@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cafeo.Gadgets;
 using Cafeo.Utils;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace Cafeo
 {
@@ -9,17 +11,23 @@ namespace Cafeo
     {
         public List<BattleVessel> vessels = new();
         public BattleVessel player;
-        private PlayerBrain _playerBrain;
+        private PlayerBrain playerBrain;
+
+        private GameObject popupPrefab;
+        [SerializeField] private Transform popupParent;
 
         protected override void Setup()
         {
             base.Setup();
             Physics2D.simulationMode = SimulationMode2D.Script;
+            popupPrefab = Addressables
+                .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/Popup.prefab")
+                .WaitForCompletion();
         }
 
         private void Start()
         {
-            _playerBrain = player.GetComponent<PlayerBrain>();
+            playerBrain = player.GetComponent<PlayerBrain>();
         }
 
         public void RegisterVessel(BattleVessel vessel)
@@ -31,7 +39,7 @@ namespace Cafeo
         {
             if (player.CanTakeAction)
             {
-                if (!_playerBrain.PlayerDecideAction()) return;
+                if (!playerBrain.PlayerDecideAction()) return;
             }
             foreach (var vessel in vessels)
             {
@@ -58,6 +66,15 @@ namespace Cafeo
             proj.initialDirection = direction;
             proj.Setup();
             go.transform.position = position;
+        }
+
+        public void CreatePopup(Vector2 position, string text)
+        {
+            var go = Instantiate(popupPrefab, popupParent);
+            go.transform.position = position;
+            var popup = go.GetComponent<Popup>();
+            popup.textColor = Color.red;
+            popup.SetText(text);
         }
     }
 }

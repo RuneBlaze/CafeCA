@@ -13,7 +13,8 @@ namespace Cafeo
         private Rigidbody2D _body;
         private BoxCollider2D _collider;
 
-        private bool _isPlayer;
+        public bool IsPlayer { get; private set; }
+
         private SpriteRenderer _sprite;
 
         public UsableItem[] hotbar;
@@ -60,6 +61,7 @@ namespace Cafeo
 
         public void ActivateItem(UsableItem item)
         {
+            item.Setup(this);
             _activeItem = item;
             EnterState(State.StartUp);
         }
@@ -93,7 +95,7 @@ namespace Cafeo
             hotbar = new UsableItem[10];
             if (Scene.player == this)
             {
-                _isPlayer = true;
+                IsPlayer = true;
             }
             SetupMyself();
             DebugColorize();
@@ -102,7 +104,7 @@ namespace Cafeo
 
         private void DebugSetup()
         {
-            if (_isPlayer)
+            if (IsPlayer)
             {
                 hotbar[0] = new RangedItem();
                 SetHotboxPointer(0);
@@ -132,15 +134,27 @@ namespace Cafeo
                 _sprite.color = Color.yellow / 2 + Color.red;
             }
             
-            if (_isPlayer) _sprite.color = Color.green;
+            if (IsPlayer) _sprite.color = Color.green;
         }
+        
+        public bool IsAlly => soul.alignment > 0;
+        public bool IsEnemy => !IsAlly;
 
         private void SetupMyself()
         {
             transform.localScale = soul.HeightScore * Vector3.one;
             _body.mass = soul.Weight;
+            if (IsAlly)
+            {
+                gameObject.layer = LayerMask.NameToLayer("Allies");
+            }
+            if (IsEnemy)
+            {
+                gameObject.layer = LayerMask.NameToLayer("Enemies");
+            }
+            gameObject.tag = IsAlly ? "Ally" : "Enemy";
             Scene.RegisterVessel(this);
-            if (_isPlayer)
+            if (IsPlayer)
             {
                 Brain = gameObject.AddComponent<PlayerBrain>();
             }
@@ -234,6 +248,20 @@ namespace Cafeo
             {
                 EnterState(State.Idle);
             }
+        }
+
+        public void ApplyDamage(int damage, float stun, Vector2 knockback)
+        {
+            if (stun > 0)
+            {
+                ApplyStun(stun);
+            }
+            if (knockback.magnitude > 0)
+            {
+                _body.AddForce(knockback, ForceMode2D.Impulse);
+            }
+            soul.TakeDamage(damage);
+            Scene.CreatePopup(transform.position, $"{damage}");
         }
     }
 }

@@ -22,6 +22,8 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         public int maxCollisionCount = 200;
         [Tooltip("The LayerMask of the objects to ignore when performing the line of sight check")]
         public LayerMask ignoreLayerMask;
+        [Tooltip("An additional LayerMask to ignore when performing the line of sight check")]
+        public SharedString ignoreLayer;
         [Tooltip("The field of view angle of the agent (in degrees)")]
         public SharedFloat fieldOfViewAngle = 90;
         [Tooltip("The distance that the agent can see")]
@@ -49,6 +51,14 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         private Collider2D[] overlap2DColliders;
 
         private int ignoreRaycastLayer = LayerMask.NameToLayer("Ignore Raycast");
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+            if (!ignoreLayer.IsNone && ignoreLayer.Value != "") {
+                ignoreLayerMask |= LayerMask.GetMask(ignoreLayer.Value);
+            }
+        }
 
         // Returns success if an object was found otherwise failure
         public override TaskStatus OnUpdate()

@@ -8,8 +8,9 @@ namespace Cafeo
     {
         public BattleVessel vessel;
 
-        private void Start()
+        public override void Start()
         {
+            base.Start();
             vessel = GetComponent<BattleVessel>();
         }
 

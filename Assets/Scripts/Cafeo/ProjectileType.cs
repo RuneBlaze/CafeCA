@@ -45,5 +45,6 @@ namespace Cafeo
         public float speed = 2f;
         public float drag;
         public float forceMultiplier;
+        public float baseDamage;
     }
 }

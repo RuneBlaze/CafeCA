@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Cafeo.Castable
 {
@@ -14,8 +16,28 @@ namespace Cafeo.Castable
         public bool forceCasting;
         public bool startUpMovable;
         public float baseDamage;
+
+        public bool hitAllies;
+        public bool hitEnemies;
         
         public RogueManager Scene => RogueManager.Instance;
+        public int targetLayerMask = -1;
+        public virtual void Setup(BattleVessel user)
+        {
+            var hitLayers = new List<string>();
+            if (hitAllies)
+            {
+                hitLayers.Add(user.IsAlly ? "Allies" : "Enemies");
+            }
+
+            if (hitEnemies)
+            {
+                hitLayers.Add(user.IsAlly ? "Enemies" : "Allies");
+            }
+            
+            targetLayerMask = LayerMask.GetMask(hitLayers.ToArray());
+            //targetLayerMask = user.IsAlly ? LayerMask.GetMask("Enemies") : LayerMask.GetMask("Allies");
+        }
 
         public virtual void OnUse(BattleVessel user)
         {

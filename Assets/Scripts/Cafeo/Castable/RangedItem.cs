@@ -25,6 +25,8 @@
             base.OnUse(user);
             if (Duration == 0)
             {
+                ProjectileType.hitAllies = hitAllies;
+                ProjectileType.hitEnemies = hitEnemies;
                 // we are doing instant use ranged items
                 Scene.CreateProjectiles(ProjectileType, user, 
                     user.CalcArrowSpawnLoc(this),

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: e53783a7005677f44919a8907401440c
+  m_SerializeEntries:
+  - m_GUID: eac3ce33743f22c47ba235ee53082df8
+    m_Address: Assets/Data/BehaviorTrees/DefaultAlly.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 7c561899cb104b445bcad4ad3398e565
+    m_Address: Assets/Data/BehaviorTrees/DefaultEnemy.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 94bd51fbe4671e241960932ce01674dd
+    m_Address: Assets/Data/RoguePrefabs/Popup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 631995a3864654b4ea88aa9c0314395f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 66e8141ff630fe94b8e78b0abcae29c3, type: 2}
+    - {fileID: 11400000, guid: 5802388c154a2544aade39cb5732d1cf, type: 2}

@@ -69,5 +69,40 @@ namespace Cafeo
                     break;
             }
         }
+
+        private void OnTriggerEnter2D(Collider2D col)
+        {
+            OnAnyCollide(col);
+        }
+
+        private void OnAnyCollide(Collider2D col)
+        {
+            var go = col.gameObject;
+            if (IsBattleVesselGameObject(go))
+            {
+                var vessel = go.GetComponent<BattleVessel>();
+                OnHit(vessel);
+            }
+        }
+
+        private void OnCollisionEnter2D(Collision2D col)
+        {
+            OnAnyCollide(col.collider);
+        }
+        
+        private bool IsBattleVesselGameObject(GameObject go)
+        {
+            return go.layer == LayerMask.NameToLayer("Allies") || go.layer == LayerMask.NameToLayer("Enemies");
+        }
+
+        private void OnHit(BattleVessel target)
+        {
+            ResolveHitEffect(target);
+        }
+
+        private void ResolveHitEffect(BattleVessel target)
+        {
+            target.ApplyDamage(1, 0.5f, _body.velocity * 10);
+        }
     }
 }

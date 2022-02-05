@@ -14,8 +14,9 @@ namespace Cafeo
             set => vessel = value;
         }
 
-        private void Start()
+        public override void Start()
         {
+            base.Start();
             _aiPath = GetComponent<AIPath>();
         }
 
