@@ -9,6 +9,8 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
     {
         [Tooltip("All of the agents")]
         public SharedGameObject[] agents = null;
+
+        public SharedGameObjectList dynamicAgents = new();
         [Tooltip("The speed of the agents")]
         public SharedFloat speed = 10;
 
@@ -17,9 +19,22 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
 
         public override void OnStart()
         {
+            if (agents.Length == 0)
+            {
+                if (dynamicAgents.Value.Count > 0)
+                {
+                    agents = new SharedGameObject[dynamicAgents.Value.Count];
+                    for (int i = 0; i < dynamicAgents.Value.Count; i++)
+                    {
+                        // var sharedGo = new SharedGameObject();
+                        agents[i] = dynamicAgents.Value[i];
+                        // var go = dynamicAgents.Value[i];
+                        // agents[i].SetValue(go);
+                    } 
+                }
+            }
             aStarAgents = new IAstarAI[agents.Length];
             transforms = new Transform[agents.Length];
-
             // Set the speed and turning speed of all of the agents
             for (int i = 0; i < agents.Length; ++i) {
                 aStarAgents[i] = agents[i].Value.GetComponent<IAstarAI>();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BehaviorDesigner.Runtime.Tasks.Movement
@@ -42,6 +43,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         public SharedBool drawDebugRay;
         [Tooltip("Should the agent's layer be disabled before the Can See Object check is executed?")]
         public SharedBool disableAgentColliderLayer;
+
+        [Tooltip("Should the agent's parent's layer be disabled before the check is executed?")]
+        public SharedBool disableParentColliderLayer;
         [Tooltip("The object that is within sight")]
         public SharedGameObject returnedObject;
 
@@ -67,8 +71,16 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
             if (disableAgentColliderLayer.Value) {
                 if (agentColliderGameObjects == null) {
                     if (usePhysics2D) {
-                        var colliders = gameObject.GetComponentsInChildren<Collider2D>();
-                        agentColliderGameObjects = new GameObject[colliders.Length];
+                        var colliders = new List<Collider2D>(gameObject.GetComponentsInChildren<Collider2D>());
+                        if (disableParentColliderLayer.Value)
+                        {
+                            var parentCollider2D = transform.parent.GetComponent<Collider2D>();
+                            if (parentCollider2D != null)
+                            {
+                                colliders.Add(parentCollider2D);
+                            }
+                        }
+                        agentColliderGameObjects = new GameObject[colliders.Count];
                         for (int i = 0; i < agentColliderGameObjects.Length; ++i) {
                             agentColliderGameObjects[i] = colliders[i].gameObject;
                         }

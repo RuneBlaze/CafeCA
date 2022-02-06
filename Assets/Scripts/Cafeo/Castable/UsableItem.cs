@@ -22,21 +22,23 @@ namespace Cafeo.Castable
         
         public RogueManager Scene => RogueManager.Instance;
         public int targetLayerMask = -1;
+        public string targetTag;
         public virtual void Setup(BattleVessel user)
         {
             var hitLayers = new List<string>();
             if (hitAllies)
             {
                 hitLayers.Add(user.IsAlly ? "Allies" : "Enemies");
+                targetTag = user.IsAlly ? "Ally" : "Enemy";
             }
 
             if (hitEnemies)
             {
                 hitLayers.Add(user.IsAlly ? "Enemies" : "Allies");
+                targetTag = user.IsAlly ? "Enemy" : "Ally";
             }
             
             targetLayerMask = LayerMask.GetMask(hitLayers.ToArray());
-            //targetLayerMask = user.IsAlly ? LayerMask.GetMask("Enemies") : LayerMask.GetMask("Allies");
         }
 
         public virtual void OnUse(BattleVessel user)

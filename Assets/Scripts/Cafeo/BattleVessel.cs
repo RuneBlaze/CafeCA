@@ -7,7 +7,7 @@ using UnityEngine.Assertions;
 namespace Cafeo
 {
     [RequireComponent(typeof(BoxCollider2D)), RequireComponent(typeof(Rigidbody2D))]
-    public class BattleVessel : MonoBehaviour
+    public class BattleVessel : MonoBehaviour, IRogueUpdate
     {
         public AgentSoul soul;
         private Rigidbody2D _body;
@@ -91,7 +91,7 @@ namespace Cafeo
             _collider = GetComponent<BoxCollider2D>();
             _sprite = GetComponent<SpriteRenderer>();
             _aimer = GetComponent<AimerGroup>();
-            Scene.vessels.Add(this);
+            // Scene.vessels.Add(this);
             hotbar = new UsableItem[10];
             if (Scene.player == this)
             {
@@ -107,6 +107,8 @@ namespace Cafeo
             if (IsPlayer)
             {
                 hotbar[0] = new RangedItem();
+                hotbar[1] = new MeleeItem(0.3f, 1f);
+                hotbar[2] = new TossItem();
                 SetHotboxPointer(0);
             }
         }
@@ -121,6 +123,16 @@ namespace Cafeo
         {
             hotbarPointer = i;
             _aimer.RequestAimer(hotbar[hotbarPointer]);
+        }
+
+        public void TrySetHotboxPointer(int i)
+        {
+            if (hotbar[i] == null)
+            {
+                return;
+            }
+            
+            SetHotboxPointer(i);
         }
 
         private void DebugColorize()
@@ -198,6 +210,11 @@ namespace Cafeo
             return _aimer.CalcDirection(item);
         }
 
+        public BattleVessel CalcAimTarget(UsableItem item)
+        {
+            return _aimer.CalcTargetObject(item)?.GetComponent<BattleVessel>();
+        }
+
         public Vector2 CalcArrowSpawnLoc()
         {
             return CalcArrowSpawnLoc(_activeItem);
@@ -262,6 +279,12 @@ namespace Cafeo
             }
             soul.TakeDamage(damage);
             Scene.CreatePopup(transform.position, $"{damage}");
+        }
+
+        public void ApplyHeal(int amount)
+        {
+            soul.Heal(amount);
+            Scene.CreatePopup(transform.position, $"{amount}", Color.green);
         }
     }
 }

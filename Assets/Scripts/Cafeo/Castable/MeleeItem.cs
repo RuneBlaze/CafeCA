@@ -12,12 +12,14 @@ namespace Cafeo.Castable
         {
             Radius = radius;
             Distance = distance;
+            hitAllies = false;
+            hitEnemies = true;
         }
 
         public override void OnUse(BattleVessel user)
         {
             base.OnUse(user);
-            var targetCoord = user.CalcAimDirection(this) * Distance;
+            var targetCoord = (Vector2) user.transform.position + user.CalcAimDirection(this) * Distance;
             int cnt = Physics2D.OverlapCircleNonAlloc(targetCoord, Radius, _results, targetLayerMask);
             for (int i = 0; i < cnt; i++)
             {

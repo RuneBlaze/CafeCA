@@ -1,11 +1,12 @@
 ﻿using System;
 using Drawing;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Cafeo
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public class Projectile : MonoBehaviour
+    public class Projectile : MonoBehaviour, IRogueUpdate
     {
         public bool alignment;
         public int pierce = 1;
@@ -16,8 +17,13 @@ namespace Cafeo
         public ProjectileType type;
         private Rigidbody2D _body;
         private Collider2D _collider;
-
         private float _timer;
+        private float _traveledDistance;
+
+        public float sizeDelta = 0;
+        private float curSize = 1;
+        public float distanceLimit = -1;
+        public UnityEvent beforeDestroy = new ();
 
         private void Start()
         {
@@ -36,8 +42,24 @@ namespace Cafeo
             {
                 _collider.isTrigger = true;
             }
-
             _timer = 0;
+            RogueManager.Instance.rogueUpdateEvent.AddListener(RogueUpdate);
+        }
+
+        private void SyncTransform()
+        {
+            if (sizeDelta != 0)
+            {
+                curSize += sizeDelta * Time.deltaTime;
+                if (curSize > 0)
+                {
+                    transform.localScale = new Vector3(curSize, curSize, curSize);
+                }
+                else
+                {
+                    SelfDestruct();
+                }
+            }
         }
 
         private void SetupLayer()
@@ -62,10 +84,10 @@ namespace Cafeo
             switch (type.Shape)
             {
                 case ProjectileType.SquareShape squareShape:
-                    draw.CircleXY( transform.position, squareShape.size/2);
+                    draw.CircleXY( transform.position, squareShape.size/2 * curSize);
                     break;
                 case ProjectileType.CircleShape circleShape:
-                    draw.CircleXY(transform.position, circleShape.radius);
+                    draw.CircleXY(transform.position, circleShape.radius * curSize);
                     break;
             }
         }
@@ -98,11 +120,37 @@ namespace Cafeo
         private void OnHit(BattleVessel target)
         {
             ResolveHitEffect(target);
+            pierce--;
+            if (pierce == 0)
+            {
+                SelfDestruct();
+            }
         }
 
         private void ResolveHitEffect(BattleVessel target)
         {
             target.ApplyDamage(1, 0.5f, _body.velocity * 10);
+        }
+
+        private void SelfDestruct()
+        {
+            beforeDestroy.Invoke();
+            Destroy(gameObject);
+        }
+
+        public void RogueUpdate()
+        {
+            _timer += Time.deltaTime;
+            if (_timer >= 20)
+            {
+                SelfDestruct();
+            }
+            _traveledDistance += _body.velocity.magnitude * Time.deltaTime;
+            if (distanceLimit >= 0 && _traveledDistance > distanceLimit)
+            {
+                SelfDestruct();
+            }
+            SyncTransform();
         }
     }
 }

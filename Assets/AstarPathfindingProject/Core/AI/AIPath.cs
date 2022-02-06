@@ -400,8 +400,8 @@ namespace Pathfinding {
 				// Make sure that we don't move further than to the end point
 				// of the path. If the RVO simulation FPS is low and we did
 				// not do this, the agent might overshoot the target a lot.
-				var rvoTarget = currentPosition + movementPlane.ToWorld(Vector2.ClampMagnitude(velocity2D, distanceToEnd), 0f);
-				rvoController.SetTarget(rvoTarget, velocity2D.magnitude, maxSpeed);
+				// var rvoTarget = currentPosition + movementPlane.ToWorld(Vector2.ClampMagnitude(velocity2D, distanceToEnd), 0f);
+				// rvoController.SetTarget(rvoTarget, velocity2D.magnitude, maxSpeed);
 			}
 
 			// Set how much the agent wants to move during this frame

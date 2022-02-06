@@ -9,9 +9,11 @@ namespace Cafeo
     [RequireComponent(typeof(BattleVessel))]
     public abstract class GenericBrain : MonoBehaviour
     {
-        private BehaviorTree _behaviorTree;
+        private BehaviorTree behaviorTree;
+        public BehaviorTree BehaviorTree => behaviorTree;
         private AimerGroup _aimer;
         public abstract BattleVessel Vessel { get; set; }
+        public RogueManager Scene => RogueManager.Instance;
         public AgentSoul Soul => Vessel.soul;
         public abstract void DecideAction();
 
@@ -21,21 +23,28 @@ namespace Cafeo
             _aimer = GetComponent<AimerGroup>();
             if (!Vessel.IsPlayer)
             {
-                _behaviorTree = gameObject.AddComponent<BehaviorTree>();
-                _behaviorTree.StartWhenEnabled = false;
+                behaviorTree = gameObject.AddComponent<BehaviorTree>();
+                behaviorTree.StartWhenEnabled = false;
                 // _behaviorTree.
                 if (Vessel.IsAlly)
                 {
-                    _behaviorTree.ExternalBehavior = 
+                    behaviorTree.ExternalBehavior = 
                         Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/DefaultAlly.asset").WaitForCompletion();
                 }
             
                 if (Vessel.IsEnemy)
                 {
-                    _behaviorTree.ExternalBehavior = 
+                    behaviorTree.ExternalBehavior = 
                         Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/DefaultEnemy.asset").WaitForCompletion();
                 }
-                _behaviorTree.EnableBehavior();
+                behaviorTree.EnableBehavior();
+            }
+            else
+            {
+                behaviorTree = gameObject.AddComponent<BehaviorTree>();
+                behaviorTree.StartWhenEnabled = false;
+                behaviorTree.ExternalBehavior =
+                    Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/LeaderFollow.asset").WaitForCompletion();
             }
             SetupAimer();
         }

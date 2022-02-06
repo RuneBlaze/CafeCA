@@ -9,11 +9,6 @@ namespace Cafeo.Aimer
     public class MeleeAimer : GenericAimer<MeleeItem>
     {
         public override MeleeItem Item { get; set; }
-        private BehaviorTree _behaviorTree;
-        public void Setup()
-        {
-            _behaviorTree = GetComponent<BehaviorTree>();
-        }
 
         public void Update()
         {
