@@ -1,6 +1,7 @@
 ﻿using System;
 using BehaviorDesigner.Runtime;
 using Cafeo.Aimer;
+using Cafeo.Castable;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -52,6 +53,29 @@ namespace Cafeo
         public void SetupAimer()
         {
             _aimer.SetupTargetTag(Vessel.IsAlly ? "Enemy" : "Ally");
+        }
+
+        public void SwitchToItemSatisfying(Predicate<UsableItem> pred)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (Vessel.hotbar[i] == null) continue;
+                if (pred.Invoke(Vessel.hotbar[i]))
+                {
+                    Vessel.TrySetHotboxPointer(i);
+                    return;
+                }
+            }
+        }
+
+        public void SwitchToFirstMeleeItem()
+        {
+            SwitchToItemSatisfying(it => it is MeleeItem);
+        }
+
+        public void SwitchToFirstRangedItem()
+        {
+            SwitchToItemSatisfying(it => it is RangedItem);
         }
     }
 }

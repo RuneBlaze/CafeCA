@@ -77,6 +77,7 @@ namespace Cafeo
         {
             if (state == State.Active)
             {
+                _activeItem.OnCounter(this);
                 _activeItem = null;
             }
         }
@@ -255,7 +256,7 @@ namespace Cafeo
             }
         }
 
-        private void ApplyActiveItemStun()
+        public void ApplyActiveItemStun()
         {
             if (_activeItem.recovery > 0)
             {

@@ -23,7 +23,7 @@
         public override void OnUse(BattleVessel user)
         {
             base.OnUse(user);
-            if (Duration == 0)
+            if (Duration == 0 && ProjectileType != null)
             {
                 ProjectileType.hitAllies = hitAllies;
                 ProjectileType.hitEnemies = hitEnemies;
