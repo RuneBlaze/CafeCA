@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BehaviorDesigner.Runtime;
 using Cafeo.Gadgets;
 using Cafeo.Utils;
 using UnityEngine;
@@ -19,6 +20,11 @@ namespace Cafeo
         public GameObject leaderAlly;
         public UnityEvent rogueUpdateEvent = new();
         [SerializeField] private Transform popupParent;
+
+        public List<BehaviorTree> allyBehaviorTrees = new();
+        public List<BehaviorTree> enemyBehaviorTrees = new();
+        
+        public Dictionary<int, BattleVessel> goIdToVessel = new();
 
         protected override void Setup()
         {
@@ -40,6 +46,17 @@ namespace Cafeo
                 {
                     otherAllyVessels.Add(battleVessel);
                 }
+
+                // if (battleVessel.IsAlly)
+                // {
+                //     var tree = battleVessel.GetComponent<BehaviorTree>();
+                //     if (tree != null) allyBehaviorTrees.Add(tree);
+                // }
+                // else
+                // {
+                //     var tree = battleVessel.GetComponent<BehaviorTree>();
+                //     if (tree != null) enemyBehaviorTrees.Add(tree);
+                // }
             }
         }
 
@@ -102,6 +119,20 @@ namespace Cafeo
         public void CreatePopup(Vector2 position, string text)
         {
             CreatePopup(position, text, Color.red);
+        }
+
+        public BattleVessel GetVesselFromGameObject(GameObject go)
+        {
+            var id = go.GetInstanceID();
+            if (goIdToVessel.ContainsKey(id))
+            {
+                return goIdToVessel[id];
+            }
+            else
+            {
+                goIdToVessel[id] = go.GetComponent<BattleVessel>();
+                return goIdToVessel[id];
+            }
         }
     }
 }

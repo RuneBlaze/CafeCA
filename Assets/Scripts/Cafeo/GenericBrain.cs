@@ -47,6 +47,25 @@ namespace Cafeo
                 behaviorTree.ExternalBehavior =
                     Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/LeaderFollow.asset").WaitForCompletion();
             }
+
+            if (Vessel.IsAlly)
+            {
+                Scene.allyBehaviorTrees.Add(behaviorTree);
+            }
+            else
+            {
+                Scene.enemyBehaviorTrees.Add(behaviorTree);
+            }
+
+            if (Vessel.IsAlly)
+            {
+                if (!Vessel.IsPlayer)
+                {
+                    BehaviorTree.SetVariableValue("PreferredDistance", 0.5f);
+                    BehaviorTree.SetVariableValue("MaxDistance", 0.7f);
+                }
+                BehaviorTree.SetVariableValue("TargetTag", Vessel.IsAlly ? "Enemy" : "Ally");
+            }
             SetupAimer();
         }
 
@@ -76,6 +95,30 @@ namespace Cafeo
         public void SwitchToFirstRangedItem()
         {
             SwitchToItemSatisfying(it => it is RangedItem);
+        }
+
+        public void TrySwitchingToItem(UsableItem.ItemTag itemTag)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (Vessel.hotbar[i] == null) continue;
+                if (Vessel.hotbar[i].HasTag(itemTag))
+                {
+                    Vessel.TrySetHotboxPointer(i);
+                    return;
+                }
+            }
+        }
+
+        public bool ShouldUseCurrentItem()
+        {
+            var item = Vessel.RetrieveCurItem();
+            if (item == null) return false;
+            if (_aimer.CalcTargetObject(item))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

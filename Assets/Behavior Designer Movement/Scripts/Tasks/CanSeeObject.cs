@@ -174,12 +174,15 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
                             }
                         }
                     }
-                    returnedObject.Value = objectFound;
+                    SetReturnedObject(objectFound);
                 } else { // If the target object is null and there is no tag then determine if there are any objects within sight based on the layer mask
                     if (overlapColliders == null) {
                         overlapColliders = new Collider[maxCollisionCount];
                     }
-                    returnedObject.Value = MovementUtility.WithinSight(transform, offset.Value, fieldOfViewAngle.Value, viewDistance.Value, overlapColliders, objectLayerMask, targetOffset.Value, ignoreLayerMask, useTargetBone.Value, targetBone, drawDebugRay.Value);
+
+                    SetReturnedObject(MovementUtility.WithinSight(transform, offset.Value, fieldOfViewAngle.Value,
+                        viewDistance.Value, overlapColliders, objectLayerMask, targetOffset.Value, ignoreLayerMask,
+                        useTargetBone.Value, targetBone, drawDebugRay.Value));
                 }
             }
 
@@ -195,6 +198,11 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
             }
             // An object is not within sight so return failure
             return TaskStatus.Failure;
+        }
+
+        private void SetReturnedObject(GameObject objectFound)
+        {
+            returnedObject.Value = objectFound;
         }
 
         // Reset the public variables

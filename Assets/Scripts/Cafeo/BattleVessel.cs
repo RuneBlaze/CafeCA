@@ -205,6 +205,9 @@ namespace Cafeo
             var dir = _aimer.CalcDirection(item);
             return (Vector2) transform.position  + dir * radius;
         }
+        
+        public float Radius => soul.HeightScore * 0.5f * Mathf.Sqrt(2);
+        public float halfSideLength => soul.HeightScore * 0.5f;
 
         public Vector2 CalcAimDirection(UsableItem item)
         {
@@ -286,6 +289,12 @@ namespace Cafeo
         {
             soul.Heal(amount);
             Scene.CreatePopup(transform.position, $"{amount}", Color.green);
+        }
+
+        public float BodyDistance(BattleVessel other)
+        {
+            return Vector3.Distance(transform.position, other.transform.position) - other.Radius -
+                   Radius;
         }
     }
 }

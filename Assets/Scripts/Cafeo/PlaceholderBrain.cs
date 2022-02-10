@@ -22,14 +22,19 @@ namespace Cafeo
             base.Start();
             _aiPath = GetComponent<AIPath>();
             _rvoController = GetComponent<RVOController>();
+
+            
         }
 
         public override void DecideAction()
         {
-            var dir = _aiPath.steeringTarget - transform.position;
-            _rvoController.SetTarget(transform.position + dir * 3, 2, 2);
-            var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);
-            vessel.Move(delta);
+            if (_aiPath.hasPath)
+            {
+                var dir = _aiPath.steeringTarget - transform.position;
+                _rvoController.SetTarget(transform.position + dir * 3, 2, 2);
+                var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);
+                vessel.Move(delta);
+            }
         }
     }
 }

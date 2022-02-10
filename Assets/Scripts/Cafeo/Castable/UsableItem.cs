@@ -21,6 +21,24 @@ namespace Cafeo.Castable
         public bool hitAllies;
         public bool hitEnemies;
 
+        public enum ItemTag
+        {
+            Approach, // this skill is useful for approaching
+            StapleDPS, // for dealing damage reliably
+        }
+        
+        public List<ItemTag> tags = new();
+        
+        public void AddTag(ItemTag tag)
+        {
+            tags.Add(tag);
+        }
+        
+        public bool HasTag(ItemTag tag)
+        {
+            return tags.Contains(tag);
+        }
+
         public IEnumerator coroutineOnStart;
         
         public RogueManager Scene => RogueManager.Instance;
