@@ -13,7 +13,7 @@ namespace Cafeo.Aimer
         public void Update()
         {
             // we draw the aimer using ALINE
-            if (Item == null)
+            if (Item == null || hidden)
             {
                 return;
             }

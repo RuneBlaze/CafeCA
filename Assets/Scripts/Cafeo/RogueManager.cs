@@ -6,6 +6,7 @@ using Cafeo.Gadgets;
 using Cafeo.Utils;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Assertions;
 using UnityEngine.Events;
 
 namespace Cafeo
@@ -17,7 +18,7 @@ namespace Cafeo
         public BattleVessel player;
         private PlayerBrain playerBrain;
         private GameObject popupPrefab;
-        public GameObject leaderAlly;
+        [HideInInspector] public GameObject leaderAlly;
         public UnityEvent rogueUpdateEvent = new();
         [SerializeField] private Transform popupParent;
 
@@ -38,6 +39,7 @@ namespace Cafeo
 
         private void Start()
         {
+            Assert.IsNotNull(player);
             playerBrain = player.GetComponent<PlayerBrain>();
             leaderAlly = CalcLeaderAlly().gameObject;
             foreach (var battleVessel in vessels)
@@ -71,6 +73,7 @@ namespace Cafeo
             {
                 if (!playerBrain.PlayerDecideAction()) return;
             }
+            // then we tick everyone else
             foreach (var vessel in vessels)
             {
                 if (vessel != player && vessel.CanTakeAction)
@@ -83,6 +86,7 @@ namespace Cafeo
                 vessel.RogueUpdate();
             }
             rogueUpdateEvent.Invoke();
+            BehaviorManager.instance.Tick();
             Physics2D.Simulate(Time.deltaTime);
         }
 

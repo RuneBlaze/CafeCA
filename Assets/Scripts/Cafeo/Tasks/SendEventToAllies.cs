@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 
 namespace Cafeo.Tasks
 {
+    [TaskCategory("Rogue")]
     public class SendEventToAllies : Action
     {
         [BehaviorDesigner.Runtime.Tasks.Tooltip("The event to send")]

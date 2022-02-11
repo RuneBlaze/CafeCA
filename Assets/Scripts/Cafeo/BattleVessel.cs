@@ -1,6 +1,7 @@
 ﻿using System;
 using Cafeo.Aimer;
 using Cafeo.Castable;
+using Cafeo.UI;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -17,7 +18,7 @@ namespace Cafeo
 
         private SpriteRenderer _sprite;
 
-        public UsableItem[] hotbar;
+        public UsableItem[] hotbar = new UsableItem[10];
         public int hotbarPointer;
         private AimerGroup _aimer;
 
@@ -93,7 +94,7 @@ namespace Cafeo
             _sprite = GetComponent<SpriteRenderer>();
             _aimer = GetComponent<AimerGroup>();
             // Scene.vessels.Add(this);
-            hotbar = new UsableItem[10];
+            
             if (Scene.player == this)
             {
                 IsPlayer = true;
@@ -105,12 +106,23 @@ namespace Cafeo
 
         private void DebugSetup()
         {
+            hotbar = new UsableItem[10];
             if (IsPlayer)
             {
                 hotbar[0] = new RangedItem();
                 hotbar[1] = new MeleeItem(0.3f, 1f);
                 hotbar[2] = new TossItem();
                 SetHotboxPointer(0);
+            }
+            else
+            {
+                if (IsAlly)
+                {
+                    hotbar[0] = new MeleeItem(0.3f, 1f);
+                    hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                    hotbar[1] = new RangedItem();
+                    hotbar[1].AddTag(UsableItem.ItemTag.Approach);
+                }
             }
         }
 
@@ -123,6 +135,7 @@ namespace Cafeo
         public void SetHotboxPointer(int i)
         {
             hotbarPointer = i;
+            hotbar[hotbarPointer].Setup(this);
             _aimer.RequestAimer(hotbar[hotbarPointer]);
         }
 

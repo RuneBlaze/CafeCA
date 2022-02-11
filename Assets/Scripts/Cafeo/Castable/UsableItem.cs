@@ -25,6 +25,7 @@ namespace Cafeo.Castable
         {
             Approach, // this skill is useful for approaching
             StapleDPS, // for dealing damage reliably
+            FreeDPS, // for easy damage
         }
         
         public List<ItemTag> tags = new();

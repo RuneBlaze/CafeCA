@@ -3,6 +3,7 @@ using BehaviorDesigner.Runtime.Tasks;
 
 namespace Cafeo.Tasks
 {
+    [TaskCategory("Rogue")]
     public class DelayedHasReceivedEvent : Conditional
     {
         [Tooltip("The name of the event to receive")]

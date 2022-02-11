@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using BehaviorDesigner.Runtime;
 using Cafeo.Aimer;
 using Cafeo.Castable;
@@ -18,9 +20,11 @@ namespace Cafeo
         public AgentSoul Soul => Vessel.soul;
         public abstract void DecideAction();
 
+        private Queue<QueuedAction> actionQueue;
+
         public virtual void Start()
         {
-            
+            actionQueue = new Queue<QueuedAction>();
             _aimer = GetComponent<AimerGroup>();
             if (!Vessel.IsPlayer)
             {
@@ -74,7 +78,7 @@ namespace Cafeo
             _aimer.SetupTargetTag(Vessel.IsAlly ? "Enemy" : "Ally");
         }
 
-        public void SwitchToItemSatisfying(Predicate<UsableItem> pred)
+        public void SwitchToItemSatisfying(Predicate<UsableItem> pred, out UsableItem item)
         {
             for (int i = 0; i < 10; i++)
             {
@@ -82,9 +86,17 @@ namespace Cafeo
                 if (pred.Invoke(Vessel.hotbar[i]))
                 {
                     Vessel.TrySetHotboxPointer(i);
+                    item = Vessel.hotbar[i];
                     return;
                 }
             }
+            item = null;
+        }
+
+        public void SwitchToItemSatisfying(Predicate<UsableItem> pred)
+        {
+            UsableItem item;
+            SwitchToItemSatisfying(pred, out item);
         }
 
         public void SwitchToFirstMeleeItem()
@@ -119,6 +131,55 @@ namespace Cafeo
                 return true;
             }
             return false;
+        }
+
+        public bool HasPositiveUtility(UsableItem item)
+        {
+            return true;
+        }
+
+        public void QueueItemOfTag(UsableItem.ItemTag itemTag)
+        {
+            actionQueue.Enqueue(new QueuedAction.UseItemOfType(itemTag));
+        }
+
+        public void ClearQueue()
+        {
+            actionQueue.Clear();
+        }
+
+        public void InterpretQueue()
+        {
+            if (actionQueue.Count == 0) return;
+            var action = actionQueue.Peek();
+            bool performedAction = false;
+            switch (action)
+            {
+                case QueuedAction.UseItemOfType useItemOfType:
+                    UsableItem item;
+                    SwitchToItemSatisfying(it => it.HasTag(useItemOfType.tag), out item);
+                    if (item == null)
+                    {
+                        // don't have good item satisfying the condition, we should just throw this away
+                        performedAction = true;
+                    }
+                    else
+                    {
+                        // have a good item, if we can use it, use it. If we cannot use it, wait
+                        if (HasPositiveUtility(item))
+                        {
+                            Vessel.ActivateItem(item);
+                            performedAction = true;
+                        }
+                        else
+                        {
+                            // now we wait...
+                        }
+                    }
+                    break;
+            }
+            if (performedAction) actionQueue.Dequeue();
+            
         }
     }
 }

@@ -16,39 +16,39 @@ namespace Cafeo.Aimer
         public void Awake()
         {
             _rangedAimer = GetComponentInChildren<RangedAimer>();
-            _rangedAimer.gameObject.SetActive(false);
             _rangedAimer.Setup();
+            _rangedAimer.Hide();
 
             _meleeAimer = GetComponentInChildren<MeleeAimer>();
-            _meleeAimer.gameObject.SetActive(false);
             _meleeAimer.Setup();
+            _meleeAimer.Hide();
 
             _tossAimer = GetComponentInChildren<TossAimer>();
-            _tossAimer.gameObject.SetActive(false);
             _tossAimer.Setup();
+            _tossAimer.Hide();
         }
 
         public void RequestAimer(UsableItem item)
         {
-            _rangedAimer.gameObject.SetActive(false);
-            _meleeAimer.gameObject.SetActive(false);
-            _tossAimer.gameObject.SetActive(false);
+            _rangedAimer.Hide();
+            _meleeAimer.Hide();
+            _tossAimer.Hide();
             var targetTag = item.targetTag;
             switch (item)
             {
                 case RangedItem rangedItem:
                     _rangedAimer.SetupTargetTag(targetTag);
-                    _rangedAimer.gameObject.SetActive(true);
+                    _rangedAimer.Show();
                     _rangedAimer.Item = rangedItem;
                     break;
                 case MeleeItem meleeItem:
                     _meleeAimer.SetupTargetTag(targetTag);
-                    _meleeAimer.gameObject.SetActive(true);
+                    _meleeAimer.Show();
                     _meleeAimer.Item = meleeItem;
                     break;
                 case TossItem tossItem:
                     _tossAimer.SetupTargetTag(targetTag);
-                    _tossAimer.gameObject.SetActive(true);
+                    _tossAimer.Show();
                     _tossAimer.Item = tossItem;
                     break;
             }

@@ -11,7 +11,7 @@ namespace Cafeo.Aimer
 
         public void Update()
         {
-            if (Item == null)
+            if (Item == null || hidden)
             {
                 return;
             }

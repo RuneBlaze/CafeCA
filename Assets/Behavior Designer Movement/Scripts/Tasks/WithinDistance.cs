@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Cafeo;
 
 namespace BehaviorDesigner.Runtime.Tasks.Movement
 {
@@ -94,14 +95,22 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
             }
 
             Vector3 direction;
+            var scene = RogueManager.Instance;
             // check each object. All it takes is one object to be able to return success
             for (int i = 0; i < objects.Count; ++i) {
                 if (objects[i] == null || objects[i] == gameObject) {
                     continue;
                 }
                 direction = objects[i].transform.position - (transform.position + offset.Value);
+                var me = scene.GetVesselFromGameObject(gameObject);
+                var rhs = scene.GetVesselFromGameObject(objects[i]);
+                bool inDistance = Vector3.SqrMagnitude(direction) < sqrMagnitude;
+                if (me != null && rhs != null)
+                {
+                    inDistance = inDistance || me.BodyDistance(rhs) < magnitude.Value;
+                }
                 // check to see if the square magnitude is less than what is specified
-                if (Vector3.SqrMagnitude(direction) < sqrMagnitude) {
+                if (inDistance) {
                     // the magnitude is less. If lineOfSight is true do one more check
                     if (lineOfSight.Value) {
                         var hitTransform = MovementUtility.LineOfSight(transform, offset.Value, objects[i], targetOffset.Value, usePhysics2D, ignoreLayerMask.value, drawDebugRay.Value);

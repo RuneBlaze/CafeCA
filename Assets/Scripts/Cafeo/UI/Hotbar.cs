@@ -15,10 +15,14 @@ namespace Cafeo.UI
 
         private void Refresh()
         {
-            var hotbarLength = Scene.player.hotbar.Length;
-            for (int i = 0; i < hotbarLength; i++)
+            var hotbar = Scene.player.hotbar;
+            if (hotbar != null)
             {
-                _hotbarItems[i].SetItem(Scene.player.hotbar[i], Scene.player.hotbarPointer == i);
+                var hotbarLength = hotbar.Length;
+                for (int i = 0; i < hotbarLength; i++)
+                {
+                    _hotbarItems[i].SetItem(Scene.player.hotbar[i], Scene.player.hotbarPointer == i);
+                }
             }
         }
         public void Update()
