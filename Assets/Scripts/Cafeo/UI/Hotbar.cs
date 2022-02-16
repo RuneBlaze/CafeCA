@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Cafeo.UI
 {
@@ -7,6 +8,8 @@ namespace Cafeo.UI
     {
         private HotbarItem[] _hotbarItems;
         public RogueManager Scene => RogueManager.Instance;
+
+        [SerializeField] private Text curItemText;
         public void Start()
         {
             _hotbarItems = GetComponentsInChildren<HotbarItem>();
@@ -24,6 +27,7 @@ namespace Cafeo.UI
                     _hotbarItems[i].SetItem(Scene.player.hotbar[i], Scene.player.hotbarPointer == i);
                 }
             }
+            curItemText.text = Scene.player.RetrieveCurItem().name;
         }
         public void Update()
         {

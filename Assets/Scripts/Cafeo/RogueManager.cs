@@ -4,6 +4,7 @@ using System.Linq;
 using BehaviorDesigner.Runtime;
 using Cafeo.Gadgets;
 using Cafeo.Utils;
+using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
@@ -90,20 +91,37 @@ namespace Cafeo
             Physics2D.Simulate(Time.deltaTime);
         }
 
-        public Projectile CreateProjectiles(ProjectileType type, BattleVessel owner, Vector2 position, Vector2 direction)
+        public Projectile CreateProjectiles(
+            ProjectileType type, BattleVessel owner, Vector2 position, Vector2 direction)
         {
             var go = new GameObject("projectile");
-            type.Shape.CreateCollider(go);
+            type.shape.CreateCollider(go);
             go.AddComponent<Rigidbody2D>();
             var proj = go.AddComponent<Projectile>();
             proj.type = type;
             proj.owner = owner;
             proj.sizeDelta = type.deltaSize;
             proj.pierce = type.pierce;
+            proj.bounce = type.bounce;
             proj.initialDirection = direction;
-            proj.Setup();
             go.transform.position = position;
+            proj.Setup();
             return proj;
+        }
+
+        public List<Projectile> CreateFanProjectiles(
+            ProjectileType type, int k, int angle, BattleVessel owner, Vector2 position, Vector2 direction)
+        {
+            float inc = (float) angle / (k - 1);
+            var projs = new List<Projectile>();
+            for (int i = 0; i < k; i++)
+            {
+                var dir = 
+                    Quaternion.AngleAxis(-angle / 2f + inc * i, Vector3.forward) * direction.normalized;
+                var r = CreateProjectiles(type, owner, position, dir);
+                projs.Add(r);
+            }
+            return projs;
         }
 
         public void CreatePopup(Vector2 position, string text, Color color)

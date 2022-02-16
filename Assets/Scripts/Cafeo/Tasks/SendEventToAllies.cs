@@ -39,7 +39,7 @@ namespace Cafeo.Tasks
                     if (argument2 == null || argument2.IsNone) {
                         if (argument1.GetValue() != null)
                         {
-                            Debug.Log(argument1.Value);
+                            // Debug.Log(argument1.Value);
                             behaviorTree.SendEvent<object>(eventName.Value, argument1.GetValue());
                         }
                     } else {

@@ -14,12 +14,15 @@ namespace Cafeo.Castable
         public float recovery = 0.5f;
 
         public float cd;
-        public bool forceCasting;
+        public bool isArts;
         public bool startUpMovable;
         public float baseDamage;
 
+        public int orbit = 1;
+        public int orientation = 0;
+
         public bool hitAllies;
-        public bool hitEnemies;
+        public bool hitEnemies = true;
 
         public enum ItemTag
         {
@@ -86,6 +89,9 @@ namespace Cafeo.Castable
                 coroutineDone = false;
                 activeCoroutine = user.StartCoroutine(WrappedCoroutine(user));
             }
+
+            orientation++;
+            orientation %= orbit;
         }
 
         public virtual void OnCounter(BattleVessel user)
@@ -98,6 +104,23 @@ namespace Cafeo.Castable
 
         public virtual void DuringActive(BattleVessel user, float timer)
         {
+        }
+        
+        public virtual void OnEndUse(BattleVessel user)
+        {
+            
+        }
+
+        public void SetHitEnemies()
+        {
+            hitAllies = false;
+            hitEnemies = true;
+        }
+
+        public void SetHitAllies()
+        {
+            hitAllies = true;
+            hitEnemies = false;
         }
     }
 }

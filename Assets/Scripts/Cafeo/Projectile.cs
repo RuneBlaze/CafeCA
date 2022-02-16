@@ -1,6 +1,8 @@
 ﻿using System;
+using DG.Tweening;
 using Drawing;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Events;
 
 namespace Cafeo
@@ -25,6 +27,8 @@ namespace Cafeo
         public float distanceLimit = -1;
         public UnityEvent beforeDestroy = new ();
 
+        private bool destroyOnNextFrame;
+
         private void Start()
         {
             
@@ -37,28 +41,61 @@ namespace Cafeo
             _collider = GetComponent<Collider2D>();
             SetupLayer();
             _body.velocity = initialDirection.normalized * type.speed;
+            Vector2 initialFacing = type.initialFacing == Vector2.zero ? initialDirection.normalized : type.initialFacing;
+            var angle = Mathf.Atan2(initialFacing.y, initialFacing.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.AngleAxis(angle + 90, Vector3.forward);
+            _collider.density = type.density;
+            _body.useAutoMass = true;
+            // _body.inertia = 30f;
+            // Debug.Log(transform.rotation.eulerAngles);
+            // Quaternion.AngleAxis(-angle / 2f + inc * i, Vector3.forward) * direction.normalized;
             _body.gravityScale = 0;
-            if (!type.collidable)
+            if (bounce > 0)
             {
-                _collider.isTrigger = true;
+                var mat2d = new PhysicsMaterial2D
+                {
+                    friction = 0,
+                    bounciness = 0.8f
+                };
+                _body.sharedMaterial = mat2d;
+            }
+            _collider.isTrigger = !type.collidable;
+            if (type.maxSize > 0)
+            {
+                curSize = 0.05f;
             }
             _timer = 0;
+            transform.position = transform.position + (Vector3) (type.speed * initialDirection.normalized * 0.07f);
             RogueManager.Instance.rogueUpdateEvent.AddListener(RogueUpdate);
         }
 
         private void SyncTransform()
         {
+            _collider.isTrigger = !type.collidable;
             if (sizeDelta != 0)
             {
                 curSize += sizeDelta * Time.deltaTime;
-                if (curSize > 0)
+            }
+
+            if (type.maxSize > 0)
+            {
+                curSize += 4.5f * Time.deltaTime;
+                // Debug.Log(curSize);
+                if (curSize > type.maxSize)
                 {
-                    transform.localScale = new Vector3(curSize, curSize, curSize);
+                    curSize = type.maxSize;
+                    destroyOnNextFrame = true;
                 }
-                else
-                {
-                    SelfDestruct();
-                }
+            }
+            
+            if (curSize > 0)
+            {
+                transform.localScale = new Vector3(curSize, curSize, curSize);
+            }
+
+            if (curSize <= 0)
+            {
+                SelfDestruct();
             }
         }
 
@@ -81,13 +118,43 @@ namespace Cafeo
         private void Update()
         {
             var draw = Draw.ingame;
-            switch (type.Shape)
+            switch (type.shape)
             {
                 case ProjectileType.SquareShape squareShape:
                     draw.CircleXY( transform.position, squareShape.size/2 * curSize);
                     break;
                 case ProjectileType.CircleShape circleShape:
                     draw.CircleXY(transform.position, circleShape.radius * curSize);
+                    break;
+                case ProjectileType.RectShape rectShape:
+                    var collider = _collider as BoxCollider2D;
+                    var size = collider.size;
+                    var topLeft = transform.TransformPoint ( collider.offset  + new Vector2(-size.x/2, size.y/2));
+                    var topRight = transform.TransformPoint ( collider.offset  + new Vector2(size.x/2, size.y/2));
+                    var btmLeft = transform.TransformPoint ( collider.offset  + new Vector2(-size.x/2, -size.y/2));
+                    var btmRight = transform.TransformPoint ( collider.offset  + new Vector2(size.x/2, -size.y/2));
+                    // // float btm = worldPos.y - (size.y / 2f);
+                    // // float left = worldPos.x - (size.x / 2f);
+                    // // float right = worldPos.x + (size.x /2f);
+                    // var topLeft = new Vector3( left, top, worldPos.z);
+                    // var topRight = new Vector3( right, top, worldPos.z);
+                    // var btmLeft = new Vector3( left, btm, worldPos.z);
+                    // var btmRight = new Vector3( right, btm, worldPos.z);
+                    rectShape.vertices[0] = topLeft;
+                    rectShape.vertices[1] = topRight;
+                    rectShape.vertices[2] = btmRight;
+                    rectShape.vertices[3] = btmLeft;
+                    draw.Polyline(rectShape.vertices, true);
+                    break;
+                case ProjectileType.CustomShape customShape:
+                    var polycollider = _collider as PolygonCollider2D;
+                    for (int i = 0; i < polycollider.points.Length; i++)
+                    {
+                        var point = polycollider.points[i];
+                        var transformedPoint = transform.TransformPoint(point + polycollider.offset);
+                        customShape.vertices[i] = transformedPoint;
+                    }
+                    draw.Polyline(customShape.vertices, true);
                     break;
             }
         }
@@ -100,10 +167,27 @@ namespace Cafeo
         private void OnAnyCollide(Collider2D col)
         {
             var go = col.gameObject;
+            if (go.layer == LayerMask.NameToLayer("Obstacle"))
+            {
+                DecBounce();
+                // _body.AddTorque(10f);
+            }
             if (IsBattleVesselGameObject(go))
             {
                 var vessel = go.GetComponent<BattleVessel>();
                 OnHit(vessel);
+            }
+        }
+
+        private void DecBounce()
+        {
+            if (bounce > 0)
+            {
+                bounce--;
+            }
+            else
+            {
+                SelfDestruct();
             }
         }
 
@@ -140,8 +224,13 @@ namespace Cafeo
 
         public void RogueUpdate()
         {
+            if (destroyOnNextFrame)
+            {
+                SelfDestruct();
+                return;
+            }
             _timer += Time.deltaTime;
-            if (_timer >= 20)
+            if (_timer >= 20 || _timer > type.timeLimit)
             {
                 SelfDestruct();
             }
@@ -151,6 +240,11 @@ namespace Cafeo
                 SelfDestruct();
             }
             SyncTransform();
+
+            // if (_timer >= 0.1f)
+            // {
+            //     if (type.collidable) _collider.isTrigger = true;
+            // }
         }
     }
 }

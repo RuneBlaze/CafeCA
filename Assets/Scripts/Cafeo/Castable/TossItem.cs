@@ -6,8 +6,9 @@ namespace Cafeo.Castable
 {
     public class TossItem : UsableItem
     {
-        public float radius;
-        public float maxDistance;
+        public float radius = 2f;
+        public float maxDistance = 4;
+        public bool alwaysSplash;
 
         public void Update()
         {
@@ -18,6 +19,10 @@ namespace Cafeo.Castable
         {
             base.OnUse(user);
             var aimTarget = user.CalcAimTarget(this);
+            if (alwaysSplash && aimTarget == null)
+            {
+                aimTarget = user;
+            }
             if (aimTarget == null)
             {
                 // self use
@@ -26,11 +31,10 @@ namespace Cafeo.Castable
             else
             {
                 // we actually toss stuff now
-                // TODO: implement tossing and splashing
                 // ApplyEffect(user, aimTarget);
                 var type = new ProjectileType
                 {
-                    Shape = new ProjectileType.CircleShape { radius = 0.2f },
+                    shape = new ProjectileType.CircleShape { radius = 0.2f },
                     pierce = 1,
                     collidable = true,
                     speed = 20f,
@@ -38,13 +42,13 @@ namespace Cafeo.Castable
                     hitEnemies = hitEnemies,
                     baseDamage = -1
                 };
-                var dir = (aimTarget.transform.position - user.transform.position).normalized * 0.5f;
-                var proj = Scene.CreateProjectiles(type, user, user.transform.position + dir, dir);
+                var dir = (aimTarget.transform.position - user.transform.position).normalized * user.Radius;
+                var proj = Scene.CreateProjectiles(type, user, user.transform.position + dir * 1.5f , dir);
                 proj.beforeDestroy.AddListener(() =>
                 {
                     var splash = new ProjectileType
                     {
-                        Shape = new ProjectileType.CircleShape { radius = 2f },
+                        shape = new ProjectileType.CircleShape { radius = radius },
                         collidable = false,
                         speed = 0f,
                         hitAllies = hitAllies,

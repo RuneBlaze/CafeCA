@@ -7,7 +7,7 @@ namespace Cafeo.Aimer
     {
         private SpriteRenderer sprite;
         public abstract T Item { get; set; }
-        protected bool hidden;
+        [SerializeField] protected bool hidden;
         public BehaviorTree BehaviorTree { get; private set; }
         public virtual void Setup()
         {
@@ -25,16 +25,16 @@ namespace Cafeo.Aimer
 
         public void Hide()
         {
+            hidden = true;
             if (sprite == null) return;
             sprite.enabled = false;
-            hidden = true;
         }
 
         public void Show()
         {
+            hidden = false;
             if (sprite == null) return;
             sprite.enabled = true;
-            hidden = false;
         }
     }
 }

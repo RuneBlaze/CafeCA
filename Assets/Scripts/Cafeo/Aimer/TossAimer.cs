@@ -9,6 +9,11 @@ namespace Cafeo.Aimer
     {
         public override TossItem Item { get; set; }
 
+        public void SetMaxDistance(float value)
+        {
+            BehaviorTree.SetVariableValue("MaxDistance", value);
+        }
+
         public void Update()
         {
             if (Item == null || hidden)

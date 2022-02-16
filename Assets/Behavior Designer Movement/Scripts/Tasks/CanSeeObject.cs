@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BehaviorDesigner.Runtime.Tasks.Unity.Math;
 using UnityEngine;
 
 namespace BehaviorDesigner.Runtime.Tasks.Movement
@@ -56,17 +57,24 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
 
         private int ignoreRaycastLayer = LayerMask.NameToLayer("Ignore Raycast");
 
+        private int originalLayer;
         public override void OnAwake()
         {
             base.OnAwake();
-            if (!ignoreLayer.IsNone && ignoreLayer.Value != "") {
-                ignoreLayerMask |= LayerMask.GetMask(ignoreLayer.Value);
-            }
+            originalLayer = objectLayerMask.value;
         }
 
         // Returns success if an object was found otherwise failure
         public override TaskStatus OnUpdate()
         {
+            objectLayerMask.value = originalLayer;
+            if (!ignoreLayer.IsNone && ignoreLayer.Value != null && ignoreLayer.Value.Length > 0)
+            {
+                objectLayerMask &= ~LayerMask.GetMask(ignoreLayer.Value);
+            }
+            if (!ignoreLayer.IsNone && ignoreLayer.Value != "") {
+                ignoreLayerMask |= LayerMask.GetMask(ignoreLayer.Value);
+            }
             // The collider layers on the agent can be set to ignore raycast to prevent them from interferring with the raycast checks.
             if (disableAgentColliderLayer.Value) {
                 if (agentColliderGameObjects == null) {

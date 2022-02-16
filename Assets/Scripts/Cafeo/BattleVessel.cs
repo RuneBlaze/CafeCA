@@ -19,7 +19,7 @@ namespace Cafeo
         private SpriteRenderer _sprite;
 
         public UsableItem[] hotbar = new UsableItem[10];
-        public int hotbarPointer;
+        public int hotbarPointer = 0;
         private AimerGroup _aimer;
 
         public GenericBrain Brain { get; private set; }
@@ -30,6 +30,11 @@ namespace Cafeo
             StartUp,
             Active,
             Stun,
+        }
+
+        private void Awake()
+        {
+            hotbar = new UsableItem[10];
         }
 
         private void EnterState(State state)
@@ -109,9 +114,33 @@ namespace Cafeo
             hotbar = new UsableItem[10];
             if (IsPlayer)
             {
-                hotbar[0] = new RangedItem();
-                hotbar[1] = new MeleeItem(0.3f, 1f);
-                hotbar[2] = new TossItem();
+                hotbar[0] = new RangedItem {name = "以撒的眼泪"};
+                hotbar[1] = new MeleeItem(0.3f, 1f) {name = "匕首"};
+                hotbar[2] = new TossItem {name = "测试用投掷道具"};
+                hotbar[2].SetHitAllies();
+                hotbar[3] = new TossItem {name = "测试用自我中心 Buff", maxDistance = 0, alwaysSplash = true};
+                hotbar[3].SetHitAllies();
+                hotbar[4] = new RangedItem { name = "Fanshot 测试", fan = 3, spread = 90 };
+
+                hotbar[6] = new MeleeItem(1f, 1f) {name = "测试用锤子", meleeType = MeleeItem.MeleeType.Hammer};
+                hotbar[7] = new MeleeItem(1f, 1f) {name = "测试用长矛", meleeType = MeleeItem.MeleeType.Thrust};
+                hotbar[8] = new RangedItem
+                {
+                    projectileType = new ProjectileType
+                    {
+                        shape = new ProjectileType.RectShape(0.05f, 0.6f),
+                        collidable = true,
+                        speed = 9f,
+                        pierce = 1,
+                        bounce = 1,
+                    },
+                    fan = 3,
+                    spread = 60,
+                    shots = 3,
+                    duration = 0.5f,
+                    name = "测试用散射针",
+                };
+                // hotbar[7].recovery = 0.05f;
                 SetHotboxPointer(0);
             }
             else
@@ -208,13 +237,17 @@ namespace Cafeo
         public void ApplyStun(float duration)
         {
             Assert.IsTrue(duration > 0);
+            if (_state == State.Active && _activeItem.isArts)
+            {
+                return;
+            }
             _stun = Mathf.Max(_stun, duration);
             EnterState(State.Stun);
         }
 
         public Vector2 CalcArrowSpawnLoc(UsableItem item)
         {
-            var radius = soul.HeightScore * 0.5f * Mathf.Sqrt(2);
+            var radius = soul.HeightScore * 0.1f * Mathf.Sqrt(2);
             var dir = _aimer.CalcDirection(item);
             return (Vector2) transform.position  + dir * radius;
         }
@@ -274,6 +307,7 @@ namespace Cafeo
 
         public void ApplyActiveItemStun()
         {
+            _activeItem.OnEndUse(this);
             if (_activeItem.recovery > 0)
             {
                 ApplyStun(_activeItem.recovery);

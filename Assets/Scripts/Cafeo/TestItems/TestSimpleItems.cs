@@ -9,7 +9,7 @@ namespace DefaultNamespace
         {
             var rangedItem = new RangedItem
             {
-                ProjectileType = new ProjectileType
+                projectileType = new ProjectileType
                 {
                     collidable = false,
                     speed = 20f,

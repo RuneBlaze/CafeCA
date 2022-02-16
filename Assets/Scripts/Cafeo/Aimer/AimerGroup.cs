@@ -48,6 +48,7 @@ namespace Cafeo.Aimer
                     break;
                 case TossItem tossItem:
                     _tossAimer.SetupTargetTag(targetTag);
+                    _tossAimer.SetMaxDistance(tossItem.maxDistance);
                     _tossAimer.Show();
                     _tossAimer.Item = tossItem;
                     break;
