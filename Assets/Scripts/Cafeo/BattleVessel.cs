@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cafeo.Aimer;
 using Cafeo.Castable;
 using Cafeo.UI;
@@ -22,6 +23,8 @@ namespace Cafeo
         public int hotbarPointer = 0;
         private AimerGroup _aimer;
 
+        public List<StatusEffect> statusEffects;
+
         public GenericBrain Brain { get; private set; }
 
         public enum State
@@ -35,6 +38,7 @@ namespace Cafeo
         private void Awake()
         {
             hotbar = new UsableItem[10];
+            statusEffects = new List<StatusEffect>();
         }
 
         private void EnterState(State state)
@@ -109,6 +113,11 @@ namespace Cafeo
             DebugSetup();
         }
 
+        public void StopMoving()
+        {
+            Move(Vector2.zero, 12f);
+        }
+
         private void DebugSetup()
         {
             hotbar = new UsableItem[10];
@@ -140,7 +149,66 @@ namespace Cafeo
                     duration = 0.5f,
                     name = "测试用散射针",
                 };
-                // hotbar[7].recovery = 0.05f;
+
+                hotbar[9] = new MeleeItem(1f, 1f)
+                {
+                    name = "测试镰刀",
+                    meleeType = MeleeItem.MeleeType.Scythe,
+                    active = 0.5f,
+                    recovery = 0.1f,
+                };
+                
+                hotbar[5] = new MeleeItem(1f, 1f)
+                {
+                    name = "测试大剑",
+                    meleeType = MeleeItem.MeleeType.GreatSword,
+                    active = 0.5f,
+                    recovery = 0.1f,
+                };
+                
+                var sword = new MeleeItem(1f, 1f)
+                {
+                    name = "测试长剑",
+                    meleeType = MeleeItem.MeleeType.BroadSword,
+                    active = 0.3f,
+                    recovery = 0.05f,
+                };
+
+                var testBoomerang = new RangedItem
+                {
+                    projectileType = new ProjectileType
+                    {
+                        shape = new ProjectileType.PredefinedShape("Boomerang").Rescale(0.2f),
+                        collidable = true,
+                        speed = 6f,
+                        pierce = 30,
+                        bounce = 30,
+                        initialSpin = 360,
+                        bounciness = 1f,
+                        boomerang = 1f,
+                    },
+                    shots = 1,
+                    name = "测试用回旋镖",
+                };
+
+                var testGun = new RangedItem
+                {
+                    projectileType = new ProjectileType()
+                    {
+                        shape = new ProjectileType.CircleShape(0.03f),
+                        collidable = true,
+                        speed = 15f,
+                        pierce = 1,
+                        bounce = 0,
+                        bullet = true,
+                    },
+                    shots = 1,
+                    name = "测试用枪",
+                    active = 0f,
+                    recovery = 0.05f,
+                    instability = 20,
+                };
+                hotbar[0] = testGun;
                 SetHotboxPointer(0);
             }
             else
@@ -153,11 +221,16 @@ namespace Cafeo
                     hotbar[1].AddTag(UsableItem.ItemTag.Approach);
                 }
             }
+
+            if (IsPlayer)
+            {
+                _aimer.autoAim = false;
+            }
         }
 
         public UsableItem RetrieveCurItem()
         {
-            Assert.IsNotNull(hotbar[hotbarPointer]);
+            // Assert.IsNotNull(hotbar[hotbarPointer]);
             return hotbar[hotbarPointer];
         }
 
@@ -220,12 +293,12 @@ namespace Cafeo
             Brain.Vessel = this;
         }
 
-        public void Move(Vector2 direction)
+        public void Move(Vector2 direction, float lerp = 4f)
         {
             var steer = direction.normalized * 120f;
             var myVel = _body.velocity;
-            myVel.x = Mathf.MoveTowards(myVel.x, steer.x, Time.deltaTime * 4f);
-            myVel.y = Mathf.MoveTowards(myVel.y, steer.y, Time.deltaTime * 4f);
+            myVel.x = Mathf.MoveTowards(myVel.x, steer.x, Time.deltaTime * lerp);
+            myVel.y = Mathf.MoveTowards(myVel.y, steer.y, Time.deltaTime * lerp);
             _body.velocity = myVel;
         }
 
@@ -240,6 +313,11 @@ namespace Cafeo
             if (_state == State.Active && _activeItem.isArts)
             {
                 return;
+            }
+
+            if (_state == State.Active && _itemTimer < _activeItem.active)
+            {
+                _activeItem.OnInterrupt(this);
             }
             _stun = Mathf.Max(_stun, duration);
             EnterState(State.Stun);
@@ -269,9 +347,24 @@ namespace Cafeo
         {
             return CalcArrowSpawnLoc(_activeItem);
         }
+        
+        public void AddStatus(StatusEffect status)
+        {
+            statusEffects.Add(status);
+        }
 
         public void RogueUpdate()
         {
+            for (int i = statusEffects.Count - 1; i >= 0; i--)
+            {
+                var effect = statusEffects[i];
+                effect.Update();
+                if (effect.Finished)
+                {
+                    statusEffects.RemoveAt(i);
+                }
+            }
+
             switch (_state)
             {
                 case State.Idle:

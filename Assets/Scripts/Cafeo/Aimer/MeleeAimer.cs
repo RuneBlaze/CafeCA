@@ -10,8 +10,9 @@ namespace Cafeo.Aimer
     {
         public override MeleeItem Item { get; set; }
 
-        public void Update()
+        public override void Update()
         {
+            base.Update();
             // we draw the aimer using ALINE
             if (Item == null || hidden)
             {

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using Cafeo.Utils;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace Cafeo.Castable
@@ -11,6 +12,7 @@ namespace Cafeo.Castable
         public int fan = 0;
         public int spread = 0;
         public float duration = 0;
+        public float instability = 0;
 
         public RangedItem(ProjectileType projectileType)
         {
@@ -25,22 +27,38 @@ namespace Cafeo.Castable
             };
         }
 
+        public override void Setup(BattleVessel user)
+        {
+            base.Setup(user);
+            if (shots > 1)
+            {
+                Assert.IsTrue(duration > 0);
+                coroutineOnStart = MultiShotLogic(user);
+            }
+        }
+
         private void ShootOnce(BattleVessel user)
         {
             projectileType.hitAllies = hitAllies;
             projectileType.hitEnemies = hitEnemies;
             // we are doing instant use ranged items
+            var arrowSpawnLoc = user.CalcArrowSpawnLoc(this);
+            var a = Random.Range(-instability / 2, instability / 2);
+            if (instability > 0)
+            {
+                // arrowSpawnLoc = arrowSpawnLoc.Rotate(a);
+            }
             if (fan == 0 || spread == 0)
             {
-                Scene.CreateProjectiles(projectileType, user, 
-                    user.CalcArrowSpawnLoc(this),
-                    user.CalcAimDirection(this));
+                Scene.CreateProjectile(projectileType, user, 
+                    arrowSpawnLoc,
+                    user.CalcAimDirection(this).Rotate(a));
             }
             else
             {
                 Scene.CreateFanProjectiles(projectileType, fan, spread, user,
-                    user.CalcArrowSpawnLoc(this),
-                    user.CalcAimDirection(this));
+                    arrowSpawnLoc,
+                    user.CalcAimDirection(this).Rotate(a));
             }
         }
 
@@ -57,11 +75,6 @@ namespace Cafeo.Castable
 
         public override void OnUse(BattleVessel user)
         {
-            if (shots > 1)
-            {
-                Assert.IsTrue(duration > 0);
-                coroutineOnStart = MultiShotLogic(user);
-            }
             base.OnUse(user);
             if (duration == 0 && projectileType != null && shots == 1)
             {

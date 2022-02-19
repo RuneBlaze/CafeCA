@@ -14,7 +14,7 @@ namespace Cafeo
 
         public class CircleShape : ProjectileShape
         {
-            public float radius = 0.1f;
+            public float radius;
 
             public CircleShape(float radius = 0.1f)
             {
@@ -45,11 +45,13 @@ namespace Cafeo
         {
             public float width = 0.2f;
             public float height = 0.6f;
+            public bool centering;
 
-            public RectShape(float width, float height)
+            public RectShape(float width, float height, bool centering = true)
             {
                 this.width = width;
                 this.height = height;
+                this.centering = centering;
             }
 
             public Vector3[] vertices;
@@ -59,6 +61,10 @@ namespace Cafeo
                 vertices = new Vector3[4];
                 var component = gameObject.AddComponent<BoxCollider2D>();
                 component.size = new Vector2(width, height);
+                if (!centering)
+                {
+                    component.offset = new Vector2(0, -height / 2 - 0.1f);
+                }
                 return component;
             }
         }
@@ -67,6 +73,7 @@ namespace Cafeo
         {
             public GameObject prefab;
             public Vector3[] vertices;
+            public float scale = 1;
 
             public CustomShape(GameObject prefab)
             {
@@ -83,15 +90,63 @@ namespace Cafeo
                 var src = prefab.GetComponent<PolygonCollider2D>();
                 var dst = gameObject.AddComponent<PolygonCollider2D>();
                 dst.points = src.points;
-                dst.offset = src.offset;
+                for (int i = 0; i < dst.points.Length; i++)
+                {
+                    dst.points[i] *= scale;
+                }
+                dst.offset = src.offset * scale;
                 vertices = new Vector3[dst.points.Length];
                 return dst;
+            }
+
+            public CustomShape Rescale(float x)
+            {
+                scale = x;
+                return this;
+            }
+        }
+
+        public class ScytheShape : CustomShape
+        {
+            public ScytheShape() : base("Assets/Data/Shapes/Scythe.prefab")
+            {
+                
+            }
+        }
+
+        public class GreatSwordShape : CustomShape
+        {
+            public GreatSwordShape() : base("Assets/Data/Shapes/GreatSword.prefab")
+            {
+                
+            }
+        }
+
+        public class PredefinedShape : CustomShape
+        {
+            public PredefinedShape(string name) : base($"Assets/Data/Shapes/{name}.prefab")
+            {
+            }
+        }
+        
+        // swings towards orientation direction across "range" in "speed" seconds
+        public class RotateType
+        {
+            public bool orientation;
+            public float range;
+            public float speed;
+
+            public RotateType(bool orientation, float range, float speed)
+            {
+                this.orientation = orientation;
+                this.range = range;
+                this.speed = speed;
             }
         }
 
         public ProjectileShape shape;
         public int pierce;
-        public int bounce;
+        public int bounce = -1;
         public bool hitAllies;
         public bool hitEnemies;
         public bool collidable;
@@ -104,7 +159,18 @@ namespace Cafeo
         public float maxSize;
         public float density = 32f;
 
+        public bool kineticBody = false;
+        public float initialSpin = 0;
+
+        public float boomerang = 0;
+
         public Vector2 initialFacing = Vector2.zero;
+
+        public RotateType rotate;
+
+        public float bounciness = 0.8f;
+
+        public bool bullet;
         // public float timeLimit;
 
         public float boomerangStrength;

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Cafeo.Castable
 {
@@ -23,6 +24,8 @@ namespace Cafeo.Castable
 
         public bool hitAllies;
         public bool hitEnemies = true;
+
+        public UnityEvent onCounter;
 
         public enum ItemTag
         {
@@ -52,6 +55,8 @@ namespace Cafeo.Castable
         private Coroutine activeCoroutine;
         public virtual void Setup(BattleVessel user)
         {
+            onCounter = new UnityEvent();
+            
             var hitLayers = new List<string>();
             if (hitAllies)
             {
@@ -96,6 +101,12 @@ namespace Cafeo.Castable
 
         public virtual void OnCounter(BattleVessel user)
         {
+            
+        }
+
+        public virtual void OnInterrupt(BattleVessel user)
+        {
+            onCounter.Invoke();
             if (activeCoroutine != null)
             {
                 user.StopCoroutine(activeCoroutine);

@@ -103,7 +103,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
                 }
 
                 // Change the layer. Remember the previous layer so it can be reset after the check has completed.
-                for (int i = 0; i < agentColliderGameObjects.Length; ++i) {
+                for (int i = 0; i < agentColliderGameObjects.Length; ++i)
+                {
+                    if (agentColliderGameObjects[i] == null) return TaskStatus.Running;
                     originalColliderLayer[i] = agentColliderGameObjects[i].layer;
                     agentColliderGameObjects[i].layer = ignoreRaycastLayer;
                 }

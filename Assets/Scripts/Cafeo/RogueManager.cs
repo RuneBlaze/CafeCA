@@ -91,7 +91,7 @@ namespace Cafeo
             Physics2D.Simulate(Time.deltaTime);
         }
 
-        public Projectile CreateProjectiles(
+        public Projectile CreateProjectile(
             ProjectileType type, BattleVessel owner, Vector2 position, Vector2 direction)
         {
             var go = new GameObject("projectile");
@@ -118,7 +118,7 @@ namespace Cafeo
             {
                 var dir = 
                     Quaternion.AngleAxis(-angle / 2f + inc * i, Vector3.forward) * direction.normalized;
-                var r = CreateProjectiles(type, owner, position, dir);
+                var r = CreateProjectile(type, owner, position, dir);
                 projs.Add(r);
             }
             return projs;

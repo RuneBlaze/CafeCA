@@ -11,6 +11,8 @@ namespace Cafeo.Aimer
         private MeleeAimer _meleeAimer;
         private TossAimer _tossAimer;
 
+        public bool autoAim;
+
         public RangedAimer RangedAimer => _rangedAimer;
 
         public void Awake()
@@ -26,6 +28,15 @@ namespace Cafeo.Aimer
             _tossAimer = GetComponentInChildren<TossAimer>();
             _tossAimer.Setup();
             _tossAimer.Hide();
+            
+            autoAim = true;
+        }
+
+        private void Update()
+        {
+            _rangedAimer.autoAim = autoAim;
+            _meleeAimer.autoAim = autoAim;
+            _tossAimer.autoAim = autoAim;
         }
 
         public void RequestAimer(UsableItem item)
@@ -40,17 +51,20 @@ namespace Cafeo.Aimer
                     _rangedAimer.SetupTargetTag(targetTag);
                     _rangedAimer.Show();
                     _rangedAimer.Item = rangedItem;
+                    _rangedAimer.Refresh();
                     break;
                 case MeleeItem meleeItem:
                     _meleeAimer.SetupTargetTag(targetTag);
                     _meleeAimer.Show();
                     _meleeAimer.Item = meleeItem;
+                    _meleeAimer.Refresh();
                     break;
                 case TossItem tossItem:
                     _tossAimer.SetupTargetTag(targetTag);
                     _tossAimer.SetMaxDistance(tossItem.maxDistance);
                     _tossAimer.Show();
                     _tossAimer.Item = tossItem;
+                    _tossAimer.Refresh();
                     break;
             }
         }

@@ -26,8 +26,13 @@ namespace Cafeo.UI
                 {
                     _hotbarItems[i].SetItem(Scene.player.hotbar[i], Scene.player.hotbarPointer == i);
                 }
+
+                if (Scene.player.RetrieveCurItem() != null)
+                {
+                    curItemText.text = Scene.player.RetrieveCurItem().name;
+                }
+                
             }
-            curItemText.text = Scene.player.RetrieveCurItem().name;
         }
         public void Update()
         {

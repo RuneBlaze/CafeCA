@@ -37,13 +37,13 @@ namespace Cafeo.Castable
                     shape = new ProjectileType.CircleShape { radius = 0.2f },
                     pierce = 1,
                     collidable = true,
-                    speed = 20f,
+                    speed = 8f,
                     hitAllies = hitAllies,
                     hitEnemies = hitEnemies,
                     baseDamage = -1
                 };
                 var dir = (aimTarget.transform.position - user.transform.position).normalized * user.Radius;
-                var proj = Scene.CreateProjectiles(type, user, user.transform.position + dir * 1.5f , dir);
+                var proj = Scene.CreateProjectile(type, user, user.transform.position + dir * 1f , dir);
                 proj.beforeDestroy.AddListener(() =>
                 {
                     var splash = new ProjectileType
@@ -56,7 +56,7 @@ namespace Cafeo.Castable
                         baseDamage = -1,
                         deltaSize = -0.5f,
                     };
-                    Scene.CreateProjectiles(splash, user, proj.transform.position, Vector2.down);
+                    Scene.CreateProjectile(splash, user, proj.transform.position, Vector2.down);
                 });
             }
         }

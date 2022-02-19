@@ -1,4 +1,5 @@
 ﻿using System;
+using Cafeo.Castable;
 using DG.Tweening;
 using Drawing;
 using UnityEngine;
@@ -11,8 +12,8 @@ namespace Cafeo
     public class Projectile : MonoBehaviour, IRogueUpdate
     {
         public bool alignment;
-        public int pierce = 1;
-        public int bounce = 0;
+        public int pierce = 1231231234;
+        public int bounce = -1;
         public BattleVessel owner;
         public Vector2 initialDirection;
 
@@ -28,10 +29,33 @@ namespace Cafeo
         public UnityEvent beforeDestroy = new ();
 
         private bool destroyOnNextFrame;
+        private int totalBounce;
 
         private void Start()
         {
-            
+            if (type.rotate != null)
+            {
+                var orient = type.rotate.orientation ? 1 : -1;
+                var initialAngle = transform.rotation.eulerAngles.z - type.rotate.range * orient * 0.5f;
+                var finalAngle = transform.rotation.eulerAngles.z + type.rotate.range * orient * 0.5f;
+                var rotateY = 0;
+                transform.localScale = new Vector3(-orient, 1, 1);
+                transform.rotation = Quaternion.Euler(0, rotateY, initialAngle);
+                var tween = transform.DORotate(
+                    new Vector3(0, rotateY, finalAngle),
+                    type.rotate.speed);
+                tween.onComplete += SelfDestruct;
+            }
+
+            if (type.initialSpin != 0)
+            {
+                _body.AddTorque(type.initialSpin);
+            }
+        }
+
+        public void RegisterMeleeOwner(UsableItem item)
+        {
+            item.onCounter.AddListener(SelfDestruct);
         }
 
         public void Setup()
@@ -44,8 +68,8 @@ namespace Cafeo
             Vector2 initialFacing = type.initialFacing == Vector2.zero ? initialDirection.normalized : type.initialFacing;
             var angle = Mathf.Atan2(initialFacing.y, initialFacing.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.AngleAxis(angle + 90, Vector3.forward);
-            _collider.density = type.density;
             _body.useAutoMass = true;
+            _collider.density = type.density;
             // _body.inertia = 30f;
             // Debug.Log(transform.rotation.eulerAngles);
             // Quaternion.AngleAxis(-angle / 2f + inc * i, Vector3.forward) * direction.normalized;
@@ -55,7 +79,7 @@ namespace Cafeo
                 var mat2d = new PhysicsMaterial2D
                 {
                     friction = 0,
-                    bounciness = 0.8f
+                    bounciness = type.bounciness,
                 };
                 _body.sharedMaterial = mat2d;
             }
@@ -67,6 +91,16 @@ namespace Cafeo
             _timer = 0;
             transform.position = transform.position + (Vector3) (type.speed * initialDirection.normalized * 0.07f);
             RogueManager.Instance.rogueUpdateEvent.AddListener(RogueUpdate);
+
+            if (type.kineticBody)
+            {
+                _body.freezeRotation = true;
+            }
+
+            if (type.bullet)
+            {
+                _body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            }
         }
 
         private void SyncTransform()
@@ -90,7 +124,7 @@ namespace Cafeo
             
             if (curSize > 0)
             {
-                transform.localScale = new Vector3(curSize, curSize, curSize);
+                transform.localScale = new Vector3(Mathf.Sign(transform.localScale.x) * curSize, curSize, curSize);
             }
 
             if (curSize <= 0)
@@ -181,9 +215,11 @@ namespace Cafeo
 
         private void DecBounce()
         {
+            if (bounce < 0) return;
             if (bounce > 0)
             {
                 bounce--;
+                totalBounce++;
             }
             else
             {
@@ -218,6 +254,7 @@ namespace Cafeo
 
         private void SelfDestruct()
         {
+            DOTween.Kill(transform);
             beforeDestroy.Invoke();
             Destroy(gameObject);
         }
@@ -239,12 +276,25 @@ namespace Cafeo
             {
                 SelfDestruct();
             }
-            SyncTransform();
 
-            // if (_timer >= 0.1f)
-            // {
-            //     if (type.collidable) _collider.isTrigger = true;
-            // }
+            if (type.boomerang > 0)
+            {
+                // var t = _timer * 24;
+                // var f = new Vector2(Mathf.Cos(t), Mathf.Sin(t));
+                var diff = owner.transform.position - transform.position;
+                var f = diff.normalized * Mathf.Pow(_timer * 12f, 1.5f);
+                _body.AddForce(f);
+                if (Mathf.Abs(_body.angularVelocity) < 360)
+                {
+                    _body.AddTorque(Mathf.Sign(_body.angularVelocity) * 5f);
+                }
+                if (_timer > 0.5f && (diff.sqrMagnitude < 0.5f))
+                {
+                    SelfDestruct();
+                }
+            }
+
+            SyncTransform();
         }
     }
 }

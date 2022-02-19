@@ -37,6 +37,18 @@ MonoBehaviour:
     m_Address: Assets/Data/PhysicsMaterials/BouncyKnife.physicsMaterial2D
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: f6719b5227fe4e04788fc07eaceb7917
+    m_Address: Assets/Data/Shapes/Scythe.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0d8cf83b4bc34f249a1ff9441955f272
+    m_Address: Assets/Data/Shapes/GreatSword.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a9bc14cae3956b44d9c6087bd979e31c
+    m_Address: Assets/Data/Shapes/Boomerang.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 631995a3864654b4ea88aa9c0314395f, type: 2}
   m_SchemaSet:
