@@ -33,6 +33,11 @@ namespace Cafeo
         {
             public float size = 0.2f;
 
+            public SquareShape(float size)
+            {
+                this.size = size;
+            }
+
             public override Collider2D CreateCollider(GameObject gameObject)
             {
                 var component = gameObject.AddComponent<BoxCollider2D>();
@@ -128,7 +133,7 @@ namespace Cafeo
             {
             }
         }
-        
+
         // swings towards orientation direction across "range" in "speed" seconds
         public class RotateType
         {
@@ -171,6 +176,8 @@ namespace Cafeo
         public float bounciness = 0.8f;
 
         public bool bullet;
+
+        public bool followOwner;
         // public float timeLimit;
 
         public float boomerangStrength;

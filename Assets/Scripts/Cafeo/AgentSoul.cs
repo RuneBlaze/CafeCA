@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cafeo.Utils;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Cafeo
@@ -11,6 +13,18 @@ namespace Cafeo
         {
             Male,
             Female,
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                if (firstName == "" && lastName == "")
+                {
+                    return gameObject.name;
+                }
+                return $"{lastName} {firstName}";
+            }
         }
 
         public string firstName;
@@ -25,7 +39,7 @@ namespace Cafeo
         public string skinColor = "fair";
         public string hairColor = "black";
         public string eyeColor = "brown";
-        public float appearedAgeMultiplier = 1;
+        // public float appearedAgeMultiplier = 1;
         public float genderAppearance = 0.7f;
 
         public bool hasMaleFeature = false;
@@ -36,16 +50,47 @@ namespace Cafeo
         public float femaleFeatureProminence = 1f;
         public float appearedAge = 1f;
 
+        [SerializeField] private AgentPreset preset;
+
         public int hp = 12;
-        public int mhp = 12;
         public int mp = 6;
-        public int mmp = 6;
+
+        public float[] baseAttrs = new float[12];
+        public float Str => baseAttrs[0] * Mathf.Pow(HeightScore, 1.5f);
+        public float Con => baseAttrs[1] * Mathf.Pow(HeightScore, 1.5f);
+        public float Dex => baseAttrs[2] / Mathf.Pow(HeightScore, 1.5f);
+        public float Per => baseAttrs[3];
+        public float Lea => baseAttrs[4];
+        public float Wil => baseAttrs[5];
+        public float Mag => baseAttrs[6];
+        public float Cut => baseAttrs[7];
+        public float Awe => baseAttrs[8];
+        public float Life => baseAttrs[9];
+        public float Mana => baseAttrs[10];
+        
+        [ShowInInspector]
+        public float Atk => Str * 2 + Con * 0.5f;
+        [ShowInInspector]
+        public float Def => Con * 2 + Str * 0.5f;
+        [ShowInInspector]
+        public float Mat => Mag * 2 + Wil * 0.5f;
+        [ShowInInspector]
+        public float Mdf => Wil * 2 + Mag * 0.5f;
+
+        [ShowInInspector]
+        public int MaxHp =>
+            Mathf.RoundToInt((5 + (Life / 100) * (Con * 3 + Str + Wil) / 3) * 20 * Mathf.Pow(HeightScore, 0.8f));
+
+        [ShowInInspector]
+        public int MaxMp => Mathf.RoundToInt(Mana * (Mag + (6 * Mag + 3 * Wil + Lea) / 10) / 5);
+
 
         public int alignment = 0;
 
         void Start()
         {
-
+            hp = MaxHp;
+            mp = MaxMp;
         }
 
         public float RawHeight
@@ -61,9 +106,10 @@ namespace Cafeo
         public int GirlInd => gender == Gender.Female ? 1 : 0;
         public int BoyInd => 1 - GirlInd;
 
+        [ShowInInspector]
         public float Height => RawHeight * sizeMultiplier;
         public float HeightScore => Height / 160;
-
+        [ShowInInspector]
         public float Weight => bmi * Mathf.Pow((Height / 100f), 2);
 
 
@@ -94,18 +140,48 @@ namespace Cafeo
         public void TakeDamage(int k)
         {
             k = Mathf.Clamp(k, 0, hp);
+            hp -= k;
         }
 
         public void Heal(int k)
         {
-            
+            k = Mathf.Clamp(k, 0, MaxHp - hp);
+            hp += k;
+        }
+
+        private void Awake()
+        {
+            if (preset != null)
+            {
+                ConsumePreset();
+            }
         }
         
+        [Button("Consume Preset")]
+
+        private void ConsumePreset()
+        {
+            if (preset == null) return;
+            baseAttrs[0] = preset.str;
+            baseAttrs[1] = preset.con;
+            baseAttrs[2] = preset.dex;
+            baseAttrs[3] = preset.per;
+            baseAttrs[4] = preset.lea;
+            baseAttrs[5] = preset.wil;
+            baseAttrs[6] = preset.mag;
+            baseAttrs[7] = preset.cut;
+            baseAttrs[8] = preset.awe;
+            baseAttrs[9] = preset.life;
+            baseAttrs[10] = preset.mana;
+        }
+
         // Update is called once per frame
         void Update()
         {
             
         }
+        
+        public bool Dead => hp <= 0;
     }
 
 }

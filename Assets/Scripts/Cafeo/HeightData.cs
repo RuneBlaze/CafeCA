@@ -37,6 +37,10 @@ namespace Cafeo
 
         public float GetHeight(AgentSoul.Gender gender, float age, float z)
         {
+            if (_maleData == null)
+            {
+                Setup();
+            }
             int months = Mathf.RoundToInt(Mathf.Clamp(age * 12, 61, 220));
             var (avg, std) = gender == AgentSoul.Gender.Male ? _maleData[months] : _femaleData[months];
             return avg + z * std;

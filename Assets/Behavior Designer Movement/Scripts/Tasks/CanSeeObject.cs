@@ -12,6 +12,7 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
     {
         [Tooltip("Should the 2D version be used?")]
         public bool usePhysics2D;
+        public bool allowEmptyTag;
         [Tooltip("The object that we are searching for")]
         public SharedGameObject targetObject;
         [Tooltip("The objects that we are searching for")]
@@ -62,6 +63,18 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         {
             base.OnAwake();
             originalLayer = objectLayerMask.value;
+        }
+
+        public override void OnStart()
+        {
+            base.OnStart();
+            if (!string.IsNullOrEmpty(targetTag.Value))
+            {
+                if (ignoreLayer.IsNone || string.IsNullOrEmpty(ignoreLayer.Value))
+                {
+                    ignoreLayer.Value = targetTag.Value == "Ally" ? "Enemies" : "Allies";
+                }
+            }
         }
 
         // Returns success if an object was found otherwise failure
@@ -146,10 +159,17 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
                     }
                     returnedObject.Value = objectFound;
                 } else { // If the target object is null and there is no tag then determine if there are any objects within sight based on the layer mask
-                    if (overlap2DColliders == null) {
-                        overlap2DColliders = new Collider2D[maxCollisionCount];
+                    if (allowEmptyTag)
+                    {
+                        if (overlap2DColliders == null) {
+                            overlap2DColliders = new Collider2D[maxCollisionCount];
+                        }
+                        returnedObject.Value = MovementUtility.WithinSight2D(transform, offset.Value, fieldOfViewAngle.Value, viewDistance.Value, overlap2DColliders, objectLayerMask, targetOffset.Value, angleOffset2D.Value, ignoreLayerMask, drawDebugRay.Value);
                     }
-                    returnedObject.Value = MovementUtility.WithinSight2D(transform, offset.Value, fieldOfViewAngle.Value, viewDistance.Value, overlap2DColliders, objectLayerMask, targetOffset.Value, angleOffset2D.Value, ignoreLayerMask, drawDebugRay.Value);
+                    else
+                    {
+                        returnedObject.Value = null;
+                    }
                 }
             } else {
                 if (targetObjects.Value != null && targetObjects.Value.Count > 0) { // If there are objects in the group list then search for the object within that list

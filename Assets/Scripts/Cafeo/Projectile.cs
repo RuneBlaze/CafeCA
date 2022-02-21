@@ -22,6 +22,10 @@ namespace Cafeo
         private Collider2D _collider;
         private float _timer;
         private float _traveledDistance;
+        
+        public Vector2 Velocity => _body.velocity;
+
+        public UsableItem parentSkill;
 
         public float sizeDelta = 0;
         private float curSize = 1;
@@ -30,6 +34,8 @@ namespace Cafeo
 
         private bool destroyOnNextFrame;
         private int totalBounce;
+
+        public UnityEvent<BattleVessel> onHit;
 
         private void Start()
         {
@@ -63,8 +69,16 @@ namespace Cafeo
             // Called after type is set on creation
             _body = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
+            onHit = new UnityEvent<BattleVessel>();
             SetupLayer();
-            _body.velocity = initialDirection.normalized * type.speed;
+            if (type.followOwner)
+            {
+                // we do nothing here
+            }
+            else
+            {
+                _body.velocity = initialDirection.normalized * type.speed;
+            }
             Vector2 initialFacing = type.initialFacing == Vector2.zero ? initialDirection.normalized : type.initialFacing;
             var angle = Mathf.Atan2(initialFacing.y, initialFacing.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.AngleAxis(angle + 90, Vector3.forward);
@@ -149,7 +163,7 @@ namespace Cafeo
             }
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             var draw = Draw.ingame;
             switch (type.shape)
@@ -249,13 +263,15 @@ namespace Cafeo
 
         private void ResolveHitEffect(BattleVessel target)
         {
-            target.ApplyDamage(1, 0.5f, _body.velocity * 10);
+            // target.ApplyDamage(1, 0.5f, _body.velocity * 10);
+            onHit.Invoke(target);
         }
 
         private void SelfDestruct()
         {
             DOTween.Kill(transform);
             beforeDestroy.Invoke();
+            RogueManager.Instance.rogueUpdateEvent.RemoveListener(RogueUpdate);
             Destroy(gameObject);
         }
 
@@ -275,6 +291,11 @@ namespace Cafeo
             if (distanceLimit >= 0 && _traveledDistance > distanceLimit)
             {
                 SelfDestruct();
+            }
+
+            if (type.followOwner)
+            {
+                transform.position = owner.transform.position;
             }
 
             if (type.boomerang > 0)

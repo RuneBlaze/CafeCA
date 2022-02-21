@@ -19,7 +19,7 @@ namespace Cafeo.Aimer
                 return;
             }
             // first, draw a line from center to target coord
-            var targetCoord = transform.position + Item.Distance * transform.right;
+            var targetCoord = transform.position + Item.distance * transform.right;
             var draw = Draw.ingame;
             draw.Arrow(transform.position, targetCoord);
         }

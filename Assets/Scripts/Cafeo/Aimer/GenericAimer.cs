@@ -63,7 +63,7 @@ namespace Cafeo.Aimer
             {
                 var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 mousePos.z = 0;
-                VectorUtils.RotateTowards(transform, mousePos, 4);
+                VectorUtils.RotateTowards(transform, mousePos, 16);
             }
         }
 

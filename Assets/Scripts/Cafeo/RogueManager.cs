@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BehaviorDesigner.Runtime;
+using Cafeo.Castable;
 using Cafeo.Gadgets;
 using Cafeo.Utils;
 using UnityEditor.SearchService;
@@ -9,6 +10,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using Random = UnityEngine.Random;
 
 namespace Cafeo
 {
@@ -36,6 +38,15 @@ namespace Cafeo
             popupPrefab = Addressables
                 .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/Popup.prefab")
                 .WaitForCompletion();
+        }
+
+        public IEnumerable<BattleVessel> Allies()
+        {
+            yield return player;
+            foreach (var vessel in otherAllyVessels)
+            {
+                yield return vessel;
+            }
         }
 
         private void Start()
@@ -82,10 +93,25 @@ namespace Cafeo
                     vessel.Brain.DecideAction();
                 }
             }
+
+            int dead = 0;
             foreach (var vessel in vessels)
             {
-                vessel.RogueUpdate();
+                if (vessel != null)
+                {
+                    vessel.RogueUpdate();
+                }
+                else
+                {
+                    dead++;
+                }
             }
+            
+            if (dead > 0)
+            {
+                vessels.RemoveAll(x => x == null);
+            }
+            
             rogueUpdateEvent.Invoke();
             BehaviorManager.instance.Tick();
             Physics2D.Simulate(Time.deltaTime);
@@ -155,6 +181,63 @@ namespace Cafeo
                 goIdToVessel[id] = go.GetComponent<BattleVessel>();
                 return goIdToVessel[id];
             }
+        }
+
+        public float CalculateBaseDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+        {
+            var lhs = attacker.soul;
+            var rhs = defender.soul;
+            var x = skill.power / 100f;
+            if (arts)
+            {
+                return x * (lhs.Mat * 2f - rhs.Mdf);
+            }
+
+            return x * (lhs.Atk * 2f - rhs.Def);
+        }
+        
+        public float CalculateDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+        {
+            var baseDamage = CalculateBaseDamageMelee(attacker, defender, skill, arts);
+            return baseDamage * CalcVariance(attacker, defender, skill);
+        }
+        
+        public float CalculateBaseDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+        {
+            var lhs = attacker.soul;
+            var rhs = defender.soul;
+            var x = skill.power / 100f;
+            if (arts)
+            {
+                return x * (lhs.Mat * 1.5f + lhs.Dex * 2f - rhs.Mdf);
+            }
+
+            return x * (lhs.Atk * 1.5f + lhs.Dex * 2f - rhs.Def);
+        }
+        
+        public float CalculateDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+        {
+            var baseDamage = CalculateBaseDamageRanged(attacker, defender, skill, arts);
+            return baseDamage * CalcVariance(attacker, defender, skill);
+        }
+        
+        public float CalculateBaseHeal(BattleVessel attacker, BattleVessel defender, UsableItem skill)
+        {
+            var lhs = attacker.soul;
+            var rhs = defender.soul;
+            var x = skill.power / 100f;
+            return x * (lhs.Mat * 1.2f);
+        }
+        
+        public float CalculateHeal(BattleVessel attacker, BattleVessel defender, UsableItem skill)
+        {
+            var baseHeal = CalculateBaseHeal(attacker, defender, skill);
+            return baseHeal * CalcVariance(attacker, defender, skill);
+        }
+        
+        public float CalcVariance(BattleVessel attacker, BattleVessel defender, UsableItem skill)
+        {
+            return Random.Range(0.8f, 1.2f);
         }
     }
 }

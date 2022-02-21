@@ -20,9 +20,14 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         public SharedFloat maxPauseDuration = 0;
         [Tooltip("The maximum number of retries per tick (set higher if using a slow tick time)")]
         public SharedInt targetRetries = 1;
+        [Tooltip("Target object that this wandering will be biased by")]
+        public SharedGameObject biasTarget;
 
         private float pauseTime;
         private float destinationReachTime;
+
+        private bool arrivedNextFrame;
+        private float wanderTime;
 
         public override void OnStart()
         {
@@ -34,8 +39,14 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         // There is no success or fail state with wander - the agent will just keep wandering
         public override TaskStatus OnUpdate()
         {
-            if (!HasPath() || HasArrived()) {
+            if (arrivedNextFrame) {
+                arrivedNextFrame = false;
+                return TaskStatus.Success;
+            }
+            var hasArrived = HasArrived();
+            if (!HasPath() || hasArrived) {
                 // The agent should pause at the destination only if the max pause duration is greater than 0
+                
                 if (maxPauseDuration.Value > 0) {
                     if (destinationReachTime == -1) {
                         destinationReachTime = Time.time;
@@ -45,18 +56,42 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
                         // Only reset the time if a destination has been set.
                         if (TrySetTarget()) {
                             destinationReachTime = -1;
+                            if (hasArrived)
+                            {
+                                arrivedNextFrame = true;
+                            }
                         }
                     }
                 } else {
                     TrySetTarget();
+                    if (HasArrived())
+                    {
+                        arrivedNextFrame = true;
+                    }
                 }
+            }
+
+            wanderTime += Time.deltaTime;
+            if (wanderTime > 3f)
+            {
+                wanderTime = 0;
+                return TaskStatus.Success;
             }
             return TaskStatus.Running;
         }
 
         private bool TrySetTarget()
         {
-            var direction = transform.forward + Random.insideUnitSphere * wanderRate.Value;
+            Vector3 direction;
+            if (biasTarget.IsNone || biasTarget.Value == null)
+            {
+                direction = transform.forward;
+            }
+            else
+            {
+                direction = biasTarget.Value.transform.position - transform.position;
+            }
+            direction += Random.insideUnitSphere * wanderRate.Value;
             var destination = transform.position + direction.normalized * Random.Range(minWanderDistance.Value, maxWanderDistance.Value);
             SetDestination(SamplePosition(destination));
             return true;

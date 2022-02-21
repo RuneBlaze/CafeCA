@@ -26,13 +26,23 @@ namespace Cafeo
 
         public override void DecideAction()
         {
-            if (_aiPath.hasPath)
-            {
+            var useRvo = true;
+            // if (_aiPath.hasPath)
+            // {
+                // Debug.Log("Deciding action...");
                 var dir = _aiPath.steeringTarget - transform.position;
-                _rvoController.SetTarget(transform.position + dir.normalized * 10, 2, 2);
-                var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);
-                vessel.Move(delta);
-            }
+                if (useRvo)
+                {
+                    _rvoController.SetTarget(transform.position + dir.normalized * 10, 2, 2);
+                    var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);
+                    vessel.Move(delta);
+                }
+                else
+                {
+                    vessel.Move(dir);
+                }
+            // }
+
             InterpretQueue();
         }
     }

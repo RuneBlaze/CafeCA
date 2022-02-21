@@ -48,6 +48,10 @@ namespace Cafeo.Tasks
         // but also, for each interval, we want to queue in a "zoning" skill.
         public override TaskStatus OnUpdate()
         {
+            if (target.Value == null)
+            {
+                return TaskStatus.Success;
+            }
             bool inSight = MovementUtility.LineOfSight(transform,
                 Vector3.zero, target.Value,
                 Vector3.zero, true, _mask, true);

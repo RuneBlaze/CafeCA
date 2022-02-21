@@ -25,6 +25,8 @@ namespace Cafeo.Castable
         public bool hitAllies;
         public bool hitEnemies = true;
 
+        public float power = 100f;
+
         public UnityEvent onCounter;
 
         public enum ItemTag
@@ -132,6 +134,11 @@ namespace Cafeo.Castable
         {
             hitAllies = true;
             hitEnemies = false;
+        }
+
+        public virtual void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
+        {
+            
         }
     }
 }

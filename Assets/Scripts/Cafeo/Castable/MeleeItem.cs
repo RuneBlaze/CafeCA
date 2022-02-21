@@ -5,8 +5,9 @@ namespace Cafeo.Castable
 {
     public class MeleeItem : UsableItem
     {
-        public float Radius = 0.2f;
-        public float Distance = 2f;
+        public float radius = 0.2f;
+        public float distance = 2f;
+        public float bodyThrust = 8f;
         public MeleeType meleeType;
         private Collider2D[] _results = new Collider2D[10];
 
@@ -18,12 +19,13 @@ namespace Cafeo.Castable
             Scythe, // swing type, cycle 3
             GreatSword,
             BroadSword,
+            BodyRush,
         }
 
         public MeleeItem(float radius, float distance)
         {
-            Radius = radius;
-            Distance = distance;
+            this.radius = radius;
+            this.distance = distance;
             hitAllies = false;
             hitEnemies = true;
             meleeType = MeleeType.Stab;
@@ -47,37 +49,38 @@ namespace Cafeo.Castable
         {
             base.OnUse(user);
             var aimDirection = user.CalcAimDirection(this);
-            var targetCoord = (Vector2) user.transform.position + aimDirection * Distance;
+            var targetCoord = (Vector2) user.transform.position + aimDirection * distance;
             Projectile proj;
             switch (meleeType)
             {
                 case MeleeType.Stab:
-                    int cnt = Physics2D.OverlapCircleNonAlloc(targetCoord, Radius, _results, targetLayerMask);
+                    int cnt = Physics2D.OverlapCircleNonAlloc(targetCoord, radius, _results, targetLayerMask);
                     for (int i = 0; i < cnt; i++)
                     {
                         var vessel = _results[i].GetComponent<BattleVessel>();
-                        vessel.ApplyDamage(1, 0.5f, (Vector2) vessel.transform.position - targetCoord);
+                        // vessel.ApplyDamage(1, 0.5f, (Vector2) vessel.transform.position - targetCoord);
+                        ApplyEffect(user, vessel, user.transform.position, null);
                     }
                     break;
                 case MeleeType.Hammer:
                     var hammerType = new ProjectileType
                     {
                         shape = new ProjectileType.CircleShape(1f),
-                        maxSize = Radius,
+                        maxSize = radius,
                     };
-                    RogueManager.Instance.CreateProjectile(hammerType, user, targetCoord, Vector2.zero);
+                    CreateMeleeProjectile(hammerType, user, targetCoord, Vector2.zero);
                     break;
                 case MeleeType.Thrust:
                     var thrustType = new ProjectileType
                     {
                         shape = new ProjectileType.RectShape(0.2f, 0.8f),
                         timeLimit = 0.2f,
-                        speed = Distance / 0.4f,
+                        speed = distance / 0.4f,
                         initialFacing = aimDirection,
                         collidable = false,
                         kineticBody = false,
                     };
-                    proj = RogueManager.Instance.CreateProjectile(thrustType, user, targetCoord - aimDirection/2, aimDirection);
+                    proj = CreateMeleeProjectile(thrustType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.RegisterMeleeOwner(this);
                     proj.transform.parent = user.transform;
                     break;
@@ -90,7 +93,7 @@ namespace Cafeo.Castable
                         initialFacing = aimDirection,
                         kineticBody = true,
                     };
-                    proj = RogueManager.Instance.CreateProjectile(scytheType, user, targetCoord - aimDirection/2, aimDirection);
+                    proj = CreateMeleeProjectile(scytheType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.RegisterMeleeOwner(this);
                     proj.transform.parent = user.transform;
                     
@@ -104,7 +107,7 @@ namespace Cafeo.Castable
                         initialFacing = aimDirection,
                         kineticBody = true,
                     };
-                    proj = RogueManager.Instance.CreateProjectile(greatSwordType, user, targetCoord - aimDirection/2, aimDirection);
+                    proj = CreateMeleeProjectile(greatSwordType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.RegisterMeleeOwner(this);
                     proj.transform.parent = user.transform;
                     break;
@@ -117,12 +120,43 @@ namespace Cafeo.Castable
                         initialFacing = aimDirection,
                         kineticBody = true,
                     };
-                    proj = RogueManager.Instance.CreateProjectile(broadSwordType, user, targetCoord - aimDirection/2, aimDirection);
+                    proj = CreateMeleeProjectile(broadSwordType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.transform.parent = user.transform;
                     proj.RegisterMeleeOwner(this);
                     break;
+                case MeleeType.BodyRush:
+                    var bodyRushType = new ProjectileType
+                    {
+                        shape = new ProjectileType.SquareShape(user.soul.HeightScore * 1.2f),
+                        followOwner = true,
+                        timeLimit = active,
+                    };
+                    proj = CreateMeleeProjectile(bodyRushType, user, user.transform.position, Vector2.zero);
+                    proj.RegisterMeleeOwner(this);
+                    proj.transform.parent = user.transform;
+                    user.AddForce(aimDirection.normalized * bodyThrust);
+                    break;
             }
             user.StopMoving();
+        }
+
+        private Projectile CreateMeleeProjectile(ProjectileType type, BattleVessel user, Vector2 spawnPos, Vector2 dir)
+        {
+            var res = RogueManager.Instance.CreateProjectile(type, user, spawnPos, dir);
+            res.onHit.AddListener(it =>
+            {
+                ApplyEffect(user, it, res.transform.position, null);
+            });
+            return res;
+        }
+
+        public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource,Projectile hitProj)
+        {
+            base.ApplyEffect(user, target, hitSource,hitProj);
+            var dmg = Scene.CalculateDamageMelee(user, target, this, false);
+            var knockBackDir = (Vector2)target.transform.position - hitSource;
+            // target.AddForce(knockBackDir.normalized * 40f);
+            target.ApplyDamage(dmg, 0.2f, knockBackDir * 20f);
         }
     }
 }

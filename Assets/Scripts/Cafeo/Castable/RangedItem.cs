@@ -50,16 +50,35 @@ namespace Cafeo.Castable
             }
             if (fan == 0 || spread == 0)
             {
-                Scene.CreateProjectile(projectileType, user, 
+                var proj = Scene.CreateProjectile(projectileType, user,
                     arrowSpawnLoc,
                     user.CalcAimDirection(this).Rotate(a));
+                proj.onHit.AddListener(it =>
+                {
+                    ApplyEffect(user, it, proj.transform.position, proj);
+                });
             }
             else
             {
-                Scene.CreateFanProjectiles(projectileType, fan, spread, user,
+                var projs = Scene.CreateFanProjectiles(projectileType, fan, spread, user,
                     arrowSpawnLoc,
                     user.CalcAimDirection(this).Rotate(a));
+                foreach (var proj in projs)
+                {
+                    proj.onHit.AddListener(it =>
+                    {
+                        ApplyEffect(user, it, proj.transform.position, proj);
+                    });
+                }
             }
+        }
+        
+        public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
+        {
+            base.ApplyEffect(user, target, hitSource, hitProj);
+            var dmg = Scene.CalculateDamageRanged(user, target, this, false);
+            // var knockBackDir = (Vector2)target.transform.position - hitSource;
+            target.ApplyDamage(dmg, 0.2f, hitProj.Velocity * 5f);
         }
 
         private IEnumerator MultiShotLogic(BattleVessel user)

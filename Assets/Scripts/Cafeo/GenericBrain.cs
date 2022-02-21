@@ -68,6 +68,10 @@ namespace Cafeo
                     BehaviorTree.SetVariableValue("PreferredDistance", 0.5f);
                     BehaviorTree.SetVariableValue("MaxDistance", 0.7f);
                 }
+            }
+
+            if (!Vessel.IsPlayer)
+            {
                 BehaviorTree.SetVariableValue("TargetTag", Vessel.IsAlly ? "Enemy" : "Ally");
             }
             SetupAimer();
@@ -135,11 +139,16 @@ namespace Cafeo
 
         public bool HasPositiveUtility(UsableItem item)
         {
-            return true;
+            if (item is MeleeItem meleeItem)
+            {
+                if (meleeItem.meleeType == MeleeItem.MeleeType.BodyRush)  return true;
+            }
+            return _aimer.CalcTargetObject(item) != null;
         }
 
-        public void QueueItemOfTag(UsableItem.ItemTag itemTag)
+        public void QueueItemOfTag(UsableItem.ItemTag itemTag, int maxLimit = 50)
         {
+            if (actionQueue.Count >= maxLimit) return;
             actionQueue.Enqueue(new QueuedAction.UseItemOfType(itemTag));
         }
 
@@ -151,6 +160,7 @@ namespace Cafeo
         public void InterpretQueue()
         {
             if (actionQueue.Count == 0) return;
+            Debug.Log(actionQueue.Count);
             var action = actionQueue.Peek();
             bool performedAction = false;
             switch (action)

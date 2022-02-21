@@ -5,6 +5,7 @@ using Cafeo.Castable;
 using Cafeo.UI;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
 
 namespace Cafeo
 {
@@ -27,6 +28,8 @@ namespace Cafeo
 
         public GenericBrain Brain { get; private set; }
 
+        public UnityEvent<State> enterState;
+
         public enum State
         {
             Idle,
@@ -39,6 +42,7 @@ namespace Cafeo
         {
             hotbar = new UsableItem[10];
             statusEffects = new List<StatusEffect>();
+            enterState = new UnityEvent<State>();
         }
 
         private void EnterState(State state)
@@ -47,6 +51,8 @@ namespace Cafeo
             _itemTimer = 0;
             ExitState(_state);
             _state = state;
+            
+            enterState.Invoke(state);
 
             if (state == State.Active)
             {
@@ -123,93 +129,7 @@ namespace Cafeo
             hotbar = new UsableItem[10];
             if (IsPlayer)
             {
-                hotbar[0] = new RangedItem {name = "以撒的眼泪"};
-                hotbar[1] = new MeleeItem(0.3f, 1f) {name = "匕首"};
-                hotbar[2] = new TossItem {name = "测试用投掷道具"};
-                hotbar[2].SetHitAllies();
-                hotbar[3] = new TossItem {name = "测试用自我中心 Buff", maxDistance = 0, alwaysSplash = true};
-                hotbar[3].SetHitAllies();
-                hotbar[4] = new RangedItem { name = "Fanshot 测试", fan = 3, spread = 90 };
-
-                hotbar[6] = new MeleeItem(1f, 1f) {name = "测试用锤子", meleeType = MeleeItem.MeleeType.Hammer};
-                hotbar[7] = new MeleeItem(1f, 1f) {name = "测试用长矛", meleeType = MeleeItem.MeleeType.Thrust};
-                hotbar[8] = new RangedItem
-                {
-                    projectileType = new ProjectileType
-                    {
-                        shape = new ProjectileType.RectShape(0.05f, 0.6f),
-                        collidable = true,
-                        speed = 9f,
-                        pierce = 1,
-                        bounce = 1,
-                    },
-                    fan = 3,
-                    spread = 60,
-                    shots = 3,
-                    duration = 0.5f,
-                    name = "测试用散射针",
-                };
-
-                hotbar[9] = new MeleeItem(1f, 1f)
-                {
-                    name = "测试镰刀",
-                    meleeType = MeleeItem.MeleeType.Scythe,
-                    active = 0.5f,
-                    recovery = 0.1f,
-                };
-                
-                hotbar[5] = new MeleeItem(1f, 1f)
-                {
-                    name = "测试大剑",
-                    meleeType = MeleeItem.MeleeType.GreatSword,
-                    active = 0.5f,
-                    recovery = 0.1f,
-                };
-                
-                var sword = new MeleeItem(1f, 1f)
-                {
-                    name = "测试长剑",
-                    meleeType = MeleeItem.MeleeType.BroadSword,
-                    active = 0.3f,
-                    recovery = 0.05f,
-                };
-
-                var testBoomerang = new RangedItem
-                {
-                    projectileType = new ProjectileType
-                    {
-                        shape = new ProjectileType.PredefinedShape("Boomerang").Rescale(0.2f),
-                        collidable = true,
-                        speed = 6f,
-                        pierce = 30,
-                        bounce = 30,
-                        initialSpin = 360,
-                        bounciness = 1f,
-                        boomerang = 1f,
-                    },
-                    shots = 1,
-                    name = "测试用回旋镖",
-                };
-
-                var testGun = new RangedItem
-                {
-                    projectileType = new ProjectileType()
-                    {
-                        shape = new ProjectileType.CircleShape(0.03f),
-                        collidable = true,
-                        speed = 15f,
-                        pierce = 1,
-                        bounce = 0,
-                        bullet = true,
-                    },
-                    shots = 1,
-                    name = "测试用枪",
-                    active = 0f,
-                    recovery = 0.05f,
-                    instability = 20,
-                };
-                hotbar[0] = testGun;
-                SetHotboxPointer(0);
+                InitPlayerHotBar();
             }
             else
             {
@@ -220,12 +140,127 @@ namespace Cafeo
                     hotbar[1] = new RangedItem();
                     hotbar[1].AddTag(UsableItem.ItemTag.Approach);
                 }
+                else
+                {
+                    var rushSkill = new MeleeItem(0.2f, 1)
+                    {
+                        bodyThrust = 500f,
+                        name = "测试用冲刺",
+                        active = 0.5f,
+                        recovery = 0.5f,
+                        meleeType = MeleeItem.MeleeType.BodyRush,
+                    };
+                    hotbar[1] = rushSkill;
+                    hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
+                    SetHotboxPointer(1);
+                }
             }
 
             if (IsPlayer)
             {
                 _aimer.autoAim = false;
             }
+        }
+
+        private void InitPlayerHotBar()
+        {
+            hotbar[0] = new RangedItem { name = "以撒的眼泪" };
+            hotbar[1] = new MeleeItem(0.3f, 1f) { name = "匕首" };
+            hotbar[2] = new TossItem { name = "测试用投掷道具" };
+            hotbar[2].SetHitAllies();
+            hotbar[3] = new TossItem { name = "测试用自我中心 Buff", maxDistance = 0, alwaysSplash = true };
+            hotbar[3].SetHitAllies();
+            hotbar[4] = new RangedItem { name = "Fanshot 测试", fan = 3, spread = 90 };
+
+            hotbar[6] = new MeleeItem(1f, 1f) { name = "测试用锤子", meleeType = MeleeItem.MeleeType.Hammer };
+            hotbar[7] = new MeleeItem(1f, 1f) { name = "测试用长矛", meleeType = MeleeItem.MeleeType.Thrust };
+            hotbar[8] = new RangedItem
+            {
+                projectileType = new ProjectileType
+                {
+                    shape = new ProjectileType.RectShape(0.05f, 0.6f),
+                    collidable = true,
+                    speed = 9f,
+                    pierce = 1,
+                    bounce = 1,
+                },
+                fan = 3,
+                spread = 60,
+                shots = 3,
+                duration = 0.5f,
+                name = "测试用散射针",
+            };
+
+            hotbar[9] = new MeleeItem(1f, 1f)
+            {
+                name = "测试镰刀",
+                meleeType = MeleeItem.MeleeType.Scythe,
+                active = 0.5f,
+                recovery = 0.1f,
+            };
+
+            hotbar[5] = new MeleeItem(1f, 1f)
+            {
+                name = "测试大剑",
+                meleeType = MeleeItem.MeleeType.GreatSword,
+                active = 0.5f,
+                recovery = 0.1f,
+            };
+
+            var sword = new MeleeItem(1f, 1f)
+            {
+                name = "测试长剑",
+                meleeType = MeleeItem.MeleeType.BroadSword,
+                active = 0.3f,
+                recovery = 0.05f,
+            };
+
+            var testBoomerang = new RangedItem
+            {
+                projectileType = new ProjectileType
+                {
+                    shape = new ProjectileType.PredefinedShape("Boomerang").Rescale(0.2f),
+                    collidable = true,
+                    speed = 6f,
+                    pierce = 30,
+                    bounce = 30,
+                    initialSpin = 360,
+                    bounciness = 1f,
+                    boomerang = 1f,
+                },
+                shots = 1,
+                name = "测试用回旋镖",
+            };
+
+            var testGun = new RangedItem
+            {
+                projectileType = new ProjectileType()
+                {
+                    shape = new ProjectileType.CircleShape(0.03f),
+                    collidable = true,
+                    speed = 15f,
+                    pierce = 1,
+                    bounce = 0,
+                    bullet = true,
+                },
+                shots = 1,
+                name = "测试用枪",
+                active = 0f,
+                recovery = 0.05f,
+                instability = 20,
+            };
+            hotbar[0] = testGun;
+
+            var rushSkill = new MeleeItem(0.2f, 1)
+            {
+                bodyThrust = 800f,
+                name = "测试用冲刺",
+                active = 0.5f,
+                recovery = 0.1f,
+                meleeType = MeleeItem.MeleeType.BodyRush,
+            };
+            hotbar[1] = rushSkill;
+            SetHotboxPointer(1);
         }
 
         public UsableItem RetrieveCurItem()
@@ -396,6 +431,11 @@ namespace Cafeo
                     }
                     break;
             }
+
+            if (soul.Dead)
+            {
+                Destroy(gameObject);
+            }
         }
 
         public void ApplyActiveItemStun()
@@ -425,6 +465,11 @@ namespace Cafeo
             Scene.CreatePopup(transform.position, $"{damage}");
         }
 
+        public void ApplyDamage(float damage, float stun, Vector2 knockback)
+        {
+            ApplyDamage(Mathf.RoundToInt(damage), stun, knockback);
+        }
+
         public void ApplyHeal(int amount)
         {
             soul.Heal(amount);
@@ -435,6 +480,11 @@ namespace Cafeo
         {
             return Vector3.Distance(transform.position, other.transform.position) - other.Radius -
                    Radius;
+        }
+
+        public void AddForce(Vector2 force)
+        {
+            _body.AddForce(force, ForceMode2D.Impulse);
         }
     }
 }

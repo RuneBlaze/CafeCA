@@ -85,7 +85,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         // Use the dot product to determine if the leader is looking at the current agent
         public bool LeaderLookingAtAgent(int agentIndex)
         {
-            return Vector3.Dot(leaderTransform.forward, transforms[agentIndex].forward) < -0.5f;
+            var position = leader.Value.transform.position;
+            return Vector3.Dot((position - prevLeaderPosition).normalized,
+                (transforms[agentIndex].position - position).normalized) < -0.5f;
         }
 
         // Reset the public variables

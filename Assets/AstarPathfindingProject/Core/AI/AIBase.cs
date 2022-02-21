@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Serialization;
@@ -291,8 +292,9 @@ namespace Pathfinding {
 		/// <summary>True if the path should be automatically recalculated as soon as possible</summary>
 		protected virtual bool shouldRecalculatePath {
 			get {
-				return Time.time - lastRepath >= repathRate && !waitingForPathCalculation && canSearch && !float.IsPositiveInfinity(destination.x);
+				return (Time.time - lastRepath >= repathRate ||! float.IsFinite(lastRepath)) && !waitingForPathCalculation && !float.IsPositiveInfinity(destination.x) && canSearch;
 			}
+			//  
 		}
 
 		protected AIBase () {
