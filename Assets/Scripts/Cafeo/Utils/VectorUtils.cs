@@ -19,5 +19,15 @@ namespace Cafeo.Utils
             transform.rotation = Quaternion.RotateTowards(transform.rotation, 
                 Quaternion.AngleAxis(angle, Vector3.forward), speed);
         }
+
+        public static float Sgn(float x)
+        {
+            if (Mathf.Abs(x) < 0.01f)
+            {
+                return 0;
+            }
+
+            return Mathf.Sign(x);
+        }
     }
 }

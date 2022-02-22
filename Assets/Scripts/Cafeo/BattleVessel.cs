@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using Cafeo.Aimer;
 using Cafeo.Castable;
 using Cafeo.UI;
+using Cafeo.Utils;
+using Drawing;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using static Cafeo.Utils.ImDraw;
 
 namespace Cafeo
 {
@@ -30,12 +33,22 @@ namespace Cafeo
 
         public UnityEvent<State> enterState;
 
+        public float dashTimer;
+
         public enum State
         {
             Idle,
             StartUp,
             Active,
             Stun,
+        }
+
+        public void TryDash(Vector2 dir)
+        {
+            if (dashTimer < 3f) return;
+            dashTimer = 0;
+            AddForce(dir.normalized * 350f);
+            ApplyStun(0.5f);
         }
 
         private void Awake()
@@ -332,8 +345,9 @@ namespace Cafeo
         {
             var steer = direction.normalized * 120f;
             var myVel = _body.velocity;
-            myVel.x = Mathf.MoveTowards(myVel.x, steer.x, Time.deltaTime * lerp);
-            myVel.y = Mathf.MoveTowards(myVel.y, steer.y, Time.deltaTime * lerp);
+            var angleDiff = Mathf.Sqrt(Mathf.Abs(Vector2.SignedAngle(direction, myVel)) / 180f);
+            myVel.x = Mathf.MoveTowards(myVel.x, steer.x, Time.deltaTime * lerp * (1 + angleDiff));
+            myVel.y = Mathf.MoveTowards(myVel.y, steer.y, Time.deltaTime * lerp * (1 + angleDiff));
             _body.velocity = myVel;
         }
 
@@ -432,6 +446,9 @@ namespace Cafeo
                     break;
             }
 
+            dashTimer += Time.deltaTime;
+            dashTimer = Mathf.Clamp(dashTimer, 0, 3f);
+
             if (soul.Dead)
             {
                 Destroy(gameObject);
@@ -485,6 +502,20 @@ namespace Cafeo
         public void AddForce(Vector2 force)
         {
             _body.AddForce(force, ForceMode2D.Impulse);
+        }
+
+        private void LateUpdate()
+        {
+            // draw debug gauge
+            if (IsEnemy)
+            {
+                float width = 1.3f;
+                var position = transform.position;
+                var x = position.x;
+                var y = position.y;
+                DrawGauge(Draw.ingame, x - width/2, y + halfSideLength + 0.2f, width, 0.15f, 
+                    soul.hp, soul.MaxHp, Palette.purple, Palette.red, 0f);
+            }
         }
     }
 }

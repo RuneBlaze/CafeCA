@@ -5,6 +5,7 @@ using Cafeo.Utils;
 using Drawing;
 using Unity.Mathematics;
 using UnityEngine;
+using static Cafeo.Utils.ImDraw;
 using static Unity.Mathematics.math;
 
 namespace Cafeo
@@ -29,18 +30,12 @@ namespace Cafeo
                 {
                     var soul = vessel.soul;
                     draw.Label2D(float3(50, y + 90, 0), soul.DisplayName, 55f, Palette.milkWhite);
+                    DrawGauge(draw, 150, y + 90, 50, 15, (int) (vessel.dashTimer * 50), 150, hpBg, hpFg);
                     DrawGauge(draw, 50, y + 40, 200, 15, soul.hp, soul.MaxHp, hpBg, hpFg);
                     DrawGauge(draw, 50, y + 10, 200, 15, soul.mp, soul.MaxMp, mpBg, mpFg);
                     y += 135;
                 }
             }
-        }
-
-        private void DrawGauge(CommandBuilder cb, int x, int y, int width, int height, int v, int maxV, Color bg, Color fg)
-        {
-            cb.SolidRectangle(new Rect(x, y, width, height), bg);
-            cb.SolidRectangle(new Rect(x, y, (int) (width * v / maxV), height), fg);
-            cb.Label2D(float3(x + 5, y + 10, 0), $"{v}/{maxV}", 55f, Palette.milkWhite);
         }
     }
 }
