@@ -51,8 +51,13 @@ namespace Cafeo
             
                 if (Vessel.IsEnemy)
                 {
+                    string treePath = "Assets/Data/BehaviorTrees/DefaultEnemy.asset";
+                    if (!string.IsNullOrEmpty(Vessel.aiType))
+                    {
+                        treePath = $"Assets/Data/BehaviorTrees/EnemyAI/{Vessel.aiType}.asset";
+                    }
                     behaviorTree.ExternalBehavior = 
-                        Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/DefaultEnemy.asset").WaitForCompletion();
+                        Addressables.LoadAssetAsync<ExternalBehaviorTree>(treePath).WaitForCompletion();
                 }
                 behaviorTree.EnableBehavior();
             }

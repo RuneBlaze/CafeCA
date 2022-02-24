@@ -181,5 +181,8 @@ namespace Cafeo
         // public float timeLimit;
 
         public float boomerangStrength;
+
+        public float homingRadius = 2f;
+        public float homingStrength = 0;
     }
 }

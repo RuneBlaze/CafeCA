@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Cafeo.Castable
 {
@@ -10,6 +12,8 @@ namespace Cafeo.Castable
         public float bodyThrust = 8f;
         public MeleeType meleeType;
         private Collider2D[] _results = new Collider2D[10];
+        private float lastUse = Single.NegativeInfinity;
+        private bool coin;
 
         public enum MeleeType
         {
@@ -29,6 +33,7 @@ namespace Cafeo.Castable
             hitAllies = false;
             hitEnemies = true;
             meleeType = MeleeType.Stab;
+            stopOnUse = false;
         }
 
         public override void Setup(BattleVessel user)
@@ -50,6 +55,13 @@ namespace Cafeo.Castable
             base.OnUse(user);
             var aimDirection = user.CalcAimDirection(this);
             var targetCoord = (Vector2) user.transform.position + aimDirection * distance;
+            if (Time.time - lastUse > active + startUp + recovery + 0.25f)
+            {
+                orientation = 0;
+                coin = Random.Range(0, 2) == 0;
+            }
+            lastUse = Time.time;
+            var coinI = (coin ? 0 : 1);
             Projectile proj;
             switch (meleeType)
             {
@@ -88,7 +100,7 @@ namespace Cafeo.Castable
                     var scytheType = new ProjectileType
                     {
                         shape = new ProjectileType.ScytheShape(),
-                        rotate = new ProjectileType.RotateType(orientation % 2 == 0, 120, 0.5f),
+                        rotate = new ProjectileType.RotateType(orientation % 2 == coinI, 120, 0.5f),
                         speed = 0,
                         initialFacing = aimDirection,
                         kineticBody = true,
@@ -102,7 +114,7 @@ namespace Cafeo.Castable
                     var greatSwordType = new ProjectileType
                     {
                         shape = new ProjectileType.GreatSwordShape(),
-                        rotate = new ProjectileType.RotateType(orientation % 2 == 0, 120, 0.5f),
+                        rotate = new ProjectileType.RotateType(orientation % 2 == coinI, 120, 0.5f),
                         speed = 0,
                         initialFacing = aimDirection,
                         kineticBody = true,
@@ -115,7 +127,7 @@ namespace Cafeo.Castable
                     var broadSwordType = new ProjectileType
                     {
                         shape = new ProjectileType.RectShape(0.2f, 1.0f, false),
-                        rotate = new ProjectileType.RotateType(orientation % 2 == 0, 150, 0.3f),
+                        rotate = new ProjectileType.RotateType(orientation % 2 == coinI, 150, 0.3f),
                         speed = 0,
                         initialFacing = aimDirection,
                         kineticBody = true,
@@ -137,7 +149,6 @@ namespace Cafeo.Castable
                     user.AddForce(aimDirection.normalized * bodyThrust);
                     break;
             }
-            user.StopMoving();
         }
 
         private Projectile CreateMeleeProjectile(ProjectileType type, BattleVessel user, Vector2 spawnPos, Vector2 dir)
@@ -145,7 +156,7 @@ namespace Cafeo.Castable
             var res = RogueManager.Instance.CreateProjectile(type, user, spawnPos, dir);
             res.onHit.AddListener(it =>
             {
-                ApplyEffect(user, it, res.transform.position, null);
+                ApplyEffect(user, it, user.transform.position, null);
             });
             return res;
         }
@@ -155,8 +166,7 @@ namespace Cafeo.Castable
             base.ApplyEffect(user, target, hitSource,hitProj);
             var dmg = Scene.CalculateDamageMelee(user, target, this, false);
             var knockBackDir = (Vector2)target.transform.position - hitSource;
-            // target.AddForce(knockBackDir.normalized * 40f);
-            target.ApplyDamage(dmg, 0.2f, knockBackDir * 20f);
+            target.ApplyDamage(dmg, 0.2f, knockBackDir.normalized * 70f);
         }
     }
 }

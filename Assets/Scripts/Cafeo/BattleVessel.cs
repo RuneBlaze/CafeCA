@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cafeo.Aimer;
 using Cafeo.Castable;
+using Cafeo.TestItems;
 using Cafeo.UI;
 using Cafeo.Utils;
 using Drawing;
@@ -52,6 +53,8 @@ namespace Cafeo
 
         public float MaxDash => 3f;
         public bool CanDash => dashTimer >= MaxDash;
+
+        public string aiType;
         public void TryDash(Vector2 dir)
         {
             if (!CanDash) return;
@@ -76,6 +79,16 @@ namespace Cafeo
             
             enterState.Invoke(state);
 
+            if (state == State.Idle)
+            {
+                _aimer.locked = false;
+            }
+            
+            if (state == State.StartUp)
+            {
+                _aimer.locked = true;
+            }
+
             if (state == State.Active)
             {
                 _activeItem.OnUse(this);
@@ -97,12 +110,22 @@ namespace Cafeo
             }
         }
 
-        public void ActivateItem(UsableItem item)
+        public void ActivateItem(UsableItem item, bool secondary = false)
         {
             if (!CanUseItem(item)) return;
+            soul.mp -= item.mpCost;
+            soul.cp -= item.cpCost;
             item.Setup(this);
-            _activeItem = item;
-            EnterState(State.StartUp);
+            if (!secondary)
+            {
+                _activeItem = item;
+                EnterState(State.StartUp);
+            }
+            else
+            {
+                StopMoving();
+                item.OnUse(this);
+            }
         }
 
         public void ActivateItem()
@@ -144,7 +167,9 @@ namespace Cafeo
 
         public void StopMoving()
         {
-            Move(Vector2.zero, 12f);
+            // Move(Vector2.zero, 100f);
+            _body.velocity = Vector2.MoveTowards(_body.velocity, Vector2.zero, 4f);
+            // Debug.Log(_body.velocity);
         }
 
         private void DebugSetup()
@@ -271,6 +296,7 @@ namespace Cafeo
                 active = 0f,
                 recovery = 0.05f,
                 instability = 20,
+                mpCost = 5,
             };
             hotbar[0] = testGun;
 
@@ -282,8 +308,66 @@ namespace Cafeo
                 recovery = 0.1f,
                 meleeType = MeleeItem.MeleeType.BodyRush,
             };
-            hotbar[1] = rushSkill;
-            SetHotboxPointer(1);
+            string preset = "gun";
+            if (preset == "sword")
+            {
+                hotbar[0] = sword;
+                hotbar[1] = new RangedItem
+                {
+                    projectileType = new ProjectileType
+                    {
+                        shape = new ProjectileType.RectShape(1.2f, 0.23f),
+                        collidable = false,
+                        speed = 7f,
+                        pierce = 3,
+                        bounce = 1,
+                        timeLimit = 0.4f,
+                    },
+                    startUp = 0.1f,
+                    name = "测试用剑气",
+                    withPrimaryShot = true,
+                };
+            } else if (preset == "bow")
+            {
+                hotbar[0] = new RangedItem
+                {
+                    projectileType = new ProjectileType
+                    {
+                        shape = new ProjectileType.RectShape(0.05f, 0.6f),
+                        collidable = true,
+                        speed = 17f,
+                        density = 50,
+                        pierce = 1,
+                        bounce = 0,
+                        bullet = true,
+                    },
+                    name = "测试用弓箭",
+                };
+                
+                hotbar[1] = new RangedItem
+                {
+                    projectileType = ((RangedItem) hotbar[0]).projectileType,
+                    duration = 0.5f,
+                    shots = 4,
+                    name = "连射",
+                    startUp = 0.7f,
+                };
+            } else if (preset == "gun")
+            {
+                hotbar[0] = testGun;
+                hotbar[1] = new TossItem()
+                {
+                    maxDistance = 0,
+                    coroutineFactory = SkillPresets.GunnerRegen,
+                    name = "装填",
+                };
+            }
+            SetHotboxPointer(0);
+        }
+
+        public void UsePrimaryShot()
+        {
+            ActivateItem(hotbar[0], true);
         }
 
         public UsableItem RetrieveCurItem()

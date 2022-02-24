@@ -59,8 +59,8 @@ namespace Cafeo
 
         public bool PlayerDecideAction()
         {
-            var hor = Input.GetAxis("Horizontal");
-            var vert = Input.GetAxis("Vertical");
+            var hor = Input.GetAxisRaw("Horizontal");
+            var vert = Input.GetAxisRaw("Vertical");
             var dir = new Vector2(hor, vert);
             var dirSgn = new Vector2(VectorUtils.Sgn(dir.x), VectorUtils.Sgn(dir.y));
             bool doubleTap = false;

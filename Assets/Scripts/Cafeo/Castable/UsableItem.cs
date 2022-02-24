@@ -30,6 +30,8 @@ namespace Cafeo.Castable
         public int mpCost;
         public int cpCost;
 
+        public bool stopOnUse;
+
         public UnityEvent onCounter;
 
         public static UsableItem dashSkill = new()
@@ -57,6 +59,7 @@ namespace Cafeo.Castable
             return tags.Contains(tag);
         }
 
+        public Func<BattleVessel, IEnumerator> coroutineFactory;
         public IEnumerator coroutineOnStart;
         
         public RogueManager Scene => RogueManager.Instance;
@@ -100,6 +103,11 @@ namespace Cafeo.Castable
 
         public virtual void OnUse(BattleVessel user)
         {
+            if (coroutineFactory != null)
+            {
+                coroutineOnStart = coroutineFactory.Invoke(user);
+            }
+            
             if (coroutineOnStart != null)
             {
                 coroutineDone = false;
@@ -108,6 +116,8 @@ namespace Cafeo.Castable
 
             orientation++;
             orientation %= orbit;
+            
+            if (stopOnUse) user.StopMoving();
         }
 
         public virtual void OnCounter(BattleVessel user)

@@ -13,6 +13,7 @@ namespace Cafeo.Castable
         public int spread = 0;
         public float duration = 0;
         public float instability = 0;
+        public bool withPrimaryShot;
 
         public RangedItem(ProjectileType projectileType)
         {
@@ -25,6 +26,7 @@ namespace Cafeo.Castable
             {
                 shape = new ProjectileType.CircleShape()
             };
+            stopOnUse = true;
         }
 
         public override void Setup(BattleVessel user)
@@ -99,6 +101,13 @@ namespace Cafeo.Castable
             {
                 ShootOnce(user);
             }
+
+            if (withPrimaryShot)
+            {
+                user.UsePrimaryShot();
+            }
+            
+            // user.StopMoving();
         }
     }
 }

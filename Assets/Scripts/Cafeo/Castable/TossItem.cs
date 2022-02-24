@@ -10,6 +10,11 @@ namespace Cafeo.Castable
         public float maxDistance = 4;
         public bool alwaysSplash;
 
+        public TossItem()
+        {
+            stopOnUse = true;
+        }
+
         public void Update()
         {
             
@@ -18,6 +23,7 @@ namespace Cafeo.Castable
         public override void OnUse(BattleVessel user)
         {
             base.OnUse(user);
+            if (maxDistance <= 0 && coroutineOnStart != null) return;
             var aimTarget = user.CalcAimTarget(this);
             if (alwaysSplash && aimTarget == null)
             {

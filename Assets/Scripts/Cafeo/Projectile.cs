@@ -1,5 +1,6 @@
 ﻿using System;
 using Cafeo.Castable;
+using Cafeo.Utils;
 using DG.Tweening;
 using Drawing;
 using UnityEngine;
@@ -34,6 +35,8 @@ namespace Cafeo
 
         private bool destroyOnNextFrame;
         private int totalBounce;
+
+        public int contactLayer;
 
         public UnityEvent<BattleVessel> onHit;
 
@@ -115,6 +118,8 @@ namespace Cafeo
             {
                 _body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             }
+
+            contactLayer = VectorUtils.GetCollisionMaskOf(gameObject);
         }
 
         private void SyncTransform()
@@ -181,13 +186,6 @@ namespace Cafeo
                     var topRight = transform.TransformPoint ( collider.offset  + new Vector2(size.x/2, size.y/2));
                     var btmLeft = transform.TransformPoint ( collider.offset  + new Vector2(-size.x/2, -size.y/2));
                     var btmRight = transform.TransformPoint ( collider.offset  + new Vector2(size.x/2, -size.y/2));
-                    // // float btm = worldPos.y - (size.y / 2f);
-                    // // float left = worldPos.x - (size.x / 2f);
-                    // // float right = worldPos.x + (size.x /2f);
-                    // var topLeft = new Vector3( left, top, worldPos.z);
-                    // var topRight = new Vector3( right, top, worldPos.z);
-                    // var btmLeft = new Vector3( left, btm, worldPos.z);
-                    // var btmRight = new Vector3( right, btm, worldPos.z);
                     rectShape.vertices[0] = topLeft;
                     rectShape.vertices[1] = topRight;
                     rectShape.vertices[2] = btmRight;
@@ -312,6 +310,19 @@ namespace Cafeo
                 if (_timer > 0.5f && (diff.sqrMagnitude < 0.5f))
                 {
                     SelfDestruct();
+                }
+            }
+
+            if (type.homingStrength > 0)
+            {
+                var homingTarget = Physics2D.OverlapCircle(
+                    transform.position,
+                    type.homingRadius,
+                    contactLayer
+                );
+                if (homingTarget != null)
+                {
+                    VectorUtils.RotateTowards(_body, homingTarget.transform.position, type.homingStrength);
                 }
             }
 

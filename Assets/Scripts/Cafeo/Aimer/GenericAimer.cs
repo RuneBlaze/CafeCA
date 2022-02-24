@@ -13,6 +13,7 @@ namespace Cafeo.Aimer
         [SerializeField] protected bool hidden;
 
         public bool autoAim;
+        public bool locked;
         protected BattleVessel battleVessel;
         public BehaviorTree BehaviorTree { get; private set; }
         public virtual void Setup()
@@ -45,7 +46,7 @@ namespace Cafeo.Aimer
 
         public virtual void Update()
         {
-            BehaviorTree.enabled = autoAim;
+            BehaviorTree.enabled = autoAim && !locked;
             if (!autoAim && Item != null)
             {
                 ManualAim();
@@ -59,7 +60,7 @@ namespace Cafeo.Aimer
 
         public virtual void ManualAim()
         {
-            if (battleVessel.IsPlayer)
+            if (battleVessel.IsPlayer &&! locked)
             {
                 var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 mousePos.z = 0;

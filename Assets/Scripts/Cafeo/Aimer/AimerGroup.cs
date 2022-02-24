@@ -12,6 +12,7 @@ namespace Cafeo.Aimer
         private TossAimer tossAimer;
 
         public bool autoAim;
+        public bool locked;
 
         public RangedAimer RangedAimer => rangedAimer;
 
@@ -37,6 +38,10 @@ namespace Cafeo.Aimer
             rangedAimer.autoAim = autoAim;
             meleeAimer.autoAim = autoAim;
             tossAimer.autoAim = autoAim;
+            
+            rangedAimer.locked = locked;
+            meleeAimer.locked = locked;
+            tossAimer.locked = locked;
         }
 
         public void RequestAimer(UsableItem item)
