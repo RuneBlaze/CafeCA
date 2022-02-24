@@ -6,6 +6,7 @@ using Cafeo.Aimer;
 using Cafeo.Castable;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Events;
 
 namespace Cafeo
 {
@@ -21,6 +22,17 @@ namespace Cafeo
         public abstract void DecideAction();
 
         private Queue<QueuedAction> actionQueue;
+
+        public UnityEvent<int> itemUsed;
+        public UnityEvent<int> itemDiscarded;
+
+        public int aggression = 1; // positive: we should approach, negative: we should retreat, zero: we should just zone
+
+        private void Awake()
+        {
+            itemUsed = new UnityEvent<int>();
+            itemDiscarded = new UnityEvent<int>();
+        }
 
         public virtual void Start()
         {
@@ -84,10 +96,14 @@ namespace Cafeo
 
         public void SwitchToItemSatisfying(Predicate<UsableItem> pred, out UsableItem item)
         {
+            if (Vessel.IsAlly && pred.Invoke(UsableItem.dashSkill) && Vessel.CanUseItem(UsableItem.dashSkill)) {
+                item = UsableItem.dashSkill;
+                return;
+            }
             for (int i = 0; i < 10; i++)
             {
                 if (Vessel.hotbar[i] == null) continue;
-                if (pred.Invoke(Vessel.hotbar[i]))
+                if (pred.Invoke(Vessel.hotbar[i]) && Vessel.CanUseItem(Vessel.hotbar[i]))
                 {
                     Vessel.TrySetHotboxPointer(i);
                     item = Vessel.hotbar[i];
@@ -146,10 +162,12 @@ namespace Cafeo
             return _aimer.CalcTargetObject(item) != null;
         }
 
-        public void QueueItemOfTag(UsableItem.ItemTag itemTag, int maxLimit = 50)
+        public int QueueItemOfTag(UsableItem.ItemTag itemTag, int maxLimit = 50)
         {
-            if (actionQueue.Count >= maxLimit) return;
-            actionQueue.Enqueue(new QueuedAction.UseItemOfType(itemTag));
+            if (actionQueue.Count >= maxLimit) return -1;
+            var a = new QueuedAction.UseItemOfType(itemTag);
+            actionQueue.Enqueue(a);
+            return a.id;
         }
 
         public void ClearQueue()
@@ -160,9 +178,9 @@ namespace Cafeo
         public void InterpretQueue()
         {
             if (actionQueue.Count == 0) return;
-            Debug.Log(actionQueue.Count);
             var action = actionQueue.Peek();
             bool performedAction = false;
+            bool discardedAction = false;
             switch (action)
             {
                 case QueuedAction.UseItemOfType useItemOfType:
@@ -171,14 +189,34 @@ namespace Cafeo
                     if (item == null)
                     {
                         // don't have good item satisfying the condition, we should just throw this away
-                        performedAction = true;
+                        discardedAction = true;
                     }
                     else
                     {
                         // have a good item, if we can use it, use it. If we cannot use it, wait
                         if (HasPositiveUtility(item))
                         {
-                            Vessel.ActivateItem(item);
+                            if (!item.HasTag(UsableItem.ItemTag.Dash))
+                            {
+                                Vessel.ActivateItem(item);
+                            }
+                            else
+                            {
+                                // we need to handle dashing
+                                var rangedTarget = _aimer.CalcRangedTarget();
+                                if (rangedTarget != null)
+                                {
+                                    // dash towards the target
+                                    // TODO: round dashing to cardinal directions
+                                    var dir = rangedTarget.transform.position - Vessel.transform.position;
+                                    Vessel.TryDash(dir);
+                                }
+                                else
+                                {
+                                    // invalid dash, let's just do nothing
+                                    discardedAction = true;
+                                }
+                            }
                             performedAction = true;
                         }
                         else
@@ -188,8 +226,16 @@ namespace Cafeo
                     }
                     break;
             }
-            if (performedAction) actionQueue.Dequeue();
-            
+
+            if (discardedAction)
+            {
+                var justUsed = actionQueue.Dequeue();
+                itemDiscarded.Invoke(justUsed.id);
+            } else if (performedAction)
+            {
+                var justUsed = actionQueue.Dequeue();
+                itemUsed.Invoke(justUsed.id);
+            }
         }
     }
 }

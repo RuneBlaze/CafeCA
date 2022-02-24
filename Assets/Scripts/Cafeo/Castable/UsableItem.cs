@@ -27,13 +27,22 @@ namespace Cafeo.Castable
 
         public float power = 100f;
 
+        public int mpCost;
+        public int cpCost;
+
         public UnityEvent onCounter;
+
+        public static UsableItem dashSkill = new()
+        {
+            tags = { ItemTag.Approach, ItemTag.Dash }
+        };
 
         public enum ItemTag
         {
             Approach, // this skill is useful for approaching
             StapleDPS, // for dealing damage reliably
             FreeDPS, // for easy damage
+            Dash,
         }
         
         public List<ItemTag> tags = new();

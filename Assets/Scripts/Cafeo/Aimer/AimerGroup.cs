@@ -102,5 +102,10 @@ namespace Cafeo.Aimer
             var bt = GetBehaviourTree(item);
             return bt.GetVariable("TargetObject").GetValue() as GameObject;
         }
+        
+        public GameObject CalcRangedTarget()
+        {
+            return rangedAimer.TargetObject;
+        }
     }
 }

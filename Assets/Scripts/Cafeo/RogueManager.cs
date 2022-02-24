@@ -185,8 +185,8 @@ namespace Cafeo
 
         public float CalculateBaseDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
         {
-            var lhs = attacker.soul;
-            var rhs = defender.soul;
+            var lhs = attacker;
+            var rhs = defender;
             var x = skill.power / 100f;
             if (arts)
             {
@@ -204,8 +204,8 @@ namespace Cafeo
         
         public float CalculateBaseDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
         {
-            var lhs = attacker.soul;
-            var rhs = defender.soul;
+            var lhs = attacker;
+            var rhs = defender;
             var x = skill.power / 100f;
             if (arts)
             {
@@ -223,8 +223,8 @@ namespace Cafeo
         
         public float CalculateBaseHeal(BattleVessel attacker, BattleVessel defender, UsableItem skill)
         {
-            var lhs = attacker.soul;
-            var rhs = defender.soul;
+            var lhs = attacker;
+            // var rhs = defender.soul;
             var x = skill.power / 100f;
             return x * (lhs.Mat * 1.2f);
         }

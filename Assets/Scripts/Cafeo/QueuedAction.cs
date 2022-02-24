@@ -2,9 +2,21 @@
 
 namespace Cafeo
 {
-    public abstract record QueuedAction
+    public class QueuedAction
     {
-        public record UseItemOfType : QueuedAction
+        public static int nextId = 0;
+        public int id;
+
+        protected QueuedAction()
+        {
+            SetId();
+        }
+
+        private void SetId()
+        {
+            id = nextId++;
+        }
+        public class UseItemOfType : QueuedAction
         {
             public UsableItem.ItemTag tag;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cafeo.Aimer;
 using Cafeo.Castable;
 using Cafeo.UI;
@@ -42,10 +43,18 @@ namespace Cafeo
             Active,
             Stun,
         }
+        
+        public float Atk => soul.Atk + statusEffects.Sum(it => it.atk);
+        public float Def => soul.Def + statusEffects.Sum(it => it.def);
+        public float Mat => soul.Mat + statusEffects.Sum(it => it.mat);
+        public float Mdf => soul.Mdf + statusEffects.Sum(it => it.mdf);
+        public float Dex => soul.Dex;
 
+        public float MaxDash => 3f;
+        public bool CanDash => dashTimer >= MaxDash;
         public void TryDash(Vector2 dir)
         {
-            if (dashTimer < 3f) return;
+            if (!CanDash) return;
             dashTimer = 0;
             AddForce(dir.normalized * 350f);
             ApplyStun(0.5f);
@@ -90,6 +99,7 @@ namespace Cafeo
 
         public void ActivateItem(UsableItem item)
         {
+            if (!CanUseItem(item)) return;
             item.Setup(this);
             _activeItem = item;
             EnterState(State.StartUp);
@@ -100,7 +110,7 @@ namespace Cafeo
             ActivateItem(hotbar[hotbarPointer]);
         }
 
-        public bool CanTakeAction => _state == State.Idle;
+        public bool CanTakeAction => _state == State.Idle &&! statusEffects.Any(it => it.paralyzed);
 
         private void ExitState(State state)
         {
@@ -339,6 +349,7 @@ namespace Cafeo
                 Brain = gameObject.AddComponent<PlaceholderBrain>();
             }
             Brain.Vessel = this;
+            dashTimer = MaxDash;
         }
 
         public void Move(Vector2 direction, float lerp = 4f)
@@ -399,7 +410,16 @@ namespace Cafeo
         
         public void AddStatus(StatusEffect status)
         {
-            statusEffects.Add(status);
+            int curCount = statusEffects.Count(it => 
+                !string.IsNullOrEmpty(status.displayName) && it.displayName == status.displayName);
+            if (curCount < status.maxStack)
+            {
+                statusEffects.Add(status);
+            }
+            else
+            {
+                // TODO: replace existing status and replenish the duration
+            }
         }
 
         public void RogueUpdate()
@@ -447,7 +467,7 @@ namespace Cafeo
             }
 
             dashTimer += Time.deltaTime;
-            dashTimer = Mathf.Clamp(dashTimer, 0, 3f);
+            dashTimer = Mathf.Clamp(dashTimer, 0, MaxDash);
 
             if (soul.Dead)
             {
@@ -478,8 +498,16 @@ namespace Cafeo
             {
                 _body.AddForce(knockback, ForceMode2D.Impulse);
             }
+            damage = ModifyDamage(damage);
             soul.TakeDamage(damage);
-            Scene.CreatePopup(transform.position, $"{damage}");
+            Scene.CreatePopup(transform.position, $"{damage}", Palette.red);
+        }
+
+        public int ModifyDamage(int damage)
+        {
+            var shield = statusEffects.Sum(x => x.shield);
+            var shieldPerc = statusEffects.Sum(x => x.shieldPerc);
+            return Mathf.RoundToInt((damage - shield) * (1 - shieldPerc));
         }
 
         public void ApplyDamage(float damage, float stun, Vector2 knockback)
@@ -490,7 +518,19 @@ namespace Cafeo
         public void ApplyHeal(int amount)
         {
             soul.Heal(amount);
-            Scene.CreatePopup(transform.position, $"{amount}", Color.green);
+            Scene.CreatePopup(transform.position, $"{amount}", Palette.green);
+        }
+
+        public void ApplyHealMp(int amount)
+        {
+            soul.HealMp(amount);
+            Scene.CreatePopup(transform.position, $"{amount}", Palette.skyBlue);
+        }
+
+        public void ApplyHealCp(int amount)
+        {
+            soul.HealCp(amount);
+            Scene.CreatePopup(transform.position, $"{amount}", Palette.green);
         }
 
         public float BodyDistance(BattleVessel other)
@@ -516,6 +556,15 @@ namespace Cafeo
                 DrawGauge(Draw.ingame, x - width/2, y + halfSideLength + 0.2f, width, 0.15f, 
                     soul.hp, soul.MaxHp, Palette.purple, Palette.red, 0f);
             }
+        }
+        
+        public bool CanUseItem(UsableItem item)
+        {
+            if (item.HasTag(UsableItem.ItemTag.Dash))
+            {
+                return CanDash;
+            }
+            return soul.mp >= item.mpCost && soul.cp >= item.cpCost;
         }
     }
 }

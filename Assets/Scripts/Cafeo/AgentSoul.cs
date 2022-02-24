@@ -54,6 +54,7 @@ namespace Cafeo
 
         public int hp = 12;
         public int mp = 6;
+        public int cp = 0;
 
         public float[] baseAttrs = new float[12];
         public float Str => baseAttrs[0] * Mathf.Pow(HeightScore, 1.5f);
@@ -83,6 +84,8 @@ namespace Cafeo
 
         [ShowInInspector]
         public int MaxMp => Mathf.RoundToInt(Mana * (Mag + (6 * Mag + 3 * Wil + Lea) / 10) / 5);
+
+        public int MaxCp => 200;
 
 
         public int alignment = 0;
@@ -147,6 +150,33 @@ namespace Cafeo
         {
             k = Mathf.Clamp(k, 0, MaxHp - hp);
             hp += k;
+        }
+
+        public void HealPercentage(float perc)
+        {
+            Heal(Mathf.RoundToInt(MaxHp * perc));
+        }
+
+        public void HealMp(int k)
+        {
+            k = Mathf.Clamp(k, 0, MaxMp - mp);
+            mp += k;
+        }
+
+        public void HealMpPercentage(float perc)
+        {
+            HealMp(Mathf.RoundToInt(MaxMp * perc));
+        }
+
+        public void HealCp(int k)
+        {
+            k = Mathf.Clamp(k, 0, MaxCp - cp);
+            cp += k;
+        }
+        
+        public void HealCpPercentage(float perc)
+        {
+            HealCp(Mathf.RoundToInt(MaxCp * perc));
         }
 
         private void Awake()
