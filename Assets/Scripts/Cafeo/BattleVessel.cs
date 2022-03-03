@@ -7,6 +7,7 @@ using Cafeo.TestItems;
 using Cafeo.UI;
 using Cafeo.Utils;
 using Drawing;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
@@ -29,7 +30,7 @@ namespace Cafeo
         public int hotbarPointer = 0;
         private AimerGroup _aimer;
 
-        public List<StatusEffect> statusEffects;
+        public List<StatusEffect> statusEffects = new();
 
         public GenericBrain Brain { get; private set; }
 
@@ -45,10 +46,15 @@ namespace Cafeo
             Stun,
         }
         
+        [ShowInInspector]
         public float Atk => soul.Atk + statusEffects.Sum(it => it.atk);
+        [ShowInInspector]
         public float Def => soul.Def + statusEffects.Sum(it => it.def);
+        [ShowInInspector]
         public float Mat => soul.Mat + statusEffects.Sum(it => it.mat);
+        [ShowInInspector]
         public float Mdf => soul.Mdf + statusEffects.Sum(it => it.mdf);
+        [ShowInInspector]
         public float Dex => soul.Dex;
 
         public float MaxDash => 3f;
@@ -216,8 +222,6 @@ namespace Cafeo
             hotbar[1] = new MeleeItem(0.3f, 1f) { name = "匕首" };
             hotbar[2] = new TossItem { name = "测试用投掷道具" };
             hotbar[2].SetHitAllies();
-            hotbar[3] = new TossItem { name = "测试用自我中心 Buff", maxDistance = 0, alwaysSplash = true };
-            hotbar[3].SetHitAllies();
             hotbar[4] = new RangedItem { name = "Fanshot 测试", fan = 3, spread = 90 };
 
             hotbar[6] = new MeleeItem(1f, 1f) { name = "测试用锤子", meleeType = MeleeItem.MeleeType.Hammer };
@@ -360,9 +364,37 @@ namespace Cafeo
                     maxDistance = 0,
                     coroutineFactory = SkillPresets.GunnerRegen,
                     name = "装填",
+                    // active = Single.PositiveInfinity,
+                };
+                hotbar[2] = new RangedItem
+                {
+                    projectileType = new ProjectileType()
+                    {
+                        shape = new ProjectileType.CircleShape(0.03f),
+                        collidable = true,
+                        speed = 15f,
+                        pierce = 1,
+                        bounce = 0,
+                        bullet = true,
+                    },
+                    shots = 40,
+                    duration = 3f,
+                    name = "扫射",
+                    active = 0f,
+                    recovery = 0.5f,
+                    instability = 30,
+                    mpCost = 5,
                 };
             }
-            SetHotboxPointer(0);
+            hotbar[9] = new TossItem
+            {
+                name = "测试用自我中心 Buff", maxDistance = 0, alwaysSplash = true,
+                power = 0,
+            };
+            hotbar[9].hitEffects.buffs.Add(
+                new HitEffects.BuffExpr(HitEffects.SecondaryAttr.Atk, "0.2 * mat", 5f));
+            hotbar[9].SetHitAllies();
+            SetHotboxPointer(9);
         }
 
         public void UsePrimaryShot()
@@ -499,11 +531,20 @@ namespace Cafeo
             if (curCount < status.maxStack)
             {
                 statusEffects.Add(status);
+                Scene.CreatePopup(transform.position, status.displayName, Palette.milkYellow);
             }
             else
             {
-                // TODO: replace existing status and replenish the duration
+                var existing = statusEffects.OrderBy(it => it.timer).First(it =>
+                    !string.IsNullOrEmpty(status.displayName) && it.displayName == status.displayName);
+                existing.duration = status.duration;
+                existing.timer = 0;
             }
+        }
+
+        private void OnStatusEffectExpired(StatusEffect statusEffect)
+        {
+            Scene.CreatePopup(transform.position, $"- {statusEffect.displayName}", Palette.gray);
         }
 
         public void RogueUpdate()
@@ -514,6 +555,7 @@ namespace Cafeo
                 effect.Update();
                 if (effect.Finished)
                 {
+                    OnStatusEffectExpired(effect);
                     statusEffects.RemoveAt(i);
                 }
             }
@@ -572,7 +614,8 @@ namespace Cafeo
             }
         }
 
-        public void ApplyDamage(int damage, float stun, Vector2 knockback)
+        public void ApplyDamage(int damage, float stun, Vector2 knockback, 
+            AgentSoul.ResourceType resourceType = AgentSoul.ResourceType.Hp)
         {
             if (stun > 0)
             {
@@ -583,7 +626,7 @@ namespace Cafeo
                 _body.AddForce(knockback, ForceMode2D.Impulse);
             }
             damage = ModifyDamage(damage);
-            soul.TakeDamage(damage);
+            soul.TakeDamage(damage, resourceType);
             Scene.CreatePopup(transform.position, $"{damage}", Palette.red);
         }
 

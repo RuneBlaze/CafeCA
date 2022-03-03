@@ -13,6 +13,7 @@ namespace Cafeo.Castable
         public TossItem()
         {
             stopOnUse = true;
+            damageType = DamageType.HpRecovery;
         }
 
         public void Update()
@@ -60,16 +61,27 @@ namespace Cafeo.Castable
                         hitAllies = hitAllies,
                         hitEnemies = hitEnemies,
                         baseDamage = -1,
-                        deltaSize = -0.5f,
+                        deltaSize = -1.2f,
                     };
-                    Scene.CreateProjectile(splash, user, proj.transform.position, Vector2.down);
+                    var splashProj = Scene.CreateProjectile(splash, user, proj.transform.position, Vector2.down);
+                    splashProj.onHit.AddListener(target =>
+                    {
+                        ApplyEffect(user, target, splashProj.transform.position, splashProj);
+                    });
                 });
             }
         }
 
-        public void ApplyEffect(BattleVessel user, BattleVessel target)
+        public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
         {
-            target.ApplyHeal(10);
+            base.ApplyEffect(user, target, hitSource, hitProj);
+            Vector2 towardsTarget = (Vector2) target.transform.position - hitSource;
+            ApplyCalculatedDamage(user, target, hitStun, towardsTarget * 0.5f);
+            // target.ApplyHeal(10);
         }
+        // public void ApplyEffect(BattleVessel user, BattleVessel target)
+        // {
+        //     target.ApplyHeal(10);
+        // }
     }
 }

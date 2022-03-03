@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hidden: 0
   autoAim: 0
+  locked: 0
 --- !u!114 &8674458830587775887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,6 +190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hidden: 0
   autoAim: 0
+  locked: 0
 --- !u!114 &4360376756346176568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,6 +392,8 @@ MonoBehaviour:
   enterState:
     m_PersistentCalls:
       m_Calls: []
+  dashTimer: 0
+  aiType: 
 --- !u!114 &4360376756709627843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -403,6 +407,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoAim: 0
+  locked: 0
 --- !u!114 &1099999558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,6 +547,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hidden: 0
   autoAim: 0
+  locked: 0
 --- !u!114 &3260866702309651362
 MonoBehaviour:
   m_ObjectHideFlags: 0

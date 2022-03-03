@@ -140,10 +140,30 @@ namespace Cafeo
             get { return Mathf.RoundToInt(FootLength * 2 - 10); }
         }
 
-        public void TakeDamage(int k)
+        public enum ResourceType
         {
-            k = Mathf.Clamp(k, 0, hp);
-            hp -= k;
+            Hp,
+            Mp,
+            Cp,
+        }
+
+        public void TakeDamage(int k, ResourceType t = ResourceType.Hp)
+        {
+            switch (t)
+            {
+                case ResourceType.Hp:
+                    k = Mathf.Clamp(k, 0, hp);
+                    hp -= k;
+                    break;
+                case ResourceType.Mp:
+                    k = Mathf.Clamp(k, 0, mp);
+                    mp -= k;
+                    break;
+                case ResourceType.Cp:
+                    k = Mathf.Clamp(k, 0, cp);
+                    cp -= k;
+                    break;
+            }
         }
 
         public void Heal(int k)

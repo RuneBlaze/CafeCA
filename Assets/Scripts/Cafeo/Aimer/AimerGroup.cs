@@ -105,7 +105,7 @@ namespace Cafeo.Aimer
         public GameObject CalcTargetObject(UsableItem item)
         {
             var bt = GetBehaviourTree(item);
-            return bt.GetVariable("TargetObject").GetValue() as GameObject;
+            return bt != null ? bt.GetVariable("TargetObject").GetValue() as GameObject : null;
         }
         
         public GameObject CalcRangedTarget()

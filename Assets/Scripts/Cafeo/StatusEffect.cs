@@ -7,7 +7,7 @@ namespace Cafeo
     {
         public BattleVessel owner;
         public float duration;
-        private float timer;
+        public float timer;
         private int lastSecond;
         public int maxStack = 1;
         public virtual bool Finished => timer >= duration;
@@ -23,10 +23,10 @@ namespace Cafeo
         public float shield;
         public float shieldPerc;
 
-        public int atk;
-        public int def;
-        public int mat;
-        public int mdf;
+        public float atk;
+        public float def;
+        public float mat;
+        public float mdf;
 
         public string displayName;
 

@@ -26,13 +26,39 @@ namespace Cafeo.Castable
         public bool hitEnemies = true;
 
         public float power = 100f;
+        public float hitStun = 0.2f;
+
+        public UsableItem()
+        {
+            damageType = DamageType.Null;
+            powerType = PowerType.Physical;
+            hitEffects = new HitEffects();
+        }
+
+        public enum PowerType
+        {
+            Physical,
+            Ranged,
+            Magic,
+        }
+
+        public enum DamageType
+        {
+            HpDamage,
+            MpDamage,
+            HpRecovery,
+            Null,
+        }
+
+        public PowerType powerType;
+        public DamageType damageType;
 
         public int mpCost;
         public int cpCost;
-
+        public float knockbackPower;
         public bool stopOnUse;
-
         public UnityEvent onCounter;
+        public HitEffects hitEffects;
 
         public static UsableItem dashSkill = new()
         {
@@ -111,6 +137,7 @@ namespace Cafeo.Castable
             if (coroutineOnStart != null)
             {
                 coroutineDone = false;
+                active = float.PositiveInfinity;
                 activeCoroutine = user.StartCoroutine(WrappedCoroutine(user));
             }
 
@@ -143,6 +170,15 @@ namespace Cafeo.Castable
             
         }
 
+        public virtual void ApplyHitEffects(BattleVessel user, BattleVessel target)
+        {
+            foreach (var buff in hitEffects.buffs)
+            {
+                var statusEffect = buff.CalcStatus(user, target);
+                target.AddStatus(statusEffect);
+            }
+        }
+
         public void SetHitEnemies()
         {
             hitAllies = false;
@@ -157,7 +193,47 @@ namespace Cafeo.Castable
 
         public virtual void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
         {
-            
+            ApplyHitEffects(user, target);
+        }
+
+        public virtual void ApplyCalculatedDamage(BattleVessel user, BattleVessel target, float stun, Vector2 knockback)
+        {
+            // deal HP, deal MP damage, etc.
+            if (damageType == DamageType.HpRecovery && power > 0)
+            {
+                var heal = Scene.CalculateHeal(user, target, this);
+                target.ApplyHeal(Mathf.RoundToInt(heal));
+            }
+            else
+            {
+                var damage = powerType switch
+                {
+                    PowerType.Physical => Scene.CalculateDamageMelee(user, target, this),
+                    PowerType.Ranged => Scene.CalculateDamageRanged(user, target, this),
+                    _ => Scene.CalculateDamageMelee(user, target, this, true)
+                };
+
+                switch (damageType)
+                {
+                    case DamageType.Null:
+                        break;
+                    case DamageType.HpDamage:
+                        target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Hp);
+                        break;
+                    case DamageType.MpDamage:
+                        target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Mp);
+                        break;
+                    case DamageType.HpRecovery:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        public void ApplyEffect(BattleVessel user, BattleVessel target)
+        {
+            ApplyEffect(user, target, Vector2.zero, null);
         }
     }
 }

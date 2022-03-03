@@ -18,15 +18,17 @@ namespace Cafeo.Castable
         public RangedItem(ProjectileType projectileType)
         {
             this.projectileType = projectileType;
+            stopOnUse = true;
+            damageType = DamageType.HpDamage;
+            powerType = PowerType.Magic;
         }
 
-        public RangedItem()
+        public RangedItem() : this(new ProjectileType
         {
-            projectileType = new ProjectileType
-            {
-                shape = new ProjectileType.CircleShape()
-            };
-            stopOnUse = true;
+            shape = new ProjectileType.CircleShape()
+        })
+        {
+            
         }
 
         public override void Setup(BattleVessel user)
@@ -78,9 +80,10 @@ namespace Cafeo.Castable
         public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
         {
             base.ApplyEffect(user, target, hitSource, hitProj);
-            var dmg = Scene.CalculateDamageRanged(user, target, this, false);
+            // var dmg = Scene.CalculateDamageRanged(user, target, this, false);
             // var knockBackDir = (Vector2)target.transform.position - hitSource;
-            target.ApplyDamage(dmg, 0.2f, hitProj.Velocity * 5f);
+            // target.ApplyDamage(dmg, 0.2f, hitProj.Velocity * 5f);
+            ApplyCalculatedDamage(user, target, hitStun, hitProj.Velocity * 5f);
         }
 
         private IEnumerator MultiShotLogic(BattleVessel user)

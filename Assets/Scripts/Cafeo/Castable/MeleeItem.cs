@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using static System.Single;
 using Random = UnityEngine.Random;
 
 namespace Cafeo.Castable
@@ -12,7 +12,7 @@ namespace Cafeo.Castable
         public float bodyThrust = 8f;
         public MeleeType meleeType;
         private Collider2D[] _results = new Collider2D[10];
-        private float lastUse = Single.NegativeInfinity;
+        private float lastUse = NegativeInfinity;
         private bool coin;
 
         public enum MeleeType
@@ -34,6 +34,8 @@ namespace Cafeo.Castable
             hitEnemies = true;
             meleeType = MeleeType.Stab;
             stopOnUse = false;
+            powerType = PowerType.Physical;
+            damageType = DamageType.HpDamage;
         }
 
         public override void Setup(BattleVessel user)
@@ -164,9 +166,9 @@ namespace Cafeo.Castable
         public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource,Projectile hitProj)
         {
             base.ApplyEffect(user, target, hitSource,hitProj);
-            var dmg = Scene.CalculateDamageMelee(user, target, this, false);
+            // var dmg = Scene.CalculateDamageMelee(user, target, this, false);
             var knockBackDir = (Vector2)target.transform.position - hitSource;
-            target.ApplyDamage(dmg, 0.2f, knockBackDir.normalized * 70f);
+            ApplyCalculatedDamage(user, target, hitStun,knockBackDir.normalized * 70f);
         }
     }
 }
