@@ -1,3 +1,4 @@
+using Cafeo;
 using UnityEngine;
 
 namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
@@ -24,6 +25,8 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         // The previous leader position
         private Vector3 prevLeaderPosition;
 
+        private float timer;
+
         public override void OnStart()
         {
             leaderTransform = leader.Value.transform;
@@ -37,8 +40,13 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         {
             var behindPosition = LeaderBehindPosition();
             // Determine a destination for each agent
-            for (int i = 0; i < agents.Length; ++i) {
+            for (int i = 0; i < agents.Length; i++) {
                 // Get out of the way of the leader if the leader is currently looking at the agent and is getting close
+                var brain = RogueManager.Instance.GetVesselFromGameObject(agents[i].Value).Brain;
+                if (brain.busy)
+                {
+                    continue;
+                }
                 if (LeaderLookingAtAgent(i) && Vector3.SqrMagnitude(leaderTransform.position - transforms[i].position) < aheadDistance.Value) {
                     SetDestination(i, transform.position + (transform.position - leaderTransform.position).normalized * aheadDistance.Value);
                 } else {
@@ -46,7 +54,17 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
                     SetDestination(i, behindPosition + DetermineSeparation(i));
                 }
             }
-            return TaskStatus.Running;
+
+            timer += Time.deltaTime;
+            if (timer <= 0.2f)
+            {
+                return TaskStatus.Running;
+            }
+            else
+            {
+                timer = 0;
+                return TaskStatus.Success;
+            }
         }
 
         private Vector3 LeaderBehindPosition()

@@ -48,8 +48,8 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         {
             aStarAgents[index].destination = target;
             aStarAgents[index].canMove = true;
-            // aStarAgents[index].canSearch = true;
-            // aStarAgents[index].SearchPath();
+            aStarAgents[index].canSearch = true;
+            aStarAgents[index].SearchPath();
             return true;
         }
 

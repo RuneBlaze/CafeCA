@@ -37,6 +37,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         public SharedGameObject returnedObject;
 
         private List<GameObject> objects;
+        
+        [Tooltip("Minimum distance")]
+        public SharedFloat minDistance;
         // distance * distance, optimization so we don't have to take the square root
         private float sqrMagnitude;
         private bool overlapCast = false;
@@ -107,7 +110,8 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
                 bool inDistance = Vector3.SqrMagnitude(direction) < sqrMagnitude;
                 if (me != null && rhs != null)
                 {
-                    inDistance = inDistance || me.BodyDistance(rhs) < magnitude.Value;
+                    var bodyDistance = me.BodyDistance(rhs);
+                    inDistance = minDistance.Value <= bodyDistance && (inDistance || bodyDistance < magnitude.Value);
                 }
                 // check to see if the square magnitude is less than what is specified
                 if (inDistance) {

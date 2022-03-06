@@ -21,14 +21,14 @@ namespace Cafeo.Tasks
         {
             base.OnStart();
             brain = GetComponent<GenericBrain>();
-            
-            
+
             brain.itemUsed.AddListener(i =>
             {
                 if (i == queueId)
                 {
                     skillUsed = true;
                     itemSucceeded = true;
+                    skillExecuted = true;
                 }
             });
             
@@ -38,6 +38,7 @@ namespace Cafeo.Tasks
                 {
                     skillUsed = true;
                     itemSucceeded = false;
+                    skillExecuted = true;
                 }
             });
             

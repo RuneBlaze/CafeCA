@@ -151,10 +151,21 @@ namespace Cafeo
         }
 
         public RogueManager Scene => RogueManager.Instance;
+
+        private void DuplicateSoul()
+        {
+            var newSoul = gameObject.AddComponent<AgentSoul>();
+            soul.CopyTo(newSoul);
+            soul = newSoul;
+        }
         
         public void Start()
         {
             Assert.IsNotNull(soul);
+            if (IsEnemy)
+            {
+                DuplicateSoul();
+            }
             _state = State.Idle;
             _body = GetComponent<Rigidbody2D>();
             _collider = GetComponent<BoxCollider2D>();
@@ -189,10 +200,39 @@ namespace Cafeo
             {
                 if (IsAlly)
                 {
-                    hotbar[0] = new MeleeItem(0.3f, 1f);
-                    hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
-                    hotbar[1] = new RangedItem();
-                    hotbar[1].AddTag(UsableItem.ItemTag.Approach);
+                    if (aiType == "ranged")
+                    {
+                        hotbar[0] = new RangedItem
+                        {
+                            projectileType = new ProjectileType
+                            {
+                                shape = new ProjectileType.RectShape(0.05f, 0.6f),
+                                collidable = true,
+                                speed = 17f,
+                                density = 50,
+                                pierce = 1,
+                                bounce = 0,
+                                bullet = true,
+                            },
+                            name = "测试用弓箭",
+                        };
+                        hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                        hotbar[0].AddTag(UsableItem.ItemTag.Approach);
+                    }
+                    else
+                    {
+                        var sword = new MeleeItem(1f, 1f)
+                        {
+                            name = "测试长剑",
+                            meleeType = MeleeItem.MeleeType.BroadSword,
+                            active = 0.3f,
+                            recovery = 0.05f,
+                        };
+                        hotbar[0] = sword;
+                        hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                        // hotbar[1] = new RangedItem();
+                        // hotbar[1].AddTag(UsableItem.ItemTag.Approach);
+                    }
                 }
                 else
                 {
@@ -662,8 +702,8 @@ namespace Cafeo
 
         public float BodyDistance(BattleVessel other)
         {
-            return Vector3.Distance(transform.position, other.transform.position) - other.Radius -
-                   Radius;
+            return Mathf.Max(0,Vector3.Distance(transform.position, other.transform.position) - other.Radius -
+                               Radius);
         }
 
         public void AddForce(Vector2 force)

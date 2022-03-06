@@ -27,7 +27,7 @@ namespace Cafeo
 
         public List<BehaviorTree> allyBehaviorTrees = new();
         public List<BehaviorTree> enemyBehaviorTrees = new();
-        
+
         public Dictionary<int, BattleVessel> goIdToVessel = new();
 
         protected override void Setup()
@@ -190,10 +190,10 @@ namespace Cafeo
             var x = skill.power / 100f;
             if (arts)
             {
-                return x * (lhs.Mat * 2f - rhs.Mdf);
+                return x * (lhs.Mat * 1.8f - rhs.Mdf);
             }
 
-            return x * (lhs.Atk * 2f - rhs.Def);
+            return x * (lhs.Atk * 1.8f - rhs.Def);
         }
         
         public float CalculateDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
@@ -209,10 +209,10 @@ namespace Cafeo
             var x = skill.power / 100f;
             if (arts)
             {
-                return x * (lhs.Mat * 1.5f + lhs.Dex * 2f - rhs.Mdf);
+                return x * (lhs.Mat * 1.4f + lhs.Dex * 1.8f - rhs.Mdf);
             }
 
-            return x * (lhs.Atk * 1.5f + lhs.Dex * 2f - rhs.Def);
+            return x * (lhs.Atk * 1.4f + lhs.Dex * 1.8f - rhs.Def);
         }
         
         public float CalculateDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)

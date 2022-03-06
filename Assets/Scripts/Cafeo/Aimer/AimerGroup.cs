@@ -1,6 +1,7 @@
 ﻿using System;
 using BehaviorDesigner.Runtime;
 using Cafeo.Castable;
+using Cafeo.Utils;
 using UnityEngine;
 
 namespace Cafeo.Aimer
@@ -106,6 +107,16 @@ namespace Cafeo.Aimer
         {
             var bt = GetBehaviourTree(item);
             return bt != null ? bt.GetVariable("TargetObject").GetValue() as GameObject : null;
+        }
+
+        public bool IsAimedAtTargetObject(UsableItem item, float tol = 10)
+        {
+            var targetObject = CalcTargetObject(item);
+            if (targetObject == null) return false;
+            var dir = CalcDirection(item);
+            Vector2 pos = targetObject.transform.position - transform.position;
+            var delta = VectorUtils.DegreesBetween(pos.normalized, dir);
+            return Mathf.Abs(delta) < tol;
         }
         
         public GameObject CalcRangedTarget()

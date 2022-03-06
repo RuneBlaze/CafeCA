@@ -51,6 +51,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         [Tooltip("The object that is within sight")]
         public SharedGameObject returnedObject;
 
+        [Tooltip("Should we skip the line of sight check")]
+        public SharedBool skipCheck;
+
         private GameObject[] agentColliderGameObjects;
         private int[] originalColliderLayer;
         private Collider[] overlapColliders;
@@ -80,6 +83,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement
         // Returns success if an object was found otherwise failure
         public override TaskStatus OnUpdate()
         {
+            if (skipCheck.Value) {
+                return TaskStatus.Success;
+            }
             objectLayerMask.value = originalLayer;
             if (!ignoreLayer.IsNone && ignoreLayer.Value != null && ignoreLayer.Value.Length > 0)
             {

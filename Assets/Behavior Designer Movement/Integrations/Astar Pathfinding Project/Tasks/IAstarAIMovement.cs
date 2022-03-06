@@ -30,7 +30,10 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
             agent.canSearch = true;
             agent.canMove = true;
             agent.destination = target;
-            agent.SearchPath();
+            if (!agent.pathPending)
+            {
+                agent.SearchPath();
+            }
             return true;
         }
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using BehaviorDesigner.Runtime;
 using Cafeo.Aimer;
 using Cafeo.Castable;
+using Pathfinding;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Events;
@@ -26,7 +27,10 @@ namespace Cafeo
         public UnityEvent<int> itemUsed;
         public UnityEvent<int> itemDiscarded;
 
+        public bool busy;
+
         public int aggression = 1; // positive: we should approach, negative: we should retreat, zero: we should just zone
+        private AIPath path;
 
         private void Awake()
         {
@@ -38,6 +42,7 @@ namespace Cafeo
         {
             actionQueue = new Queue<QueuedAction>();
             _aimer = GetComponent<AimerGroup>();
+            path = GetComponent<AIPath>();
             if (!Vessel.IsPlayer)
             {
                 behaviorTree = gameObject.AddComponent<BehaviorTree>();
@@ -82,8 +87,18 @@ namespace Cafeo
             {
                 if (!Vessel.IsPlayer)
                 {
-                    BehaviorTree.SetVariableValue("PreferredDistance", 0.5f);
-                    BehaviorTree.SetVariableValue("MaxDistance", 0.7f);
+                    if (Vessel.aiType == "ranged")
+                    {
+                        BehaviorTree.SetVariableValue("PreferredDistance", 3f);
+                        BehaviorTree.SetVariableValue("MaxDistance", 5f);
+                        BehaviorTree.SetVariableValue("MinDistance", 1.8f);
+                    }
+                    else
+                    {
+                        BehaviorTree.SetVariableValue("PreferredDistance", 0.5f);
+                        BehaviorTree.SetVariableValue("MaxDistance", 0.8f);
+                        BehaviorTree.SetVariableValue("SkipSight", true);
+                    }
                 }
             }
 
@@ -160,11 +175,20 @@ namespace Cafeo
 
         public bool HasPositiveUtility(UsableItem item)
         {
+            if (item.HasTag(UsableItem.ItemTag.Dash))
+            {
+                return true;
+            }
+            if (!Vessel.CanUseItem(item)) return false;
             if (item is MeleeItem meleeItem)
             {
                 if (meleeItem.meleeType == MeleeItem.MeleeType.BodyRush)  return true;
+                var targetObject = _aimer.CalcTargetObject(item);
+                if (targetObject == null) return false;
+                if (Scene.GetVesselFromGameObject(targetObject).BodyDistance(Vessel) > 1f) return false;
+                return  _aimer.IsAimedAtTargetObject(item, 60);
             }
-            return _aimer.CalcTargetObject(item) != null;
+            return _aimer.CalcTargetObject(item) != null && _aimer.IsAimedAtTargetObject(item);
         }
 
         public int QueueItemOfTag(UsableItem.ItemTag itemTag, int maxLimit = 50)
@@ -208,18 +232,24 @@ namespace Cafeo
                             else
                             {
                                 // we need to handle dashing
-                                var rangedTarget = _aimer.CalcRangedTarget();
-                                if (rangedTarget != null)
+                                // var rangedTarget = _aimer.CalcRangedTarget();
+                                // if (rangedTarget != null)
+                                // {
+                                //     // dash towards the target
+                                //     // TODO: round dashing to cardinal directions
+                                //     var dir = rangedTarget.transform.position - Vessel.transform.position;
+                                //     Vessel.TryDash(dir);
+                                // }
+                                // else
+                                // {
+                                //     // invalid dash, let's just do nothing
+                                //     discardedAction = true;
+                                // }
+                                // Debug.Log("checking if we should dash");
+                                if ((path.destination - transform.position).magnitude >= 1)
                                 {
-                                    // dash towards the target
-                                    // TODO: round dashing to cardinal directions
-                                    var dir = rangedTarget.transform.position - Vessel.transform.position;
-                                    Vessel.TryDash(dir);
-                                }
-                                else
-                                {
-                                    // invalid dash, let's just do nothing
-                                    discardedAction = true;
+                                    // Debug.Log("we are dashing towards the target");
+                                    Vessel.TryDash(path.steeringTarget - transform.position);
                                 }
                             }
                             performedAction = true;
@@ -227,6 +257,7 @@ namespace Cafeo
                         else
                         {
                             // now we wait...
+                            discardedAction = true;
                         }
                     }
                     break;

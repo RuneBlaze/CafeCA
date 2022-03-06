@@ -31,7 +31,7 @@ namespace Cafeo
             // {
                 // Debug.Log("Deciding action...");
                 var dir = _aiPath.steeringTarget - transform.position;
-                if (useRvo)
+                if (useRvo && dir.magnitude > 0)
                 {
                     _rvoController.SetTarget(transform.position + dir.normalized * 10, 2, 2);
                     var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);

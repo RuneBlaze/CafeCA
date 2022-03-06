@@ -12,6 +12,16 @@ namespace Cafeo.Utils
             return new Vector2(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos);
         }
 
+        public static float DegreesBetween(Vector2 lhs, Vector2 rhs)
+        {
+            return Mathf.DeltaAngle(AngleOf(lhs), AngleOf(rhs));
+        }
+        
+        public static float AngleOf(Vector2 vec)
+        {
+            return Mathf.Atan2(vec.y, vec.x) * Mathf.Rad2Deg;
+        }
+
         public static Vector2 RotateVectorTowards(Vector2 src, Vector2 dst, float t)
         {
             return Vector3.Slerp(src, dst, t).normalized * src.magnitude;

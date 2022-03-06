@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Cafeo.Utils;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -49,6 +50,7 @@ namespace Cafeo
         public float maleFeatureProminence = 1f;
         public float femaleFeatureProminence = 1f;
         public float appearedAge = 1f;
+        
 
         [SerializeField] private AgentPreset preset;
 
@@ -57,6 +59,19 @@ namespace Cafeo
         public int cp = 0;
 
         public float[] baseAttrs = new float[12];
+        
+        public void CopyTo(AgentSoul dst)
+        {
+            dst.firstName = firstName;
+            dst.lastName = lastName;
+            dst.age = age;
+            dst.gender = gender;
+            dst.muscleStrength = muscleStrength;
+            dst.limbSize = limbSize;
+            dst.sizeMultiplier = sizeMultiplier;
+            dst.appearedAge = appearedAge;
+            dst.baseAttrs = baseAttrs.AsEnumerable().ToArray();
+        }
         public float Str => baseAttrs[0] * Mathf.Pow(HeightScore, 1.5f);
         public float Con => baseAttrs[1] * Mathf.Pow(HeightScore, 1.5f);
         public float Dex => baseAttrs[2] / Mathf.Pow(HeightScore, 1.5f);
