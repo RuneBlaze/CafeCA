@@ -27,6 +27,7 @@ namespace Cafeo
         public float def;
         public float mat;
         public float mdf;
+        public float spd;
 
         public string displayName;
 

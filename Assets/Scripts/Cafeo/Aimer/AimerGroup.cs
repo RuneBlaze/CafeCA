@@ -102,7 +102,14 @@ namespace Cafeo.Aimer
                 _ => null
             });
         }
-        
+
+        public void SetAllTargetObject(GameObject go)
+        {
+            rangedAimer.BehaviorTree.SetVariableValue("TargetObject", go);
+            meleeAimer.BehaviorTree.SetVariableValue("TargetObject", go);
+            tossAimer.BehaviorTree.SetVariableValue("TargetObject", go);
+        }
+
         public GameObject CalcTargetObject(UsableItem item)
         {
             var bt = GetBehaviourTree(item);

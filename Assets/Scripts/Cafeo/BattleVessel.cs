@@ -57,6 +57,9 @@ namespace Cafeo
         [ShowInInspector]
         public float Dex => soul.Dex;
 
+        [ShowInInspector]
+        public float Spd => 10 + statusEffects.Sum(it => it.spd);
+
         public float MaxDash => 3f;
         public bool CanDash => dashTimer >= MaxDash;
 
@@ -506,13 +509,23 @@ namespace Cafeo
             }
             Brain.Vessel = this;
             dashTimer = MaxDash;
+
+            SyncPhysics();
         }
+
+        private void SyncPhysics()
+        {
+            _body.drag = 1.5f / NormalizedSpd;
+        }
+
+        private float NormalizedSpd => Spd / 10;
 
         public void Move(Vector2 direction, float lerp = 4f)
         {
-            var steer = direction.normalized * 120f;
+            var steer = direction.normalized * 120f * NormalizedSpd;
             var myVel = _body.velocity;
             var angleDiff = Mathf.Sqrt(Mathf.Abs(Vector2.SignedAngle(direction, myVel)) / 180f);
+            lerp *= NormalizedSpd;
             myVel.x = Mathf.MoveTowards(myVel.x, steer.x, Time.deltaTime * lerp * (1 + angleDiff));
             myVel.y = Mathf.MoveTowards(myVel.y, steer.y, Time.deltaTime * lerp * (1 + angleDiff));
             _body.velocity = myVel;
@@ -589,6 +602,7 @@ namespace Cafeo
 
         public void RogueUpdate()
         {
+            SyncPhysics();
             for (int i = statusEffects.Count - 1; i >= 0; i--)
             {
                 var effect = statusEffects[i];

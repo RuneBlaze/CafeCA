@@ -13,6 +13,7 @@ namespace Cafeo
             Def,
             Mat,
             Mdf,
+            Spd,
             HpPerSec,
             MpPerSec,
             CpPerSec,
@@ -63,6 +64,9 @@ namespace Cafeo
                         break;
                     case SecondaryAttr.Mdf:
                         s.mdf = v;
+                        break;
+                    case SecondaryAttr.Spd:
+                        s.spd = v;
                         break;
                     case SecondaryAttr.HpPerSec:
                         s.hpChangeSec = v;

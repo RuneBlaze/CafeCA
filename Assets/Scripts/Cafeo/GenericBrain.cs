@@ -96,7 +96,7 @@ namespace Cafeo
                     else
                     {
                         BehaviorTree.SetVariableValue("PreferredDistance", 0.5f);
-                        BehaviorTree.SetVariableValue("MaxDistance", 0.8f);
+                        BehaviorTree.SetVariableValue("MaxDistance", 0.7f);
                         BehaviorTree.SetVariableValue("SkipSight", true);
                     }
                 }
