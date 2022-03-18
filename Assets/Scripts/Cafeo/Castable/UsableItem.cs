@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cafeo.Utility;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Cafeo.Castable
 {
     [Serializable]
-    public class UsableItem
+    public class UsableItem : AbstractItem
     {
-        public string name;
         public float startUp;
         public float active;
         public float recovery = 0.5f;
@@ -27,6 +27,8 @@ namespace Cafeo.Castable
 
         public float power = 100f;
         public float hitStun = 0.2f;
+
+        public UtilityType utilityType;
 
         public UsableItem()
         {
@@ -62,7 +64,8 @@ namespace Cafeo.Castable
 
         public static UsableItem dashSkill = new()
         {
-            tags = { ItemTag.Approach, ItemTag.Dash }
+            tags = { ItemTag.Approach, ItemTag.Dash },
+            utilityType = new UtilityType.DashUtility(),
         };
 
         public enum ItemTag
@@ -75,6 +78,9 @@ namespace Cafeo.Castable
         
         public List<ItemTag> tags = new();
         
+        /* <summary>If this skill upon use, should have UI indication that it has been used.</summary>*/
+        public bool Announcing => !tags.Contains(ItemTag.FreeDPS) && !tags.Contains(ItemTag.Dash);
+
         public void AddTag(ItemTag tag)
         {
             tags.Add(tag);
@@ -93,6 +99,8 @@ namespace Cafeo.Castable
         public string targetTag;
         private bool coroutineDone;
         private Coroutine activeCoroutine;
+        
+        // called when the skill is being switched to
         public virtual void Setup(BattleVessel user)
         {
             onCounter = new UnityEvent();
@@ -117,6 +125,16 @@ namespace Cafeo.Castable
                 coroutineDone = false;
                 active = 1231231234;
             }
+
+            if (hitAllies)
+            {
+                user.Aimer.TossAimer.BehaviorTree.SetVariableValue("TargetObject", 
+                    user.UtilityEnv.targetAlly != null ? user.UtilityEnv.targetAlly.gameObject : null);
+            }
+            else
+            {
+                user.Aimer.TossAimer.BehaviorTree.SetVariableValue("TargetObject", user.Brain.RetrieveTargetEnemy()?.gameObject);
+            }
         }
 
         private IEnumerator WrappedCoroutine(BattleVessel user)
@@ -127,8 +145,15 @@ namespace Cafeo.Castable
             yield return null;
         }
 
+        public virtual void OnTryUsing(BattleVessel user)
+        {
+            utilityType?.OnTryUsing(user);
+        }
+
         public virtual void OnUse(BattleVessel user)
         {
+            utilityType?.OnUse(user);
+            user.UtilityEnv.justUsed = this;
             if (coroutineFactory != null)
             {
                 coroutineOnStart = coroutineFactory.Invoke(user);
@@ -229,6 +254,11 @@ namespace Cafeo.Castable
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        public virtual bool IsGonnaHit(BattleVessel user, BattleVessel target)
+        {
+            return true;
         }
 
         public void ApplyEffect(BattleVessel user, BattleVessel target)

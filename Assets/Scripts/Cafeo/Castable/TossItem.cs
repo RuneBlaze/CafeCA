@@ -28,12 +28,17 @@ namespace Cafeo.Castable
             var aimTarget = user.CalcAimTarget(this);
             if (alwaysSplash && aimTarget == null)
             {
-                aimTarget = user;
+                aimTarget = null;
             }
+            // if (alwaysSplash && maxDistance <= 0)
+            // {
+            //     aimTarget = null;
+            // }
             if (aimTarget == null)
             {
                 // self use
-                ApplyEffect(user, user);
+                // ApplyEffect(user, user);
+                CreateSplashProjectile(user, user.transform);
             }
             else
             {
@@ -51,25 +56,24 @@ namespace Cafeo.Castable
                 };
                 var dir = (aimTarget.transform.position - user.transform.position).normalized * user.Radius;
                 var proj = Scene.CreateProjectile(type, user, user.transform.position + dir * 1f , dir);
-                proj.beforeDestroy.AddListener(() =>
-                {
-                    var splash = new ProjectileType
-                    {
-                        shape = new ProjectileType.CircleShape { radius = radius },
-                        collidable = false,
-                        speed = 0f,
-                        hitAllies = hitAllies,
-                        hitEnemies = hitEnemies,
-                        baseDamage = -1,
-                        deltaSize = -1.2f,
-                    };
-                    var splashProj = Scene.CreateProjectile(splash, user, proj.transform.position, Vector2.down);
-                    splashProj.onHit.AddListener(target =>
-                    {
-                        ApplyEffect(user, target, splashProj.transform.position, splashProj);
-                    });
-                });
+                proj.beforeDestroy.AddListener(() => { CreateSplashProjectile(user, proj.transform); });
             }
+        }
+
+        private void CreateSplashProjectile(BattleVessel user, Transform origin)
+        {
+            var splash = new ProjectileType
+            {
+                shape = new ProjectileType.CircleShape { radius = radius },
+                collidable = false,
+                speed = 0f,
+                hitAllies = hitAllies,
+                hitEnemies = hitEnemies,
+                baseDamage = -1,
+                deltaSize = -1.2f,
+            };
+            var splashProj = Scene.CreateProjectile(splash, user, origin.position, Vector2.down);
+            splashProj.onHit.AddListener(target => { ApplyEffect(user, target, splashProj.transform.position, splashProj); });
         }
 
         public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)

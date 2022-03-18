@@ -26,6 +26,9 @@ namespace Cafeo
             public string calcExpr;
             public float duration;
 
+            public string buffNameOverride;
+            public string BuffName => buffNameOverride ?? dst.ToString();
+
             public BuffExpr(SecondaryAttr dst, string calcExpr, float duration)
             {
                 this.dst = dst;

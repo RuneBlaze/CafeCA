@@ -13,6 +13,7 @@ namespace Cafeo
     public class AllyParty : Singleton<AllyParty>
     {
         public RogueManager Scene => RogueManager.Instance;
+        public int gold;
 
         private void LateUpdate()
         {

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using BehaviorDesigner.Runtime;
 using Cafeo.Aimer;
 using Cafeo.Castable;
+using Cafeo.Utils;
 using Pathfinding;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -36,6 +38,31 @@ namespace Cafeo
         {
             itemUsed = new UnityEvent<int>();
             itemDiscarded = new UnityEvent<int>();
+        }
+
+        public GameObject RetrieveTargetObject()
+        {
+            return BehaviorTree != null ? BehaviorTree.GetVariable("TargetObject").GetValue() as GameObject : null;
+        }
+
+        public void TrySetTargetObject(GameObject target)
+        {
+            // Debug.Log("Setting target object to " + target);
+            if (BehaviorTree != null)
+            {
+                // if (RetrieveTargetObject().name != target.name)
+                // {
+                //     Debug.Log("Setting target to " + target.name);
+                // }
+                BehaviorTree.SetVariableValue("TargetObject", target);
+            }
+        }
+
+        public BattleVessel RetrieveTargetEnemy()
+        {
+            var go = RetrieveTargetObject();
+            if (go != null) return Scene.GetVesselFromGameObject(go);
+            return null;
         }
 
         public virtual void Start()
@@ -116,21 +143,25 @@ namespace Cafeo
 
         public void SwitchToItemSatisfying(Predicate<UsableItem> pred, out UsableItem item)
         {
-            if (Vessel.IsAlly && pred.Invoke(UsableItem.dashSkill) && Vessel.CanUseItem(UsableItem.dashSkill)) {
-                item = UsableItem.dashSkill;
+            var suitableObjects = HeldItemsWithIdx().Where(it => pred(it.Item1)).ToList();
+            if (suitableObjects.Count == 0)
+            {
+                item = null;
                 return;
             }
-            for (int i = 0; i < 10; i++)
+            else
             {
-                if (Vessel.hotbar[i] == null) continue;
-                if (pred.Invoke(Vessel.hotbar[i]) && Vessel.CanUseItem(Vessel.hotbar[i]))
+                var bestItem = suitableObjects.MaxObject(it => CalcUtility(it.Item1));
+                if (bestItem.Item2 >= 0)
                 {
-                    Vessel.TrySetHotboxPointer(i);
-                    item = Vessel.hotbar[i];
-                    return;
+                    Vessel.TrySetHotboxPointer(bestItem.Item2);
+                    item = Vessel.hotbar[bestItem.Item2];
+                }
+                else
+                {
+                    item = bestItem.Item1;
                 }
             }
-            item = null;
         }
 
         public void SwitchToItemSatisfying(Predicate<UsableItem> pred)
@@ -173,27 +204,56 @@ namespace Cafeo
             return false;
         }
 
+        public float CalcUtility(UsableItem item)
+        {
+            return item.utilityType.CalcUtility(Vessel, item, Vessel.UtilityEnv);
+        }
+
         public bool HasPositiveUtility(UsableItem item)
         {
-            if (item.HasTag(UsableItem.ItemTag.Dash))
+            var utility = CalcUtility(item);
+            // Debug.Log("Utility: " + utility + " for " + item.name);
+            return utility > 0;
+            // if (item.HasTag(UsableItem.ItemTag.Dash))
+            // {
+            //     return true;
+            // }
+            // if (!Vessel.CanUseItem(item)) return false;
+            // if (item is MeleeItem meleeItem)
+            // {
+            //     if (meleeItem.meleeType == MeleeItem.MeleeType.BodyRush)  return true;
+            //     var targetObject = _aimer.CalcTargetObject(item);
+            //     if (targetObject == null) return false;
+            //     if (Scene.GetVesselFromGameObject(targetObject).BodyDistance(Vessel) > 1f) return false;
+            //     return  _aimer.IsAimedAtTargetObject(item, 60);
+            // }
+            // return _aimer.CalcTargetObject(item) != null && _aimer.IsAimedAtTargetObject(item);
+        }
+
+        public IEnumerable<UsableItem> HeldItems()
+        {
+            yield return UsableItem.dashSkill;
+            for (int i = 0; i < 10; i++)
             {
-                return true;
+                if (Vessel.hotbar[i] == null) continue;
+                yield return Vessel.hotbar[i];
             }
-            if (!Vessel.CanUseItem(item)) return false;
-            if (item is MeleeItem meleeItem)
+        }
+        
+        public IEnumerable<(UsableItem, int)> HeldItemsWithIdx()
+        {
+            yield return (UsableItem.dashSkill, -1);
+            for (int i = 0; i < 10; i++)
             {
-                if (meleeItem.meleeType == MeleeItem.MeleeType.BodyRush)  return true;
-                var targetObject = _aimer.CalcTargetObject(item);
-                if (targetObject == null) return false;
-                if (Scene.GetVesselFromGameObject(targetObject).BodyDistance(Vessel) > 1f) return false;
-                return  _aimer.IsAimedAtTargetObject(item, 60);
+                if (Vessel.hotbar[i] == null) continue;
+                yield return (Vessel.hotbar[i], i);
             }
-            return _aimer.CalcTargetObject(item) != null && _aimer.IsAimedAtTargetObject(item);
         }
 
         public int QueueItemOfTag(UsableItem.ItemTag itemTag, int maxLimit = 50)
         {
             if (actionQueue.Count >= maxLimit) return -1;
+            if (HeldItems().All(it => !it.HasTag(itemTag))) return -1;
             var a = new QueuedAction.UseItemOfType(itemTag);
             actionQueue.Enqueue(a);
             return a.id;

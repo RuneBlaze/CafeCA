@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Cafeo.Utility;
 using Cafeo.Utils;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -21,6 +22,7 @@ namespace Cafeo.Castable
             stopOnUse = true;
             damageType = DamageType.HpDamage;
             powerType = PowerType.Magic;
+            utilityType = new UtilityType.SingleEnemyInRange(15f, 10f);
         }
 
         public RangedItem() : this(new ProjectileType

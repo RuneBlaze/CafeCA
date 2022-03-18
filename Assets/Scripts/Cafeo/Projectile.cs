@@ -259,6 +259,13 @@ namespace Cafeo
             }
         }
 
+        public void MoveUnder(BattleVessel target)
+        {
+            var transform1 = transform;
+            transform1.parent = target.transform;
+            transform1.localScale = Vector3.one / transform1.lossyScale.magnitude;
+        }
+
         private void ResolveHitEffect(BattleVessel target)
         {
             // target.ApplyDamage(1, 0.5f, _body.velocity * 10);
@@ -281,6 +288,17 @@ namespace Cafeo
                 return;
             }
             _timer += Time.deltaTime;
+            if (type.acceleration > 0)
+            {
+                var velocity = _body.velocity;
+                velocity += velocity.normalized * type.acceleration * Time.deltaTime;
+                _body.velocity = velocity;
+                if (_body.velocity.magnitude > type.maxSpeed)
+                {
+                    _body.velocity = _body.velocity.normalized * type.maxSpeed;
+                }
+            }
+
             if (_timer >= 20 || _timer > type.timeLimit)
             {
                 SelfDestruct();

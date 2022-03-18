@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Cafeo.Utility;
 using UnityEngine;
 using static System.Single;
 using Random = UnityEngine.Random;
@@ -26,6 +27,9 @@ namespace Cafeo.Castable
             BodyRush,
         }
 
+        public float EffectiveRange => 0.8f;
+        public float EffectiveDegrees => 60f;
+
         public MeleeItem(float radius, float distance)
         {
             this.radius = radius;
@@ -36,6 +40,7 @@ namespace Cafeo.Castable
             stopOnUse = false;
             powerType = PowerType.Physical;
             damageType = DamageType.HpDamage;
+            utilityType = new UtilityType.SingleEnemyInRange(1f);
         }
 
         public override void Setup(BattleVessel user)
@@ -72,7 +77,6 @@ namespace Cafeo.Castable
                     for (int i = 0; i < cnt; i++)
                     {
                         var vessel = _results[i].GetComponent<BattleVessel>();
-                        // vessel.ApplyDamage(1, 0.5f, (Vector2) vessel.transform.position - targetCoord);
                         ApplyEffect(user, vessel, user.transform.position, null);
                     }
                     break;
@@ -96,7 +100,7 @@ namespace Cafeo.Castable
                     };
                     proj = CreateMeleeProjectile(thrustType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.RegisterMeleeOwner(this);
-                    proj.transform.parent = user.transform;
+                    proj.MoveUnder(user);
                     break;
                 case MeleeType.Scythe:
                     var scytheType = new ProjectileType
@@ -109,8 +113,7 @@ namespace Cafeo.Castable
                     };
                     proj = CreateMeleeProjectile(scytheType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.RegisterMeleeOwner(this);
-                    proj.transform.parent = user.transform;
-                    
+                    proj.MoveUnder(user);
                     break;
                 case MeleeType.GreatSword:
                     var greatSwordType = new ProjectileType
@@ -123,7 +126,7 @@ namespace Cafeo.Castable
                     };
                     proj = CreateMeleeProjectile(greatSwordType, user, targetCoord - aimDirection/2, aimDirection);
                     proj.RegisterMeleeOwner(this);
-                    proj.transform.parent = user.transform;
+                    proj.MoveUnder(user);
                     break;
                 case MeleeType.BroadSword:
                     var broadSwordType = new ProjectileType
@@ -135,7 +138,7 @@ namespace Cafeo.Castable
                         kineticBody = true,
                     };
                     proj = CreateMeleeProjectile(broadSwordType, user, targetCoord - aimDirection/2, aimDirection);
-                    proj.transform.parent = user.transform;
+                    proj.MoveUnder(user);
                     proj.RegisterMeleeOwner(this);
                     break;
                 case MeleeType.BodyRush:
@@ -147,7 +150,7 @@ namespace Cafeo.Castable
                     };
                     proj = CreateMeleeProjectile(bodyRushType, user, user.transform.position, Vector2.zero);
                     proj.RegisterMeleeOwner(this);
-                    proj.transform.parent = user.transform;
+                    proj.MoveUnder(user);
                     user.AddForce(aimDirection.normalized * bodyThrust);
                     break;
             }
@@ -169,6 +172,11 @@ namespace Cafeo.Castable
             // var dmg = Scene.CalculateDamageMelee(user, target, this, false);
             var knockBackDir = (Vector2)target.transform.position - hitSource;
             ApplyCalculatedDamage(user, target, hitStun,knockBackDir.normalized * 70f);
+        }
+
+        public override bool IsGonnaHit(BattleVessel user, BattleVessel target)
+        {
+            return target.BodyDistance(user) < EffectiveRange && user.IsFacing(target, EffectiveDegrees);
         }
     }
 }

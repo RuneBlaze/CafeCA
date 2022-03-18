@@ -160,6 +160,8 @@ namespace Cafeo
         public float drag;
         public float forceMultiplier;
         public float baseDamage;
+        public float acceleration;
+        public float maxSpeed;
         public float deltaSize;
         public float maxSize;
         public float density = 32f;

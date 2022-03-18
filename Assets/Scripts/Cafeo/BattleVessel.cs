@@ -5,6 +5,7 @@ using Cafeo.Aimer;
 using Cafeo.Castable;
 using Cafeo.TestItems;
 using Cafeo.UI;
+using Cafeo.Utility;
 using Cafeo.Utils;
 using Drawing;
 using Sirenix.OdinInspector;
@@ -37,6 +38,8 @@ namespace Cafeo
         public UnityEvent<State> enterState;
 
         public float dashTimer;
+        
+        public AimerGroup Aimer => _aimer;
 
         public enum State
         {
@@ -81,10 +84,10 @@ namespace Cafeo
 
         private void EnterState(State state)
         {
-            if (_state == state) return;
-            _itemTimer = 0;
-            ExitState(_state);
-            _state = state;
+            if (this.state == state) return;
+            itemTimer = 0;
+            ExitState(this.state);
+            this.state = state;
             
             enterState.Invoke(state);
 
@@ -96,27 +99,34 @@ namespace Cafeo
             if (state == State.StartUp)
             {
                 _aimer.locked = true;
+                activeItem.OnTryUsing(this);
             }
 
             if (state == State.Active)
             {
-                _activeItem.OnUse(this);
+                activeItem.OnUse(this);
+                OnUseItem(activeItem);
             }
 
-            if (state == State.StartUp && _activeItem.startUp == 0)
+            if (state == State.StartUp && activeItem.startUp == 0)
             {
                 EnterState(State.Active);
             }
 
-            if (state == State.Active && _activeItem.active == 0)
+            if (state == State.Active && activeItem.active == 0)
             {
                 ApplyActiveItemStun();
             }
 
-            if (state == State.Stun && _stun == 0)
+            if (state == State.Stun && stun == 0)
             {
                 EnterState(State.Idle);
             }
+        }
+
+        private void OnUseItem(UsableItem item)
+        {
+            if (item.Announcing) Announce(item);
         }
 
         public void ActivateItem(UsableItem item, bool secondary = false)
@@ -127,7 +137,7 @@ namespace Cafeo
             item.Setup(this);
             if (!secondary)
             {
-                _activeItem = item;
+                activeItem = item;
                 EnterState(State.StartUp);
             }
             else
@@ -142,14 +152,14 @@ namespace Cafeo
             ActivateItem(hotbar[hotbarPointer]);
         }
 
-        public bool CanTakeAction => _state == State.Idle &&! statusEffects.Any(it => it.paralyzed);
+        public bool CanTakeAction => state == State.Idle &&! statusEffects.Any(it => it.paralyzed);
 
         private void ExitState(State state)
         {
             if (state == State.Active)
             {
-                _activeItem.OnCounter(this);
-                _activeItem = null;
+                activeItem.OnCounter(this);
+                activeItem = null;
             }
         }
 
@@ -169,7 +179,9 @@ namespace Cafeo
             {
                 DuplicateSoul();
             }
-            _state = State.Idle;
+            state = State.Idle;
+            utilityEnv = gameObject.AddComponent<UtilityEnv>();
+            if (IsEnemy) utilityEnv.simple = true;
             _body = GetComponent<Rigidbody2D>();
             _collider = GetComponent<BoxCollider2D>();
             _sprite = GetComponent<SpriteRenderer>();
@@ -224,6 +236,7 @@ namespace Cafeo
                     }
                     else
                     {
+                        // melee type ally initializer
                         var sword = new MeleeItem(1f, 1f)
                         {
                             name = "测试长剑",
@@ -231,10 +244,26 @@ namespace Cafeo
                             active = 0.3f,
                             recovery = 0.05f,
                         };
+                        sword.utilityType += (UtilityType) 10f;
                         hotbar[0] = sword;
                         hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
-                        // hotbar[1] = new RangedItem();
-                        // hotbar[1].AddTag(UsableItem.ItemTag.Approach);
+                        hotbar[1] = new RangedItem
+                        {
+                            projectileType = new ProjectileType
+                            {
+                                shape = new ProjectileType.RectShape(1.2f, 0.23f),
+                                collidable = false,
+                                speed = 7f,
+                                pierce = 3,
+                                bounce = 1,
+                                timeLimit = 0.4f,
+                            },
+                            startUp = 0.1f,
+                            name = "测试用剑气",
+                            withPrimaryShot = true,
+                            utilityType = new UtilityType.SingleEnemyInDirection()
+                        };
+                        hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
                     }
                 }
                 else
@@ -247,6 +276,7 @@ namespace Cafeo
                         recovery = 0.5f,
                         meleeType = MeleeItem.MeleeType.BodyRush,
                     };
+                    rushSkill.utilityType = new UtilityType.Disregarding();
                     hotbar[1] = rushSkill;
                     hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
                     SetHotboxPointer(1);
@@ -437,6 +467,13 @@ namespace Cafeo
             hotbar[9].hitEffects.buffs.Add(
                 new HitEffects.BuffExpr(HitEffects.SecondaryAttr.Atk, "0.2 * mat", 5f));
             hotbar[9].SetHitAllies();
+            hotbar[8] = new TossItem
+            {
+                name = "测试用回复", maxDistance = 0, alwaysSplash = true,
+                damageType = UsableItem.DamageType.HpRecovery,
+                power = 30,
+            };
+            hotbar[8].SetHitAllies();
             SetHotboxPointer(9);
         }
 
@@ -531,25 +568,34 @@ namespace Cafeo
             _body.velocity = myVel;
         }
 
-        private float _itemTimer = 0;
-        private float _stun = 0;
-        private State _state;
-        private UsableItem _activeItem;
+        private float itemTimer = 0;
+        private float stun = 0;
+        private float invincible = 0;
+        private State state;
+        private UsableItem activeItem;
+        private UtilityEnv utilityEnv;
+        public UtilityEnv UtilityEnv => utilityEnv;
 
         public void ApplyStun(float duration)
         {
             Assert.IsTrue(duration > 0);
-            if (_state == State.Active && _activeItem.isArts)
+            if (state == State.Active && activeItem.isArts)
             {
                 return;
             }
 
-            if (_state == State.Active && _itemTimer < _activeItem.active)
+            if (state == State.Active && itemTimer < activeItem.active)
             {
-                _activeItem.OnInterrupt(this);
+                activeItem.OnInterrupt(this);
             }
-            _stun = Mathf.Max(_stun, duration);
+            stun = Mathf.Max(stun, duration);
             EnterState(State.Stun);
+        }
+        
+        public void ApplyInvincible(float duration)
+        {
+            Assert.IsTrue(duration > 0);
+            invincible = Mathf.Max(invincible, duration);
         }
 
         public Vector2 CalcArrowSpawnLoc(UsableItem item)
@@ -574,7 +620,7 @@ namespace Cafeo
 
         public Vector2 CalcArrowSpawnLoc()
         {
-            return CalcArrowSpawnLoc(_activeItem);
+            return CalcArrowSpawnLoc(activeItem);
         }
         
         public void AddStatus(StatusEffect status)
@@ -600,6 +646,11 @@ namespace Cafeo
             Scene.CreatePopup(transform.position, $"- {statusEffect.displayName}", Palette.gray);
         }
 
+        private void Announce(UsableItem item)
+        {
+            Scene.CreatePopup(transform.position, item.name, Palette.milkYellow);
+        }
+
         public void RogueUpdate()
         {
             SyncPhysics();
@@ -614,33 +665,36 @@ namespace Cafeo
                 }
             }
 
-            switch (_state)
+            invincible -= Time.deltaTime;
+            invincible = Mathf.Max(invincible, 0);
+
+            switch (state)
             {
                 case State.Idle:
                     break;
                 case State.StartUp:
-                    _itemTimer += Time.deltaTime;
-                    if (_itemTimer > _activeItem.startUp)
+                    itemTimer += Time.deltaTime;
+                    if (itemTimer > activeItem.startUp)
                     {
                         EnterState(State.Active);
                     }
                     break;
                 case State.Active:
-                    _itemTimer += Time.deltaTime;
-                    if (_itemTimer > _activeItem.active)
+                    itemTimer += Time.deltaTime;
+                    if (itemTimer > activeItem.active)
                     {
                         ApplyActiveItemStun();
                     }
                     else
                     {
-                        _activeItem.DuringActive(this, _itemTimer);
+                        activeItem.DuringActive(this, itemTimer);
                     }
                     break;
                 case State.Stun:
-                    _stun -= Time.deltaTime;
-                    if (_stun <= 0)
+                    stun -= Time.deltaTime;
+                    if (stun <= 0)
                     {
-                        _stun = 0;
+                        stun = 0;
                         EnterState(State.Idle);
                     }
                     break;
@@ -657,10 +711,10 @@ namespace Cafeo
 
         public void ApplyActiveItemStun()
         {
-            _activeItem.OnEndUse(this);
-            if (_activeItem.recovery > 0)
+            activeItem.OnEndUse(this);
+            if (activeItem.recovery > 0)
             {
-                ApplyStun(_activeItem.recovery);
+                ApplyStun(activeItem.recovery);
             }
             else
             {
@@ -671,15 +725,18 @@ namespace Cafeo
         public void ApplyDamage(int damage, float stun, Vector2 knockback, 
             AgentSoul.ResourceType resourceType = AgentSoul.ResourceType.Hp)
         {
+            if (invincible > 0) return;
             if (stun > 0)
             {
                 ApplyStun(stun);
+                ApplyInvincible(stun/2);
             }
             if (knockback.magnitude > 0)
             {
                 _body.AddForce(knockback, ForceMode2D.Impulse);
             }
             damage = ModifyDamage(damage);
+            GainCp(3);
             soul.TakeDamage(damage, resourceType);
             Scene.CreatePopup(transform.position, $"{damage}", Palette.red);
         }
@@ -714,6 +771,11 @@ namespace Cafeo
             Scene.CreatePopup(transform.position, $"{amount}", Palette.green);
         }
 
+        public void GainCp(int cnt)
+        {
+            soul.HealCp(cnt);
+        }
+
         public float BodyDistance(BattleVessel other)
         {
             return Mathf.Max(0,Vector3.Distance(transform.position, other.transform.position) - other.Radius -
@@ -746,6 +808,13 @@ namespace Cafeo
                 return CanDash;
             }
             return soul.mp >= item.mpCost && soul.cp >= item.cpCost;
+        }
+        
+        public bool IsFacing(BattleVessel other, float tol)
+        {
+            Vector2 pos = other.transform.position - transform.position;
+            var delta = VectorUtils.DegreesBetween(pos.normalized, _aimer.RangedAimer.transform.right);
+            return Mathf.Abs(delta) < tol;
         }
     }
 }

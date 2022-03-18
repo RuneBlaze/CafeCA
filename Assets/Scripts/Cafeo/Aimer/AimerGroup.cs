@@ -16,6 +16,7 @@ namespace Cafeo.Aimer
         public bool locked;
 
         public RangedAimer RangedAimer => rangedAimer;
+        public TossAimer TossAimer => tossAimer;
 
         public void Awake()
         {

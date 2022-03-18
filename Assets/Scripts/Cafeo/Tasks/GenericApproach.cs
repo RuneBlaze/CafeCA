@@ -3,6 +3,7 @@ using BehaviorDesigner.Runtime.Tasks;
 using BehaviorDesigner.Runtime.Tasks.Movement;
 using BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject;
 using Cafeo.Castable;
+using Cafeo.Utility;
 using Cafeo.Utils;
 using UnityEngine;
 
@@ -23,10 +24,14 @@ namespace Cafeo.Tasks
         protected float timer;
         protected float atDestinationTimer;
 
+        protected float retargetTimer;
+        private UtilityEnv utilityEnv;
+
         public override void OnStart()
         {
             base.OnStart();
             InitApproach();
+            utilityEnv = GetComponent<UtilityEnv>();
         }
 
         protected virtual void InitApproach()
@@ -67,6 +72,12 @@ namespace Cafeo.Tasks
                 return TaskStatus.Success;
             }
             timer += Time.deltaTime;
+            retargetTimer += Time.deltaTime;
+            if (retargetTimer > 1)
+            {
+                retargetTimer = 0;
+                TryRetargeting();
+            }
             if (timeLimit > 0 && timer > timeLimit)
             {
                 timer = 0;
@@ -125,6 +136,15 @@ namespace Cafeo.Tasks
         void UseZoningSkill()
         {
             vessel.Brain.QueueItemOfTag(UsableItem.ItemTag.Approach);
+        }
+
+        private void TryRetargeting()
+        {
+            var bestAlternative = utilityEnv.bestTargetEnemy;
+            if (bestAlternative != null)
+            {
+                vessel.Brain.TrySetTargetObject(bestAlternative.gameObject);
+            }
         }
 
         public override void OnReset()
