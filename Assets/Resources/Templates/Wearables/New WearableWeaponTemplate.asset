@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   icon: {fileID: 0}
+  tint: 0
   description: 
   lines: 
   sizeBias: 0
-  garmentKind: 1
+  garmentKind: 0
   composition: 
   associatedSkill: {fileID: 0}

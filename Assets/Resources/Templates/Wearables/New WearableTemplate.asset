@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177202acf53e430bb78a4fa0edf1ede4, type: 3}
   m_Name: New WearableTemplate
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: New WearableTemplate
+  icon: {fileID: 0}
+  tint: 0
   description: 
   lines: 
   sizeBias: 0
-  garmentKind: 1
-  composition: 
+  garmentKind: 2
+  composition: 02000000

@@ -28,7 +28,7 @@ namespace Cafeo
 
         public UsableItem parentSkill;
 
-        public float sizeDelta = 0;
+        public float deltaSize = 0;
         private float curSize = 1;
         public float distanceLimit = -1;
         public UnityEvent beforeDestroy = new ();
@@ -125,9 +125,9 @@ namespace Cafeo
         private void SyncTransform()
         {
             _collider.isTrigger = !type.collidable;
-            if (sizeDelta != 0)
+            if (deltaSize != 0)
             {
-                curSize += sizeDelta * Time.deltaTime;
+                curSize += deltaSize * Time.deltaTime;
             }
 
             if (type.maxSize > 0)

@@ -52,7 +52,6 @@ namespace Cafeo.Castable
                     speed = 8f,
                     hitAllies = hitAllies,
                     hitEnemies = hitEnemies,
-                    baseDamage = -1
                 };
                 var dir = (aimTarget.transform.position - user.transform.position).normalized * user.Radius;
                 var proj = Scene.CreateProjectile(type, user, user.transform.position + dir * 1f , dir);
@@ -69,7 +68,6 @@ namespace Cafeo.Castable
                 speed = 0f,
                 hitAllies = hitAllies,
                 hitEnemies = hitEnemies,
-                baseDamage = -1,
                 deltaSize = -1.2f,
             };
             var splashProj = Scene.CreateProjectile(splash, user, origin.position, Vector2.down);

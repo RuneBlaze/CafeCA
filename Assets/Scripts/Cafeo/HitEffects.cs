@@ -36,20 +36,21 @@ namespace Cafeo
                 this.duration = duration;
             }
 
-            public float CalcValue(BattleVessel src, BattleVessel target)
+            public float CalcValue(BattleVessel src, BattleVessel target, int levelOffset = 0)
             {
                 var state = new Dictionary<string, float>();
                 state["atk"] = src.Atk;
                 state["def"] = src.Def;
                 state["mat"] = src.Mat;
                 state["mdf"] = src.Mdf;
+                state["level"] = levelOffset;
                 float v = ArithmeticEval.EvaluateArithmeticExpression(calcExpr.ToLowerInvariant(), state);
                 return v;
             }
 
-            public StatusEffect CalcStatus(BattleVessel src, BattleVessel target)
+            public StatusEffect CalcStatus(BattleVessel src, BattleVessel target, int levelOffset = 0)
             {
-                float v = CalcValue(src, target);
+                float v = CalcValue(src, target, levelOffset);
                 var s = new StatusEffect(target, duration);
                 bool isDebuff = v < 0;
                 string buffHumanize = isDebuff ? "debuff" : "buff";
@@ -87,5 +88,19 @@ namespace Cafeo
             }
         }
         public List<BuffExpr> buffs = new ();
+        
+        public void Apply(BattleVessel user, BattleVessel target, int levelOffset = 0)
+        {
+            foreach (var buff in buffs)
+            {
+                var statusEffect = buff.CalcStatus(user, target, levelOffset);
+                target.AddStatus(statusEffect);
+            }
+        }
+
+        public void TearDown(BattleVessel target)
+        {
+            target.RemoveStatus(it => it.source == this);
+        }
     }
 }

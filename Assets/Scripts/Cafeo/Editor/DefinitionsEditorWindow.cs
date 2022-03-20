@@ -8,12 +8,12 @@ using UnityEngine;
 
 namespace Cafeo.Editor
 {
-    public class SkillTemplateEditorWindow : OdinMenuEditorWindow
+    public class DefinitionsEditorWindow : OdinMenuEditorWindow
     {
-        [MenuItem("Cafeo/Skill Template Editor")]
+        [MenuItem("Cafeo/Definitions Editor")]
         public static void OpenWindow()
         {
-            var window = GetWindow<SkillTemplateEditorWindow>();
+            var window = GetWindow<DefinitionsEditorWindow>();
         }
 
         protected override OdinMenuTree BuildMenuTree()
@@ -30,8 +30,6 @@ namespace Cafeo.Editor
                     DrawSearchToolbar = true
                 }
             };
-            // tree.AddAllAssetsAtPath("", "Resources/Templates", typeof(SkillTemplate), true);
-            // tree.AddAllAssetsAtPath("", "Resources/Templates", typeof(SkillTreeTemplate), true);
             tree.AddAllAssetsAtPath("", "Resources/Templates", typeof(WithDisplayName), true);
             tree.EnumerateTree().AddIcons<WithIcon>(x => x.icon);
             return tree;
@@ -71,6 +69,8 @@ namespace Cafeo.Editor
                 AddCreateButtonToToolbar<WeaponTypeTemplate>("Weapon Type", "WeaponTypes");
                 AddCreateButtonToToolbar<TreasureTemplate>("Treasure", "Treasures");
                 AddCreateButtonToToolbar<OneTimeUseTemplate>("OneTimeUse", "OneTimes");
+                AddCreateButtonToToolbar<ProjectileTypeTemplate>("ProjectileType", "ProjectileTypes");
+                AddCreateButtonToToolbar<SoulTemplate>("Soul", "Souls");
             }
             SirenixEditorGUI.EndHorizontalToolbar();
         }

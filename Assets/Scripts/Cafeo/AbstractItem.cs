@@ -4,8 +4,9 @@ namespace Cafeo
 {
     public abstract class AbstractItem
     {
-        public Texture2D icon;
+        public Texture icon;
         public string name;
+        public string description;
         private int exp;
         public int k;
         public int b;

@@ -37,20 +37,17 @@ namespace Cafeo
         public float muscleStrength = 1;
         public float limbSize = 1;
         public float sizeMultiplier = 1;
+        public float appearedAge = 1f;
         public string skinColor = "fair";
         public string hairColor = "black";
         public string eyeColor = "brown";
-        // public float appearedAgeMultiplier = 1;
         public float genderAppearance = 0.7f;
-
         public bool hasMaleFeature = false;
         public bool hasFemaleFeature = false;
         public bool hasBreasts = false;
         public float carved = 0.5f;
         public float maleFeatureProminence = 1f;
         public float femaleFeatureProminence = 1f;
-        public float appearedAge = 1f;
-        
 
         [SerializeField] private AgentPreset preset;
 

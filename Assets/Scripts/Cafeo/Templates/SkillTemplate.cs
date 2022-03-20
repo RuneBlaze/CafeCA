@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Cafeo.Templates
 {
-    public class SkillTemplate : WithIcon, ITemplate<UsableItem>
+    public class SkillTemplate : WithIcon
     {
         
         // [BoxGroup("Basic Info", centerLabel: true)]
@@ -55,10 +55,42 @@ namespace Cafeo.Templates
             public float active;
             public float recovery;
         }
-
-        public virtual UsableItem Create()
+        
+        protected void CopyBaseParameters(UsableItem item)
         {
-            throw new NotImplementedException();
+            item.name = displayName;
+            item.description = description;
+            item.icon = icon;
+            item.power = power;
+            item.powerType = powerType;
+            item.damageType = damageType;
+            switch (hitType)
+            {
+                case TemplateHitType.HitAllies:
+                    item.SetHitAllies();
+                    break;
+                case TemplateHitType.HitEnemies:
+                    item.SetHitEnemies();
+                    break;
+                case TemplateHitType.HitBoth:
+                    item.hitAllies = true;
+                    item.hitEnemies = true;
+                    break;
+                case TemplateHitType.HitNone:
+                    item.hitAllies = false;
+                    item.hitEnemies = false;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            item.hitStun = hitStun;
+            item.startUp = timePoints.startUp;
+            item.active = timePoints.active;
+            item.recovery = timePoints.recovery;
+            item.stopOnUse = stopOnUse;
+            item.hitEffects = hitEffects;
+            item.orbit = orbit;
         }
+        
     }
 }

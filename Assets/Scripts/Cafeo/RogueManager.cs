@@ -126,7 +126,7 @@ namespace Cafeo
             var proj = go.AddComponent<Projectile>();
             proj.type = type;
             proj.owner = owner;
-            proj.sizeDelta = type.deltaSize;
+            proj.deltaSize = type.deltaSize;
             proj.pierce = type.pierce;
             proj.bounce = type.bounce;
             proj.initialDirection = direction;

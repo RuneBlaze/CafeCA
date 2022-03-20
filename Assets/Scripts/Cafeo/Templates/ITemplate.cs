@@ -2,6 +2,6 @@
 {
     public interface ITemplate<out T>
     {
-        public T Create();
+        public T Generate();
     }
 }

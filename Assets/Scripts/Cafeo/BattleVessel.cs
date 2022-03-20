@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cafeo.Aimer;
 using Cafeo.Castable;
+using Cafeo.Entities;
 using Cafeo.TestItems;
 using Cafeo.UI;
 using Cafeo.Utility;
@@ -40,6 +41,8 @@ namespace Cafeo
         public float dashTimer;
         
         public AimerGroup Aimer => _aimer;
+
+        public Treasure treasure;
 
         public enum State
         {
@@ -80,6 +83,28 @@ namespace Cafeo
             hotbar = new UsableItem[10];
             statusEffects = new List<StatusEffect>();
             enterState = new UnityEvent<State>();
+        }
+
+        public void PickupDrop(Collectable collectable)
+        {
+            // assumes that we are currently in some idle state
+            if (collectable.load is Collectable.TreasureLoad treasureLoad)
+            {
+                if (treasure != null)
+                {
+                    treasure.OnUnequip();
+                    treasure.owner = null;
+                }
+                else
+                {
+                    treasure = treasureLoad.treasure;
+                    treasure.owner = this;
+                    treasure.OnEquip();
+                }
+            } else if (collectable.load is Collectable.BasicsLoad)
+            {
+                
+            }
         }
 
         private void EnterState(State state)
@@ -639,6 +664,11 @@ namespace Cafeo
                 existing.duration = status.duration;
                 existing.timer = 0;
             }
+        }
+
+        public void RemoveStatus(Predicate<StatusEffect> pred)
+        {
+            statusEffects.RemoveAll(pred);
         }
 
         private void OnStatusEffectExpired(StatusEffect statusEffect)

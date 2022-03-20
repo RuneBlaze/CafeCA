@@ -197,11 +197,12 @@ namespace Cafeo.Castable
 
         public virtual void ApplyHitEffects(BattleVessel user, BattleVessel target)
         {
-            foreach (var buff in hitEffects.buffs)
-            {
-                var statusEffect = buff.CalcStatus(user, target);
-                target.AddStatus(statusEffect);
-            }
+            hitEffects.Apply(user, target, levelOffset: Level - 1);
+            // foreach (var buff in hitEffects.buffs)
+            // {
+            //     var statusEffect = buff.CalcStatus(user, target);
+            //     target.AddStatus(statusEffect);
+            // }
         }
 
         public void SetHitEnemies()

@@ -9,6 +9,7 @@ namespace Cafeo.Entities
         private Rigidbody2D body;
         private Collider2D collider;
         public SizeScale sizeScale = SizeScale.Small;
+        public CollectableLoad load;
         
         public enum SizeScale
         {
@@ -46,6 +47,23 @@ namespace Cafeo.Entities
         protected virtual void OnCollect(BattleVessel collector)
         {
             
+        }
+
+        public abstract class CollectableLoad
+        {
+            
+        }
+
+        public class TreasureLoad : CollectableLoad
+        {
+            public Treasure treasure;
+        }
+
+        public class BasicsLoad : CollectableLoad
+        {
+            public int gold;
+            public int torches;
+            public int keys;
         }
     }
 }

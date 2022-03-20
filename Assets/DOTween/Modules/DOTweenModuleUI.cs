@@ -323,7 +323,7 @@ namespace DG.Tweening
             return t;
         }
 
-        /// <summary>Tweens a RectTransform's sizeDelta to the given value.
+        /// <summary>Tweens a RectTransform's deltaSize to the given value.
         /// Also stores the RectTransform as the tween's target so it can be used for filtered operations</summary>
         /// <param name="endValue">The end value to reach</param><param name="duration">The duration of the tween</param>
         /// <param name="snapping">If TRUE the tween will smoothly snap all values to integers</param>

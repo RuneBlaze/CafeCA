@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1366192139214262a9f501e631dd0984, type: 3}
   m_Name: New Melee
   m_EditorClassIdentifier: 
+  displayName: New Melee
   icon: {fileID: 0}
-  displayName: 
+  tint: 0
   description: 
   mpCost: 0
   cpCost: 0
@@ -30,4 +31,8 @@ MonoBehaviour:
   hitEffects:
     buffs: []
   orbit: 1
-  meleeType: 0
+  meleeType: 5
+  sizeModifier: 0
+  speedModifier: 0
+  rangeModifier: 0
+  additionalSkill: {fileID: 0}

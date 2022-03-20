@@ -33,6 +33,8 @@ namespace Cafeo
 
         public bool paralyzed;
 
+        public HitEffects source;
+
         public StatusEffect(BattleVessel owner, float duration)
         {
             this.owner = owner;

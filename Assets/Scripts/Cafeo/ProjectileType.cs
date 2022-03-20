@@ -7,11 +7,32 @@ namespace Cafeo
     [Serializable]
     public class ProjectileType
     {
+        
+        [Serializable]
         public abstract class ProjectileShape
         {
             public abstract Collider2D CreateCollider(GameObject gameObject);
         }
 
+        public enum PrimitiveShapes
+        {
+            Circle,
+            Box,
+            Rect,
+        }
+
+        public static ProjectileShape CreatePrimitiveShape(PrimitiveShapes shapeType, Vector4 userData)
+        {
+            return shapeType switch
+            {
+                PrimitiveShapes.Box => new SquareShape(userData[0]),
+                PrimitiveShapes.Circle => new CircleShape(userData[0]),
+                PrimitiveShapes.Rect => new RectShape(userData[0], userData[1]),
+                _ => throw new ArgumentOutOfRangeException(nameof(shapeType), shapeType, null)
+            };
+        }
+
+        [Serializable]
         public class CircleShape : ProjectileShape
         {
             public float radius;
@@ -29,6 +50,7 @@ namespace Cafeo
             }
         }
 
+        [Serializable]
         public class SquareShape : ProjectileShape
         {
             public float size = 0.2f;
@@ -46,6 +68,7 @@ namespace Cafeo
             }
         }
 
+        [Serializable]
         public class RectShape : ProjectileShape
         {
             public float width = 0.2f;
@@ -73,7 +96,7 @@ namespace Cafeo
                 return component;
             }
         }
-
+        [Serializable]
         public class CustomShape : ProjectileShape
         {
             public GameObject prefab;
@@ -157,33 +180,19 @@ namespace Cafeo
         public bool collidable;
         public float timeLimit = 30f;
         public float speed = 2f;
-        public float drag;
-        public float forceMultiplier;
-        public float baseDamage;
         public float acceleration;
         public float maxSpeed;
         public float deltaSize;
         public float maxSize;
         public float density = 32f;
-
         public bool kineticBody = false;
         public float initialSpin = 0;
-
         public float boomerang = 0;
-
         public Vector2 initialFacing = Vector2.zero;
-
         public RotateType rotate;
-
         public float bounciness = 0.8f;
-
         public bool bullet;
-
         public bool followOwner;
-        // public float timeLimit;
-
-        public float boomerangStrength;
-
         public float homingRadius = 2f;
         public float homingStrength = 0;
     }
