@@ -19,6 +19,7 @@ MonoBehaviour:
   mpCost: 0
   cpCost: 0
   power: 100
+  knockbackPower: 1
   powerType: 0
   damageType: 0
   hitType: 2
@@ -31,7 +32,8 @@ MonoBehaviour:
   hitEffects:
     buffs: []
   orbit: 1
-  meleeType: 5
+  tags: 01000000
+  meleeType: 2
   sizeModifier: 0
   speedModifier: 0
   rangeModifier: 0

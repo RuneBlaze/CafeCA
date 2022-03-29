@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cafeo.Castable;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -7,7 +8,6 @@ namespace Cafeo.Templates
 {
     public class SkillTemplate : WithIcon
     {
-        
         // [BoxGroup("Basic Info", centerLabel: true)]
         // public string displayName;
         [BoxGroup("Basic Info", centerLabel: true)]
@@ -21,6 +21,9 @@ namespace Cafeo.Templates
         
         [BoxGroup("Effects", centerLabel: true)]
         public float power = 100f;
+
+        [BoxGroup("Effects", centerLabel: true)]
+        public float knockbackPower = 1f;
 
         [BoxGroup("Effects", centerLabel: true)]
         public UsableItem.PowerType powerType;
@@ -41,6 +44,10 @@ namespace Cafeo.Templates
 
         [BoxGroup("Advanced", centerLabel: true)]
         public int orbit = 1;
+
+        [BoxGroup("AI Settings", centerLabel: true)]
+        public List<UsableItem.ItemTag> tags;
+        
         public enum TemplateHitType
         {
             HitNone,
@@ -90,6 +97,8 @@ namespace Cafeo.Templates
             item.stopOnUse = stopOnUse;
             item.hitEffects = hitEffects;
             item.orbit = orbit;
+            item.tags = tags;
+            item.knockbackPower = knockbackPower;
         }
         
     }

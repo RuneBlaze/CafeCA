@@ -7,5 +7,7 @@ namespace Cafeo.Templates
     {
         [BoxGroup("Basic Info", centerLabel: true)]
         public string displayName;
+        [BoxGroup("Basic Info", centerLabel: true)]
+        public string id;
     }
 }

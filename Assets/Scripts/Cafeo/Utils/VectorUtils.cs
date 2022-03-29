@@ -17,6 +17,11 @@ namespace Cafeo.Utils
             return Mathf.DeltaAngle(AngleOf(lhs), AngleOf(rhs));
         }
         
+        public static Vector2 OnUnitCircle(float angle)
+        {
+            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        }
+        
         public static float AngleOf(Vector2 vec)
         {
             return Mathf.Atan2(vec.y, vec.x) * Mathf.Rad2Deg;

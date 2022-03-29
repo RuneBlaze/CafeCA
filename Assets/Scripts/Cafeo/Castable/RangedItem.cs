@@ -85,7 +85,7 @@ namespace Cafeo.Castable
             // var dmg = Scene.CalculateDamageRanged(user, target, this, false);
             // var knockBackDir = (Vector2)target.transform.position - hitSource;
             // target.ApplyDamage(dmg, 0.2f, hitProj.Velocity * 5f);
-            ApplyCalculatedDamage(user, target, hitStun, hitProj.Velocity * 5f);
+            ApplyCalculatedDamage(user, target, hitStun, hitProj.Velocity * 5f * knockbackPower);
         }
 
         private IEnumerator MultiShotLogic(BattleVessel user)

@@ -99,7 +99,6 @@ namespace Cafeo
 
         public int MaxCp => 200;
 
-
         public int alignment = 0;
 
         void Start()

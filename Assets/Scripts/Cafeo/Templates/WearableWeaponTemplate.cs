@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using System;
+using Sirenix.OdinInspector;
 
 namespace Cafeo.Templates
 {
@@ -6,5 +7,12 @@ namespace Cafeo.Templates
     {
         [BoxGroup("Weapon Specs", centerLabel: true)]
         public SkillTemplate associatedSkill;
+
+        private void Reset()
+        {
+            composition = GarmentMaterial.Metal;
+            lines = FashionLine.Unisex;
+            garmentKind = GarmentKind.Weapon;
+        }
     }
 }

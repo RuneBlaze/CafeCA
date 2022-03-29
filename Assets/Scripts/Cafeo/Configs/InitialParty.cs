@@ -19,6 +19,7 @@ namespace Cafeo.Configs
         {
             [AssetSelector] public TreasureTemplate treasure;
             [AssetSelector] public List<OneTimeUseTemplate> oneTimeUses;
+            [AssetSelector] public List<SkillTemplate> restSkills;
         }
     }
 }

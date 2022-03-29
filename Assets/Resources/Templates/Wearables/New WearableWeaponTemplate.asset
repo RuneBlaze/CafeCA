@@ -16,8 +16,15 @@ MonoBehaviour:
   icon: {fileID: 0}
   tint: 0
   description: 
-  lines: 
+  lines: 0
   sizeBias: 0
-  garmentKind: 0
-  composition: 
+  garmentKind: 4
+  composition: 2048
+  color: 3
+  colorModifier: 0
+  styleAttributes:
+    seriousness: 0
+    structure: 0
+    heaviness: 0
+  styleElements: 0
   associatedSkill: {fileID: 0}

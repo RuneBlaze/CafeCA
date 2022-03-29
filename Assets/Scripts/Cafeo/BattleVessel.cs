@@ -88,23 +88,23 @@ namespace Cafeo
         public void PickupDrop(Collectable collectable)
         {
             // assumes that we are currently in some idle state
-            if (collectable.load is Collectable.TreasureLoad treasureLoad)
-            {
-                if (treasure != null)
-                {
-                    treasure.OnUnequip();
-                    treasure.owner = null;
-                }
-                else
-                {
-                    treasure = treasureLoad.treasure;
-                    treasure.owner = this;
-                    treasure.OnEquip();
-                }
-            } else if (collectable.load is Collectable.BasicsLoad)
-            {
-                
-            }
+            // if (collectable.load is Collectable.TreasureLoad treasureLoad)
+            // {
+            //     if (treasure != null)
+            //     {
+            //         treasure.OnUnequip();
+            //         treasure.owner = null;
+            //     }
+            //     else
+            //     {
+            //         treasure = treasureLoad.treasure;
+            //         treasure.owner = this;
+            //         treasure.OnEquip();
+            //     }
+            // } else if (collectable.load is Collectable.BasicsLoad)
+            // {
+            //     
+            // }
         }
 
         private void EnterState(State state)

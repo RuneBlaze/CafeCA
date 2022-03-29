@@ -37,6 +37,7 @@ namespace Cafeo
 
         public void Update()
         {
+            if (Scene.inputLocked) return;
             for (int pos = 0; pos < 10; pos++)
             {
                 int keyNum = _hotbarKeys[pos];
@@ -59,6 +60,7 @@ namespace Cafeo
 
         public bool PlayerDecideAction()
         {
+            if (Scene.inputLocked) return false;
             var hor = Input.GetAxisRaw("Horizontal");
             var vert = Input.GetAxisRaw("Vertical");
             var dir = new Vector2(hor, vert);

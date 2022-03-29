@@ -57,7 +57,7 @@ namespace Cafeo.Castable
 
         public int mpCost;
         public int cpCost;
-        public float knockbackPower;
+        public float knockbackPower = 1;
         public bool stopOnUse;
         public UnityEvent onCounter;
         public HitEffects hitEffects;

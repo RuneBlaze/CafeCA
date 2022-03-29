@@ -13,4 +13,9 @@ MonoBehaviour:
   m_Name: InitialParty
   m_EditorClassIdentifier: 
   initialMembers:
-  - {fileID: 11400000, guid: f7f07fe2226c95a49906fc05b2d99604, type: 2}
+  - {fileID: 11400000, guid: 68b44660d0b72e248a17fef122ca7f81, type: 2}
+  - {fileID: 11400000, guid: fb5a82c274dc0734ba06b57528b1ecba, type: 2}
+  battleInventories:
+  - treasure: {fileID: 0}
+    oneTimeUses:
+    - {fileID: 11400000, guid: 6c0e07de037f4e94eb8086d52729f7d2, type: 2}

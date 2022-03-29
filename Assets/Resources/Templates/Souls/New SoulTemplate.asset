@@ -37,3 +37,6 @@ MonoBehaviour:
     awe: 0
     life: 0
     mana: 0
+  job: {fileID: 0}
+  mainWeapon: {fileID: 0}
+  secondaryWeapon: {fileID: 0}

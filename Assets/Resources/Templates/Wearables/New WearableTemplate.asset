@@ -13,10 +13,18 @@ MonoBehaviour:
   m_Name: New WearableTemplate
   m_EditorClassIdentifier: 
   displayName: New WearableTemplate
-  icon: {fileID: 0}
+  id: 
+  icon: {fileID: 21300000, guid: f81ad0e0cb6d5fb4485a3a97b45fe128, type: 3}
   tint: 0
   description: 
-  lines: 
-  sizeBias: 0
-  garmentKind: 2
-  composition: 02000000
+  lines: 32
+  sizeBias: 2
+  garmentKind: 4
+  composition: 0
+  color: 0
+  colorModifier: 0
+  styleAttributes:
+    seriousness: 0
+    structure: 0
+    heaviness: 0
+  styleElements: 0

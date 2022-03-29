@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using BehaviorDesigner.Runtime;
 using Cafeo.Castable;
+using Cafeo.Data;
+using Cafeo.Entities;
 using Cafeo.Gadgets;
 using Cafeo.Utils;
 using UnityEditor.SearchService;
@@ -21,9 +23,13 @@ namespace Cafeo
         public BattleVessel player;
         private PlayerBrain playerBrain;
         private GameObject popupPrefab;
+        private GameObject collectablePrefab;
         [HideInInspector] public GameObject leaderAlly;
         public UnityEvent rogueUpdateEvent = new();
         [SerializeField] private Transform popupParent;
+        [SerializeField] private  Transform collectableParent;
+
+        public bool inputLocked;
 
         public List<BehaviorTree> allyBehaviorTrees = new();
         public List<BehaviorTree> enemyBehaviorTrees = new();
@@ -33,10 +39,13 @@ namespace Cafeo
         protected override void Setup()
         {
             base.Setup();
-            
+            inputLocked = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
             popupPrefab = Addressables
                 .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/Popup.prefab")
+                .WaitForCompletion();
+            collectablePrefab = Addressables
+                .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/Collectable.prefab")
                 .WaitForCompletion();
         }
 
@@ -159,6 +168,15 @@ namespace Cafeo
             popup.SetText(text);
         }
 
+        public void SpawnDroppable(Vector2 position, IDroppable droppable)
+        {
+            var go = Instantiate(collectablePrefab, collectableParent);
+            go.transform.position = position + new Vector2() * 0.5f;
+            go.transform.position = position;
+            var collectable = go.GetComponent<Collectable>();
+            collectable.LateInit(droppable);
+        }
+
         public BattleVessel CalcLeaderAlly()
         {
             return player;
@@ -238,6 +256,16 @@ namespace Cafeo
         public float CalcVariance(BattleVessel attacker, BattleVessel defender, UsableItem skill)
         {
             return Random.Range(0.8f, 1.2f);
+        }
+
+        public void OnDebugEnabled()
+        {
+            inputLocked = true;
+        }
+        
+        public void OnDebugDisabled()
+        {
+            inputLocked = false;
         }
     }
 }

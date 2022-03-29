@@ -68,9 +68,11 @@ namespace Cafeo.Editor
                 AddCreateButtonToToolbar<JobTemplate>("Job", "Jobs");
                 AddCreateButtonToToolbar<WeaponTypeTemplate>("Weapon Type", "WeaponTypes");
                 AddCreateButtonToToolbar<TreasureTemplate>("Treasure", "Treasures");
+                AddCreateButtonToToolbar<CharmTemplate>("Charm", "Charms");
                 AddCreateButtonToToolbar<OneTimeUseTemplate>("OneTimeUse", "OneTimes");
                 AddCreateButtonToToolbar<ProjectileTypeTemplate>("ProjectileType", "ProjectileTypes");
                 AddCreateButtonToToolbar<SoulTemplate>("Soul", "Souls");
+                AddCreateButtonToToolbar<FashionShopTemplate>("FashionShop", "FashionShops");
             }
             SirenixEditorGUI.EndHorizontalToolbar();
         }

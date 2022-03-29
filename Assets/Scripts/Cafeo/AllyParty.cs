@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cafeo.Templates;
 using Cafeo.Utils;
 using Drawing;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Events;
 using static Cafeo.Utils.ImDraw;
 using static Unity.Mathematics.math;
 
@@ -14,6 +16,31 @@ namespace Cafeo
     {
         public RogueManager Scene => RogueManager.Instance;
         public int gold;
+        public int keys;
+        public List<Charm> charms;
+        public UnityEvent<Charm> onGainCharm;
+
+        protected override void Setup()
+        {
+            base.Setup();
+            charms = new List<Charm>();
+            onGainCharm = new UnityEvent<Charm>();
+        }
+
+        public void AddCharm(Charm charm)
+        {
+            charms.Add(charm);
+            foreach (var battleVessel in Members())
+            {
+                charm.InitMyself(battleVessel);
+            }
+        }
+
+        public IEnumerable<BattleVessel> Members()
+        {
+            var instance = RogueManager.Instance;
+            return instance.Allies();
+        }
 
         private void LateUpdate()
         {

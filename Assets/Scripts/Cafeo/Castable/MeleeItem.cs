@@ -171,7 +171,7 @@ namespace Cafeo.Castable
             base.ApplyEffect(user, target, hitSource,hitProj);
             // var dmg = Scene.CalculateDamageMelee(user, target, this, false);
             var knockBackDir = (Vector2)target.transform.position - hitSource;
-            ApplyCalculatedDamage(user, target, hitStun,knockBackDir.normalized * 70f);
+            ApplyCalculatedDamage(user, target, hitStun,knockBackDir.normalized * 70f * knockbackPower);
         }
 
         public override bool IsGonnaHit(BattleVessel user, BattleVessel target)
