@@ -34,6 +34,7 @@ namespace Cafeo
             {
                 charm.InitMyself(battleVessel);
             }
+            onGainCharm.Invoke(charm);
         }
 
         public IEnumerable<BattleVessel> Members()

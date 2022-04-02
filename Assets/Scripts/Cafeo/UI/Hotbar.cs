@@ -31,7 +31,6 @@ namespace Cafeo.UI
                 {
                     curItemText.text = Scene.player.RetrieveCurItem().name;
                 }
-                
             }
         }
         public void Update()

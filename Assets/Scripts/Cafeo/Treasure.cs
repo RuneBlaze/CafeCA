@@ -9,34 +9,64 @@ namespace Cafeo
     {
         public BattleVessel owner;
         public string displayName;
-        public bool LeaderEquipped => true;
+        public bool leaderEquipped;
         public RogueManager Scene => RogueManager.Instance;
-        public AbstractItem leaderSkill;
-        public AbstractItem nonLeaderSkill;
+        public HitEffects leaderEffect;
+        public HitEffects otherEffects;
 
-        public Treasure(string displayName, AbstractItem leaderSkill, AbstractItem nonLeaderSkill, Sprite icon)
+        public AbstractItem leaderSkill;
+        public AbstractItem otherSkill;
+
+        public Treasure(string displayName, HitEffects leaderEffect, HitEffects otherEffects, AbstractItem leaderSkill, AbstractItem otherSkill, Sprite icon)
         {
             this.displayName = displayName;
+            this.leaderEffect = leaderEffect;
+            this.otherEffects = otherEffects;
             this.leaderSkill = leaderSkill;
-            this.nonLeaderSkill = nonLeaderSkill;
+            this.otherSkill = otherSkill;
             Icon = icon;
         }
 
-        public virtual void OnEquip()
-        {
-            
-        }
-
-        public virtual void OnUnequip()
-        {
-            
-        }
+        //
+        // public Treasure(string displayName, AbstractItem leaderSkill, AbstractItem nonLeaderSkill, Sprite icon)
+        // {
+        //     this.displayName = displayName;
+        //     this.leaderSkill = leaderSkill;
+        //     this.nonLeaderSkill = nonLeaderSkill;
+        //     Icon = icon;
+        // }
 
         public Sprite Icon { get; private set; }
         public Collectable.SizeScale SizeScale => Collectable.SizeScale.Large;
         public void OnPickedUp(BattleVessel vessel)
         {
-            throw new System.NotImplementedException();
+            if (vessel.IsAlly)
+            {
+                var scene = RogueManager.Instance;
+                var leader = scene.leaderAlly.GetComponent<BattleVessel>();
+                if (vessel == leader)
+                {
+                    leaderEquipped = true;
+                    leaderEffect.Apply(vessel, vessel);
+                    foreach (var ally in scene.Allies())
+                    {
+                        otherEffects.Apply(leader, ally);
+                    }
+                }
+                else
+                {
+                    otherEffects.Apply(vessel, vessel);
+                }
+            }
+            else
+            {
+                vessel.drops.AddTreasure(this);
+            }
+        }
+
+        public void TearDown(BattleVessel vessel)
+        {
+            // FIXME: add tear down logic
         }
     }
 }

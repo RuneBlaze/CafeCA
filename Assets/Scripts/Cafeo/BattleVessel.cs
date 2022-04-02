@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cafeo.Aimer;
 using Cafeo.Castable;
+using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.TestItems;
 using Cafeo.UI;
@@ -23,14 +24,16 @@ namespace Cafeo
         public AgentSoul soul;
         private Rigidbody2D _body;
         private BoxCollider2D _collider;
-
         public bool IsPlayer { get; private set; }
 
         private SpriteRenderer _sprite;
 
-        public UsableItem[] hotbar = new UsableItem[10];
+        public UsableItem[] hotbar = new UsableItem[HotbarMax];
+        public OneTimeUseItem[] oneTimeUseItems;
         public int hotbarPointer = 0;
         private AimerGroup _aimer;
+
+        public bool IsLeaderAlly => gameObject == RogueManager.Instance.leaderAlly;
 
         public List<StatusEffect> statusEffects = new();
 
@@ -39,10 +42,15 @@ namespace Cafeo
         public UnityEvent<State> enterState;
 
         public float dashTimer;
+        public float effectTimer;
+        public DropInventory drops;
         
         public AimerGroup Aimer => _aimer;
 
         public Treasure treasure;
+
+        public const int HotbarMax = 10;
+        public const int TransientMax = 3;
 
         public enum State
         {
@@ -80,9 +88,11 @@ namespace Cafeo
 
         private void Awake()
         {
-            hotbar = new UsableItem[10];
+            hotbar = new UsableItem[HotbarMax];
+            oneTimeUseItems = new OneTimeUseItem[TransientMax];
             statusEffects = new List<StatusEffect>();
             enterState = new UnityEvent<State>();
+            drops = new DropInventory();
         }
 
         public void PickupDrop(Collectable collectable)
@@ -231,7 +241,7 @@ namespace Cafeo
 
         private void DebugSetup()
         {
-            hotbar = new UsableItem[10];
+            hotbar = new UsableItem[HotbarMax];
             if (IsPlayer)
             {
                 InitPlayerHotBar();
@@ -655,6 +665,7 @@ namespace Cafeo
             if (curCount < status.maxStack)
             {
                 statusEffects.Add(status);
+                status.OnAdd();
                 Scene.CreatePopup(transform.position, status.displayName, Palette.milkYellow);
             }
             else
@@ -668,6 +679,14 @@ namespace Cafeo
 
         public void RemoveStatus(Predicate<StatusEffect> pred)
         {
+            foreach (var statusEffect in statusEffects)
+            {
+                if (pred(statusEffect))
+                {
+                    statusEffect.OnEnd();
+                }
+            }
+
             statusEffects.RemoveAll(pred);
         }
 
@@ -691,6 +710,7 @@ namespace Cafeo
                 if (effect.Finished)
                 {
                     OnStatusEffectExpired(effect);
+                    effect.OnEnd();
                     statusEffects.RemoveAt(i);
                 }
             }
@@ -736,6 +756,32 @@ namespace Cafeo
             if (soul.Dead)
             {
                 Destroy(gameObject);
+            }
+
+            for (int i = 0; i < HotbarMax; i++)
+            {
+                if (hotbar[i]?.ShouldDiscard == true)
+                {
+                    hotbar[i] = null;
+                }
+            }
+
+            UpdatePassiveEffects();
+        }
+
+        private void UpdatePassiveEffects()
+        {
+            if (Mathf.RoundToInt(effectTimer) != Mathf.RoundToInt(effectTimer + Time.deltaTime))
+            {
+                foreach (var status in statusEffects)
+                {
+                    status.passiveEffect?.EverySec(this);
+                }
+            }
+            effectTimer += Time.deltaTime;
+            foreach (var status in statusEffects)
+            {
+                status.passiveEffect?.EveryTick(this);
             }
         }
 
@@ -846,5 +892,49 @@ namespace Cafeo
             var delta = VectorUtils.DegreesBetween(pos.normalized, _aimer.RangedAimer.transform.right);
             return Mathf.Abs(delta) < tol;
         }
+
+        public bool TryGainOneTimeUse(OneTimeUseItem item)
+        {
+            for (int i = 0; i < TransientMax; i++)
+            {
+                if (hotbar[7 + i] == null)
+                {
+                    hotbar[7 + i] = item;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool IsOneTimeUseFull
+        {
+            get
+            {
+                for (int i = 0; i < TransientMax; i++)
+                {
+                    if (hotbar[7 + i] == null)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        public void GainTreasure(Treasure newTreasure)
+        {
+            if (HasTreasure)
+            {
+                DropTreasure();
+            }
+            
+        }
+
+        public void DropTreasure()
+        {
+            
+        }
+        
+        public bool HasTreasure => treasure != null;
     }
 }

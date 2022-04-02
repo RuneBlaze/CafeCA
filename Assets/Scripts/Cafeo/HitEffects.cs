@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cafeo.Data;
 
 namespace Cafeo
 {
@@ -25,9 +26,9 @@ namespace Cafeo
             public SecondaryAttr dst;
             public string calcExpr;
             public float duration;
-
             public string buffNameOverride;
             public string BuffName => buffNameOverride ?? dst.ToString();
+            public PresetSpecifier presetSpecifier;
 
             public BuffExpr(SecondaryAttr dst, string calcExpr, float duration)
             {
@@ -52,6 +53,10 @@ namespace Cafeo
             {
                 float v = CalcValue(src, target, levelOffset);
                 var s = new StatusEffect(target, duration);
+                if (!presetSpecifier.IsEmpty)
+                {
+                    s.passiveEffect = presetSpecifier.Generate();
+                }
                 bool isDebuff = v < 0;
                 string buffHumanize = isDebuff ? "debuff" : "buff";
                 s.displayName = $"{dst} {buffHumanize}";

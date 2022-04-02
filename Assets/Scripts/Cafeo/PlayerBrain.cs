@@ -42,7 +42,10 @@ namespace Cafeo
             {
                 int keyNum = _hotbarKeys[pos];
                 if (Input.GetKeyDown(keyNum.ToString())) {
-                    vessel.TrySetHotboxPointer(pos);
+                    if (pos < BattleVessel.HotbarMax)
+                    {
+                        vessel.TrySetHotboxPointer(pos);
+                    }
                 }
             }
         }

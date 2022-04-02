@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cafeo.Data;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace Cafeo
@@ -34,6 +35,8 @@ namespace Cafeo
         public bool paralyzed;
 
         public HitEffects source;
+        
+        public IPassiveEffect passiveEffect;
 
         public StatusEffect(BattleVessel owner, float duration)
         {
@@ -44,12 +47,12 @@ namespace Cafeo
 
         public virtual void OnAdd()
         {
-            
+            passiveEffect?.InitMyself(owner);
         }
 
         public virtual void OnEnd()
         {
-            
+            passiveEffect?.TearDown(owner);
         }
 
         public virtual void Update()

@@ -67,7 +67,10 @@ namespace Cafeo.Entities
 
         protected virtual void OnCollect(BattleVessel collector)
         {
-            load.OnPickedUp(collector);
+            if (load.CanBePickedUp(collector))
+            {
+                load.OnPickedUp(collector);
+            }
         }
 
         // public abstract class CollectableLoad

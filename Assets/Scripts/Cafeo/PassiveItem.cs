@@ -6,27 +6,24 @@ namespace Cafeo
     public class PassiveItem : AbstractItem
     {
         public HitEffects initEffects;
-        public HitEffects.BuffExpr DetermineEffect()
+
+        public void InitMyself(BattleVessel owner)
         {
-            throw new NotImplementedException();
+            var user = owner;
+            if (owner.IsAlly)
+            {
+                foreach (var ally in RogueManager.Instance.Allies())
+                {
+                    initEffects.Apply(owner, ally, 0);
+                }
+            }
+            else
+            {
+                initEffects.Apply(owner, owner, 0);
+            }
         }
 
-        public virtual void InitMyself(BattleVessel owner)
-        {
-            initEffects.Apply(owner, owner);
-        }
-
-        public virtual void TearDown(BattleVessel owner)
-        {
-            initEffects.TearDown(owner);
-        }
-
-        public virtual void EveryTick()
-        {
-            
-        }
-
-        public virtual void EverySec()
+        public void TearDown(BattleVessel owner)
         {
             
         }

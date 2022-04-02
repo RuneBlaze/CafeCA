@@ -8,5 +8,10 @@ namespace Cafeo.Data
         public Sprite Icon { get; }
         public Collectable.SizeScale SizeScale { get; }
         public void OnPickedUp(BattleVessel vessel);
+        
+        public virtual bool CanBePickedUp(BattleVessel vessel)
+        {
+            return true;
+        }
     }
 }

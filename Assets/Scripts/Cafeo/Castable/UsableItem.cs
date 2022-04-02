@@ -29,7 +29,8 @@ namespace Cafeo.Castable
         public float hitStun = 0.2f;
 
         public UtilityType utilityType;
-
+        public virtual bool ShouldDiscard => false;
+        
         public UsableItem()
         {
             damageType = DamageType.Null;
