@@ -38,10 +38,17 @@ namespace Cafeo
         
         public IPassiveEffect passiveEffect;
 
-        public StatusEffect(BattleVessel owner, float duration)
+        public bool eternal;
+
+        public StatusEffect(BattleVessel owner, float duration, bool eternal = false)
         {
             this.owner = owner;
-            Assert.IsTrue(duration > 0);
+            this.eternal = eternal;
+            Assert.IsTrue(duration > 0 || eternal);
+            if (eternal)
+            {
+                duration = 1231231234;
+            }
             this.duration = duration;
         }
 

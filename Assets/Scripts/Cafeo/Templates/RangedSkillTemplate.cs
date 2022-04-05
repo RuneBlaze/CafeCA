@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Cafeo.Templates
 {
-    public class RangedSkillTemplate : SkillTemplate, ITemplate<RangedItem>
+    public class RangedSkillTemplate : SkillTemplate
     {
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public int shots = 1;
@@ -43,7 +43,7 @@ namespace Cafeo.Templates
         [BoxGroup("Bullet Specifications", centerLabel: true)]
         public GameObject projectilePrefab;
 
-        public RangedItem Generate()
+        public override UsableItem Generate()
         {
             var item = new RangedItem();
             CopyBaseParameters(item);

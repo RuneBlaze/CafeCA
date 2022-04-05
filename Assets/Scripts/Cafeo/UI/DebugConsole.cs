@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cafeo.Data;
 using Cafeo.Templates;
 using Cafeo.Utils;
@@ -22,6 +23,10 @@ namespace Cafeo.UI
             String,
         }
 
+        private bool showing;
+        
+        public string[] registeredCommands;
+
         public RogueManager Scene => RogueManager.Instance;
         public TemplateFinder Db => TemplateFinder.Instance;
 
@@ -38,8 +43,9 @@ namespace Cafeo.UI
                 var id = objects[0] as string;
                 Scene.SpawnDroppable((Vector2) Scene.player.transform.position 
                                      + VectorUtils.OnUnitCircle(Random.Range(0, 4 * Mathf.PI)) * 2, 
-                    Db.Generate<Charm>(id));
+                    Db.Generate<IDroppable>(id));
             });
+            commandText.DeactivateInputField();
         }
 
         private void RegisterCommand(string command, ArgType[] argTypes, Action<object[]> action)
@@ -49,6 +55,18 @@ namespace Cafeo.UI
 
         private void OnText(string text)
         {
+            if (text.Contains(";"))
+            {
+                var modifiedTokens = text.Split(";").Select(it => it.Trim()).ToArray();
+                int repeats;
+                bool success = int.TryParse(modifiedTokens[0], out repeats);
+                Assert.IsTrue(success);
+                for (int i = 0; i < repeats; i++)
+                {
+                    OnText(modifiedTokens[1]);
+                }
+                return;
+            }
             var tokens = text.Replace("\u200B","").Split(' ');
             string command = tokens[0];
             var argTypes = actions[command].Item1;
@@ -75,6 +93,31 @@ namespace Cafeo.UI
                 OnText(rawCommand);
                 Debug.Log("Command: " + rawCommand);
                 commandText.text = "";
+                showing = false;
+            }
+
+            for (var i = 0; i < registeredCommands.Length; i++)
+            {
+                if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Alpha1 + i))
+                {
+                    OnText(registeredCommands[i]);
+                    Debug.Log("Command: " + registeredCommands[i]);
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                showing = !showing;
+                if (showing)
+                {
+                    commandText.ActivateInputField();
+                    RogueManager.Instance.OnDebugEnabled();
+                }
+                else
+                {
+                    commandText.DeactivateInputField();
+                    RogueManager.Instance.OnDebugDisabled();
+                }
             }
         }
     }

@@ -31,7 +31,6 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
         {
             leaderTransform = leader.Value.transform;
             prevLeaderPosition = leader.Value.transform.position;
-
             base.OnStart();
         }
 
@@ -41,6 +40,9 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
             var behindPosition = LeaderBehindPosition();
             // Determine a destination for each agent
             for (int i = 0; i < agents.Length; i++) {
+                if (agents[i] == null) {
+                    continue;
+                }
                 // Get out of the way of the leader if the leader is currently looking at the agent and is getting close
                 var brain = RogueManager.Instance.GetVesselFromGameObject(agents[i].Value).Brain;
                 if (brain.busy)

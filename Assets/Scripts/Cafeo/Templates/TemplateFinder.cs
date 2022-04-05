@@ -41,6 +41,11 @@ namespace Cafeo.Templates
             {
                 Register(charmTemplate);
             }
+
+            foreach (var treasureTemplate in AllTemplatesOfType<TreasureTemplate>())
+            {
+                Register(treasureTemplate);
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using Sirenix.OdinInspector;
 
 namespace Cafeo.Templates
 {
-    public class TossSkillTemplate : SkillTemplate, ITemplate<TossItem>
+    public class TossSkillTemplate : SkillTemplate
     {
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public float explodeRange;
@@ -15,7 +15,7 @@ namespace Cafeo.Templates
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public bool alwaysSplash;
 
-        public TossItem Generate()
+        public override UsableItem Generate()
         {
             var item = new TossItem();
             CopyBaseParameters(item);

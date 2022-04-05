@@ -18,6 +18,8 @@ namespace Cafeo
             HpPerSec,
             MpPerSec,
             CpPerSec,
+            Shield,
+            ShieldPerc,
         }
 
         [Serializable]
@@ -29,6 +31,7 @@ namespace Cafeo
             public string buffNameOverride;
             public string BuffName => buffNameOverride ?? dst.ToString();
             public PresetSpecifier presetSpecifier;
+            public bool eternal;
 
             public BuffExpr(SecondaryAttr dst, string calcExpr, float duration)
             {
@@ -52,8 +55,8 @@ namespace Cafeo
             public StatusEffect CalcStatus(BattleVessel src, BattleVessel target, int levelOffset = 0)
             {
                 float v = CalcValue(src, target, levelOffset);
-                var s = new StatusEffect(target, duration);
-                if (!presetSpecifier.IsEmpty)
+                var s = new StatusEffect(target, duration, eternal);
+                if (presetSpecifier is { IsEmpty: false })
                 {
                     s.passiveEffect = presetSpecifier.Generate();
                 }
@@ -85,6 +88,12 @@ namespace Cafeo
                         break;
                     case SecondaryAttr.CpPerSec:
                         s.cpChangeSec = v;
+                        break;
+                    case SecondaryAttr.Shield:
+                        s.shield = v;
+                        break;
+                    case SecondaryAttr.ShieldPerc:
+                        s.shieldPerc = v;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

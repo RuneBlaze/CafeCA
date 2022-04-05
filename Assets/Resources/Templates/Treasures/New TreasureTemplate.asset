@@ -12,7 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9569e92a7eb7437888db6d5855f43bf1, type: 3}
   m_Name: New TreasureTemplate
   m_EditorClassIdentifier: 
-  displayName: 
-  icon: {fileID: 0}
+  displayName: Good treasure
+  id: test_treasure
+  icon: {fileID: 21300000, guid: 6432389fc85419a4e92658e383e37c96, type: 3}
+  lore: 
+  tint: 0
+  leaderEffect:
+    buffs:
+    - dst: 0
+      calcExpr: 30
+      duration: 0
+      buffNameOverride: 
+      presetSpecifier:
+        presetName: 
+        userData: {x: 0, y: 0, z: 0, w: 0}
+      eternal: 1
+  otherEffects:
+    buffs:
+    - dst: 0
+      calcExpr: 10
+      duration: 0
+      buffNameOverride: 
+      presetSpecifier:
+        presetName: 
+        userData: {x: 0, y: 0, z: 0, w: 0}
+      eternal: 1
   leaderSkill: {fileID: 0}
   nonLeaderSkill: {fileID: 0}

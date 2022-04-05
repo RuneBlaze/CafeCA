@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Cafeo.Templates
 {
-    public class SkillTemplate : WithIcon
+    public abstract class SkillTemplate : WithIcon, ITemplate<UsableItem>
     {
         // [BoxGroup("Basic Info", centerLabel: true)]
         // public string displayName;
@@ -100,6 +100,7 @@ namespace Cafeo.Templates
             item.tags = tags;
             item.knockbackPower = knockbackPower;
         }
-        
+
+        public abstract UsableItem Generate();
     }
 }

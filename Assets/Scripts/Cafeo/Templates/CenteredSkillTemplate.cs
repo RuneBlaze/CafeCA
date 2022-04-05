@@ -3,11 +3,11 @@ using Sirenix.OdinInspector;
 
 namespace Cafeo.Templates
 {
-    public class CenteredSkillTemplate : SkillTemplate, ITemplate<TossItem>
+    public class CenteredSkillTemplate : SkillTemplate
     {
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public float explodeRange;
-        public TossItem Generate()
+        public override UsableItem Generate()
         {
             var item = new TossItem
             {

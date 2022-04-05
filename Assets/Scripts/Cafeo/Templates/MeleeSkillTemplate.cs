@@ -4,7 +4,7 @@ using Sirenix.OdinInspector;
 
 namespace Cafeo.Templates
 {
-    public class MeleeSkillTemplate : SkillTemplate, ITemplate<MeleeItem>
+    public class MeleeSkillTemplate : SkillTemplate
     {
         [BoxGroup("Melee Specification", centerLabel: true)]
         public MeleeItem.MeleeType meleeType;
@@ -21,7 +21,7 @@ namespace Cafeo.Templates
         [BoxGroup("Melee Specification", centerLabel: true)]
         public SkillTemplate additionalSkill;
 
-        public MeleeItem Generate()
+        public override UsableItem Generate()
         {
             var item = new MeleeItem(2 * sizeModifier, 2 * rangeModifier);
             CopyBaseParameters(item);
