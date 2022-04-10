@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cafeo.Data;
 using Cafeo.Utility;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,7 +9,7 @@ using UnityEngine.Events;
 namespace Cafeo.Castable
 {
     [Serializable]
-    public class UsableItem : AbstractItem
+    public class UsableItem : AbstractItem, IStatusTag
     {
         public float startUp;
         public float active;
@@ -105,6 +106,7 @@ namespace Cafeo.Castable
         public virtual void Setup(BattleVessel user)
         {
             onCounter = new UnityEvent();
+            hitEffects.statusTag = this;
             
             var hitLayers = new List<string>();
             if (hitAllies)
@@ -266,6 +268,11 @@ namespace Cafeo.Castable
         public void ApplyEffect(BattleVessel user, BattleVessel target)
         {
             ApplyEffect(user, target, Vector2.zero, null);
+        }
+
+        public bool CompareStatusTag(IStatusTag statusTag)
+        {
+            return Equals(statusTag);
         }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Cafeo
 {
     // 宝物
-    public class Treasure : IDroppable
+    public class Treasure : IDroppable, IStatusTag
     {
         public BattleVessel owner;
         public string displayName;
@@ -25,6 +25,9 @@ namespace Cafeo
             this.leaderSkill = leaderSkill;
             this.otherSkill = otherSkill;
             Icon = icon;
+
+            leaderEffect.statusTag = this;
+            otherEffects.statusTag = this;
         }
 
         //
@@ -42,6 +45,12 @@ namespace Cafeo
         {
             if (vessel.IsAlly)
             {
+                if (vessel.HasTreasure)
+                {
+                    vessel.DropTreasure();
+                }
+                vessel.treasure = this;
+                vessel.onGainTreasure.Invoke(this);
                 var scene = RogueManager.Instance;
                 var leader = scene.leaderAlly.GetComponent<BattleVessel>();
                 if (vessel == leader)
@@ -64,9 +73,40 @@ namespace Cafeo
             }
         }
 
+        public void OnDrop(BattleVessel from)
+        {
+            TearDown(from);
+        }
+
         public void TearDown(BattleVessel vessel)
         {
-            // FIXME: add tear down logic
+            if (vessel.IsAlly)
+            {
+                var scene = RogueManager.Instance;
+                var leader = scene.leaderAlly.GetComponent<BattleVessel>();
+                if (vessel == leader)
+                {
+                    leaderEquipped = true;
+                    leaderEffect.TearDown(vessel);
+                    foreach (var ally in scene.Allies())
+                    {
+                        otherEffects.TearDown(ally);
+                    }
+                }
+                else
+                {
+                    otherEffects.TearDown(vessel);
+                }
+            }
+            else
+            {
+                vessel.drops.treasures.Remove(this);
+            }
+        }
+
+        public bool CompareStatusTag(IStatusTag statusTag)
+        {
+            return Equals(statusTag);
         }
     }
 }

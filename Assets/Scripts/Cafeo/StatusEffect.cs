@@ -35,9 +35,8 @@ namespace Cafeo
         public bool paralyzed;
 
         public HitEffects source;
-        
+        public IStatusTag statusTag;
         public IPassiveEffect passiveEffect;
-
         public bool eternal;
 
         public StatusEffect(BattleVessel owner, float duration, bool eternal = false)

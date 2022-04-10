@@ -37,7 +37,7 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
             transforms = new Transform[agents.Length];
             // Set the speed and turning speed of all of the agents
             for (int i = 0; i < agents.Length; ++i) {
-                if (agents[i] == null) {
+                if (agents[i] == null || agents[i].Value == null) {
                     continue;
                 }
                 aStarAgents[i] = agents[i].Value.GetComponent<IAstarAI>();

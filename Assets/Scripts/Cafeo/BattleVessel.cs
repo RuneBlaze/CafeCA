@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
 using static Cafeo.Utils.ImDraw;
+using Random = UnityEngine.Random;
 
 namespace Cafeo
 {
@@ -48,6 +49,9 @@ namespace Cafeo
         public AimerGroup Aimer => _aimer;
 
         public Treasure treasure;
+
+        public UnityEvent<Treasure> onGainTreasure;
+        public UnityEvent<Treasure> onLoseTreasure;
 
         public const int HotbarMax = 10;
         public const int TransientMax = 3;
@@ -93,6 +97,9 @@ namespace Cafeo
             statusEffects = new List<StatusEffect>();
             enterState = new UnityEvent<State>();
             drops = new DropInventory();
+            
+            onGainTreasure = new UnityEvent<Treasure>();
+            onLoseTreasure = new UnityEvent<Treasure>();
         }
 
         public void PickupDrop(Collectable collectable)
@@ -661,7 +668,7 @@ namespace Cafeo
         public void AddStatus(StatusEffect status)
         {
             int curCount = statusEffects.Count(it => 
-                !string.IsNullOrEmpty(status.displayName) && it.displayName == status.displayName);
+                it.statusTag != null && it.statusTag.CompareStatusTag(status.statusTag));
             if (curCount < status.maxStack)
             {
                 statusEffects.Add(status);
@@ -671,7 +678,7 @@ namespace Cafeo
             else
             {
                 var existing = statusEffects.OrderBy(it => it.timer).First(it =>
-                    !string.IsNullOrEmpty(status.displayName) && it.displayName == status.displayName);
+                    it.statusTag != null && it.statusTag.CompareStatusTag(status.statusTag));
                 existing.duration = status.duration;
                 existing.timer = 0;
             }
@@ -921,18 +928,14 @@ namespace Cafeo
             }
         }
 
-        public void GainTreasure(Treasure newTreasure)
-        {
-            if (HasTreasure)
-            {
-                DropTreasure();
-            }
-            
-        }
-
         public void DropTreasure()
         {
-            
+            Assert.IsNotNull(treasure);
+            treasure.OnDrop(this);
+            onLoseTreasure.Invoke(treasure);
+            Scene.SpawnDroppable(transform.position, treasure, 
+                VectorUtils.OnUnitCircle(Random.Range(0, 4 * Mathf.PI)));
+            treasure = null;
         }
         
         public bool HasTreasure => treasure != null;

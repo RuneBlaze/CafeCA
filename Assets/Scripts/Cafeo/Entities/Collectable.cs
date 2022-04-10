@@ -12,8 +12,11 @@ namespace Cafeo.Entities
         private Collider2D collider;
         public SizeScale sizeScale = SizeScale.Small;
         private IDroppable load;
+        private float pickupWait = 1.0f; // time until this item can be picked up
 
         private SpriteRenderer sprite;
+
+        private Color disabledColor;
         // public CollectableLoad load;
         
         public enum SizeScale
@@ -26,10 +29,15 @@ namespace Cafeo.Entities
         public void LateInit(IDroppable droppable)
         {
             load = droppable;
+            body = GetComponent<Rigidbody2D>();
         }
 
         private void OnCollisionEnter2D(Collision2D col)
         {
+            if (pickupWait > 0)
+            {
+                return;
+            }
             if (col.collider.CompareTag("Ally"))
             {
                 if (load != null)
@@ -43,9 +51,11 @@ namespace Cafeo.Entities
         public virtual void Start()
         {
             // Assert.IsNotNull(load);
-            body = GetComponent<Rigidbody2D>();
+            
             collider = GetComponent<Collider2D>();
             sprite = GetComponent<SpriteRenderer>();
+            disabledColor = new Color(1, 1, 1, 0.5f);
+            RogueManager.Instance.rogueUpdateEvent.AddListener(OnRogueUpdate);
             sprite.sprite = load.Icon;
             if (load != null)
             {
@@ -71,6 +81,22 @@ namespace Cafeo.Entities
             {
                 load.OnPickedUp(collector);
             }
+        }
+
+        private void Update()
+        {
+            sprite.color = pickupWait > 0 ? disabledColor : Color.white;
+        }
+
+        private void OnRogueUpdate()
+        {
+            pickupWait -= Time.deltaTime;
+            pickupWait = Mathf.Max(0, pickupWait);
+        }
+
+        public void BeThrown(Vector2 dir)
+        {
+            body.AddForce(dir * 10f);
         }
 
         // public abstract class CollectableLoad

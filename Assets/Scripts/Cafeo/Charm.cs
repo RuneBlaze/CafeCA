@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Cafeo
 {
-    public class Charm : IDroppable
+    public class Charm : IDroppable, IStatusTag
     {
         public string displayName;
         public List<HitEffects> passiveEffects;
@@ -14,6 +14,10 @@ namespace Cafeo
         {
             this.displayName = displayName;
             this.passiveEffects = passiveEffects;
+            foreach (var effect in passiveEffects)
+            {
+                effect.statusTag = this;
+            }
             Icon = icon;
         }
         
@@ -42,6 +46,16 @@ namespace Cafeo
             {
                 AllyParty.Instance.AddCharm(this);
             }
+        }
+
+        public void OnDrop(BattleVessel owner)
+        {
+            // charms don't get dropped by allies. No need to tear down
+        }
+
+        public bool CompareStatusTag(IStatusTag statusTag)
+        {
+            return statusTag is Charm charm && charm.displayName == displayName;
         }
     }
 }

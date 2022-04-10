@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cafeo.Data;
+using UnityEngine;
 
 namespace Cafeo
 {
@@ -21,6 +22,8 @@ namespace Cafeo
             Shield,
             ShieldPerc,
         }
+        
+        [HideInInspector] public IStatusTag statusTag;
 
         [Serializable]
         public class BuffExpr
@@ -108,13 +111,14 @@ namespace Cafeo
             foreach (var buff in buffs)
             {
                 var statusEffect = buff.CalcStatus(user, target, levelOffset);
+                statusEffect.statusTag = statusTag;
                 target.AddStatus(statusEffect);
             }
         }
 
         public void TearDown(BattleVessel target)
         {
-            target.RemoveStatus(it => it.source == this);
+            target.RemoveStatus(it => it.statusTag.CompareStatusTag(statusTag));
         }
     }
 }

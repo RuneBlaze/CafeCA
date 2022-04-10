@@ -28,7 +28,12 @@ namespace Cafeo.Data
         {
             vessel.TryGainOneTimeUse(this);
         }
-        
+
+        public void OnDrop(BattleVessel owner)
+        {
+            // no need to do anything
+        }
+
         public bool CanBePickedUp(BattleVessel vessel)
         {
             return !vessel.IsOneTimeUseFull;

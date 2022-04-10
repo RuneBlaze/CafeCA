@@ -168,13 +168,18 @@ namespace Cafeo
             popup.SetText(text);
         }
 
-        public void SpawnDroppable(Vector2 position, IDroppable droppable)
+        public void SpawnDroppable(Vector2 position, IDroppable droppable, Vector2 initialForce)
         {
             var go = Instantiate(collectablePrefab, collectableParent);
-            go.transform.position = position + new Vector2() * 0.5f;
             go.transform.position = position;
             var collectable = go.GetComponent<Collectable>();
             collectable.LateInit(droppable);
+            collectable.BeThrown(initialForce);
+        }
+
+        public void SpawnDroppable(Vector2 position, IDroppable droppable)
+        {
+            SpawnDroppable(position, droppable, Vector2.zero);
         }
 
         public BattleVessel CalcLeaderAlly()
