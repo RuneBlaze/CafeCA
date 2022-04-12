@@ -34,7 +34,7 @@ namespace Cafeo.Templates
         public WeaponTypeTemplate mainWeapon;
         [BoxGroup("Battle Setup", centerLabel: true)] [AssetSelector]
         public WeaponTypeTemplate secondaryWeapon;
-        public AgentSoul AddToGameObjet(GameObject gameObject)
+        public virtual AgentSoul AddToGameObjet(GameObject gameObject)
         {
             var soul = gameObject.AddComponent<AgentSoul>();
             soul.firstName = firstName;

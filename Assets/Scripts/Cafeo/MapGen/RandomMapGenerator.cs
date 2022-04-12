@@ -7,6 +7,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 namespace Cafeo.MapGen
@@ -22,13 +23,21 @@ namespace Cafeo.MapGen
         [SerializeField] private AstarPath aStarPath;
 
         private GameObject rogueDoorPrefab;
-        [SerializeField] private Transform rogueDoorParent;
+        [SerializeField] public Transform rogueDoorParent;
         const int blockSize = 17;
 
         [SerializeField] private GameObject roomClearerPrefab;
 
         public int currentRoom = -1;
-        
+
+        public UnityEvent finishedSpawning;
+
+        protected override void Setup()
+        {
+            base.Setup();
+            finishedSpawning = new UnityEvent();
+        }
+
         public Vector2 MapCoord2WorldCoord(Vector2Int mapCoord)
         {
             return new Vector2(mapCoord.x * blockSize, mapCoord.y * blockSize) - 
@@ -98,6 +107,12 @@ namespace Cafeo.MapGen
                     ally.transform.position = MapCoord2WorldCoord(randomMap.startPoint) + Random.insideUnitCircle * 2f;
                 }
             }
+
+            for (int i = 1; i < randomMap.nodes.Count; i++)
+            {
+                randomMap.nodes[i].AfterSpawned();
+            }
+            
             Scene.rogueUpdateEvent.AddListener(RogueUpdate);
             // aStarPath.UpdateGraphs(new Bounds(Vector3.zero, new Vector3(mapWidth, mapHeight, 0)));
         }
@@ -200,10 +215,11 @@ namespace Cafeo.MapGen
             // Debug.Log(World2Room(Scene.leaderAlly.transform.position));
         }
 
-        public void SpawnRoomClearer(Vector2 pos)
+        public GameObject SpawnRoomClearer(Vector2 pos)
         {
             var go = Instantiate(roomClearerPrefab, rogueDoorParent);
             go.transform.position = pos;
+            return go;
         }
     }
 }

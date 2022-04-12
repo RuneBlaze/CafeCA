@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdee9ba9e913472bbec49e861bee8b9b, type: 3}
+  m_Name: New EnemyTemplate
+  m_EditorClassIdentifier: 
+  displayName: 
+  id: 
+  icon: {fileID: 0}
+  lore: 
+  tint: 0
+  gender: 0
+  firstName: 
+  lastName: 
+  age: 17
+  heightZ: 0
+  bmi: 22.5
+  muscleStrength: 1
+  limbSize: 1
+  sizeMultiplier: 1
+  appearedAge: 1
+  baseAttrs:
+    str: 10
+    con: 10
+    dex: 10
+    per: 10
+    lea: 10
+    wil: 10
+    mag: 10
+    cut: 10
+    awe: 10
+    life: 30
+    mana: 10
+  job: {fileID: 0}
+  mainWeapon: {fileID: 0}
+  secondaryWeapon: {fileID: 0}

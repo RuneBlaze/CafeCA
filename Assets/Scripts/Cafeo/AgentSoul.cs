@@ -49,6 +49,9 @@ namespace Cafeo
         public float maleFeatureProminence = 1f;
         public float femaleFeatureProminence = 1f;
 
+        // public int gold;
+        // public string aiType;
+
         [SerializeField] private AgentPreset preset;
 
         public int hp = 12;

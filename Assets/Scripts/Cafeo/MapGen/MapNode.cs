@@ -10,6 +10,9 @@ namespace Cafeo.MapGen
         public int id;
         public Vector2Int position;
         public State state;
+        public Transform root;
+
+        public int counter; // upon counter reaching zero, this room is completed
 
         public RandomMapGenerator Map => RandomMapGenerator.Instance;
         
@@ -38,6 +41,17 @@ namespace Cafeo.MapGen
             
         }
 
+        public virtual void AfterSpawned()
+        {
+            var go = new GameObject();
+            go.name = $"Room {id}";
+            go.transform.position = WorldPos;
+            go.transform.SetParent(Map.rogueDoorParent);
+            root = go.transform;
+        }
+
+        public Vector2 WorldPos => Map.MapCoord2WorldCoord(position);
+
         public void ProgressState()
         {
             switch (state)
@@ -55,6 +69,12 @@ namespace Cafeo.MapGen
                     break;
             }
             onStateChanged.Invoke();
+        }
+
+        public void PlaceRoomClearer(Vector2 pos)
+        {
+            var go = Map.SpawnRoomClearer((Vector2) root.transform.position + pos);
+            go.transform.SetParent(root);
         }
     }
 }

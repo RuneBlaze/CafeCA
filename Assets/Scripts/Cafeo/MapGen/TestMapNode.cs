@@ -13,7 +13,7 @@ namespace Cafeo.MapGen
             base.OnEnterState(newState);
             if (newState == State.Active)
             {
-                Map.SpawnRoomClearer(Map.MapCoord2WorldCoord(position));
+                PlaceRoomClearer(Vector2.zero);
             }
         }
     }

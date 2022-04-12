@@ -6,6 +6,7 @@ using Cafeo.Castable;
 using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.Gadgets;
+using Cafeo.Templates;
 using Cafeo.Utils;
 using UnityEditor.SearchService;
 using UnityEngine;
@@ -271,6 +272,11 @@ namespace Cafeo
         public void OnDebugDisabled()
         {
             inputLocked = false;
+        }
+        
+        public BattleVessel SpawnBattleVessel(EnemyTemplate template, Vector2 pos)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
