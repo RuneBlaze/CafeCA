@@ -69,6 +69,10 @@ MonoBehaviour:
     m_Address: Assets/Data/RoguePrefabs/RoomClearer.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: e7947dcbe34fbff4e9f19b36e67117b7
+    m_Address: Assets/Data/RoguePrefabs/GenericAgent.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 631995a3864654b4ea88aa9c0314395f, type: 2}
   m_SchemaSet:

@@ -201,6 +201,15 @@ namespace Cafeo.MapGen
                     }
                 }
             }
+            
+            if (currentRoom != -1)
+            {
+                var node = randomMap.nodes[currentRoom];
+                if (node.state == MapNode.State.Active && node.counter <= 0)
+                {
+                    node.ProgressState();
+                }
+            }
         }
 
 

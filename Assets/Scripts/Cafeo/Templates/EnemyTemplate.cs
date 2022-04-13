@@ -15,6 +15,7 @@ namespace Cafeo.Templates
         public override AgentSoul AddToGameObjet(GameObject gameObject)
         {
             var soul = base.AddToGameObjet(gameObject);
+            soul.alignment = -1;
             // soul.gold = Random.Range(0, dropGoldExpectation * 2);
             // soul.aiType = aiType;
             return soul;

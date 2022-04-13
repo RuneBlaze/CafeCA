@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: New EnemyTemplate
   m_EditorClassIdentifier: 
   displayName: 
-  id: 
+  id: test_slime
   icon: {fileID: 0}
   lore: 
   tint: 0
@@ -37,8 +37,11 @@ MonoBehaviour:
     mag: 10
     cut: 10
     awe: 10
-    life: 30
+    life: 50
     mana: 10
   job: {fileID: 0}
   mainWeapon: {fileID: 0}
   secondaryWeapon: {fileID: 0}
+  skills: []
+  dropGoldExpectation: 0
+  aiType: 

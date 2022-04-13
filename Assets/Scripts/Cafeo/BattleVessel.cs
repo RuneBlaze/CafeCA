@@ -41,6 +41,7 @@ namespace Cafeo
         public GenericBrain Brain { get; private set; }
 
         public UnityEvent<State> enterState;
+        public UnityEvent onDeath;
 
         public float dashTimer;
         public float effectTimer;
@@ -100,6 +101,8 @@ namespace Cafeo
             
             onGainTreasure = new UnityEvent<Treasure>();
             onLoseTreasure = new UnityEvent<Treasure>();
+            
+            onDeath = new UnityEvent();
         }
 
         public void PickupDrop(Collectable collectable)
@@ -762,6 +765,7 @@ namespace Cafeo
 
             if (soul.Dead)
             {
+                onDeath.Invoke();
                 Destroy(gameObject);
             }
 
@@ -936,6 +940,11 @@ namespace Cafeo
             Scene.SpawnDroppable(transform.position, treasure, 
                 VectorUtils.OnUnitCircle(Random.Range(0, 4 * Mathf.PI)));
             treasure = null;
+        }
+
+        public void Kill()
+        {
+            soul.hp = 0;
         }
         
         public bool HasTreasure => treasure != null;

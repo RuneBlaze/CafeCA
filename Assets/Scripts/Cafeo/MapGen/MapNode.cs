@@ -1,4 +1,6 @@
 ﻿using System;
+using Cafeo.Entities;
+using Cafeo.Templates;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -15,6 +17,7 @@ namespace Cafeo.MapGen
         public int counter; // upon counter reaching zero, this room is completed
 
         public RandomMapGenerator Map => RandomMapGenerator.Instance;
+        public RogueManager Scene => RogueManager.Instance;
         
         public UnityEvent onStateChanged;
         public enum State
@@ -29,6 +32,7 @@ namespace Cafeo.MapGen
             this.position = position;
             this.state = State.Unexplored;
             this.onStateChanged = new UnityEvent();
+            counter = 1;
         }
 
         protected virtual void OnExitState(State prevState)
@@ -38,7 +42,16 @@ namespace Cafeo.MapGen
         
         protected virtual void OnEnterState(State newState)
         {
-            
+            if (newState == State.Cleared)
+            {
+                foreach (var vessel in root.GetComponentsInChildren<BattleVessel>())
+                {
+                    if (vessel.IsEnemy)
+                    {
+                        vessel.Kill();
+                    }
+                }
+            }
         }
 
         public virtual void AfterSpawned()
@@ -71,10 +84,31 @@ namespace Cafeo.MapGen
             onStateChanged.Invoke();
         }
 
-        public void PlaceRoomClearer(Vector2 pos)
+        public void PlaceRoomClearer(Vector2 localPos)
         {
-            var go = Map.SpawnRoomClearer((Vector2) root.transform.position + pos);
+            var go = Map.SpawnRoomClearer((Vector2) root.transform.position + localPos);
             go.transform.SetParent(root);
+        }
+        
+        public void PlaceEnemy(EnemyTemplate template, Vector2 localPos)
+        {
+            var go = Scene.SpawnBattleVessel(template, (Vector2) root.transform.position + localPos);
+            go.transform.SetParent(root);
+            counter++;
+            go.onDeath.AddListener(() =>
+            {
+                counter--;
+            });
+        }
+
+        public void PlaceEnemySpawner(string enemyId, Vector2 localPos)
+        {
+            var go = new GameObject("Spawner: " + enemyId);
+            go.transform.SetParent(root);
+            var enemySpawner = go.AddComponent<EnemySpawner>();
+            enemySpawner.enemyId = enemyId;
+            enemySpawner.LateInit(id);
+            go.transform.localPosition = localPos;
         }
     }
 }

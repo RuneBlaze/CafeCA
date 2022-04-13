@@ -2,7 +2,7 @@
 
 namespace Cafeo.Templates
 {
-    public interface IComponentTemplate<out T>
+    public interface IComponentTemplate<out T> : ITemplate<GameObject>
     {
         public T AddToGameObjet(GameObject gameObject);
 
@@ -11,6 +11,11 @@ namespace Cafeo.Templates
             var go = new GameObject();
             var comp = AddToGameObjet(go);
             return comp;
+        }
+
+        GameObject ITemplate<GameObject>.Generate()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

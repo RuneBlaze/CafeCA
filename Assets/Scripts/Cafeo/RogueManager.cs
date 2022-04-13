@@ -25,10 +25,13 @@ namespace Cafeo
         private PlayerBrain playerBrain;
         private GameObject popupPrefab;
         private GameObject collectablePrefab;
+        private GameObject agentPrefab;
         [HideInInspector] public GameObject leaderAlly;
         public UnityEvent rogueUpdateEvent = new();
         [SerializeField] private Transform popupParent;
-        [SerializeField] private  Transform collectableParent;
+        [SerializeField] private Transform collectableParent;
+        [SerializeField] private Transform enemiesSoulParent;
+        [SerializeField] private Transform agentParent;
 
         public bool inputLocked;
 
@@ -47,6 +50,9 @@ namespace Cafeo
                 .WaitForCompletion();
             collectablePrefab = Addressables
                 .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/Collectable.prefab")
+                .WaitForCompletion();
+            agentPrefab = Addressables
+                .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/GenericAgent.prefab")
                 .WaitForCompletion();
         }
 
@@ -276,7 +282,18 @@ namespace Cafeo
         
         public BattleVessel SpawnBattleVessel(EnemyTemplate template, Vector2 pos)
         {
-            throw new System.NotImplementedException();
+            // first create the soul
+            var soulGo = new GameObject(template.displayName);
+            soulGo.transform.SetParent(enemiesSoulParent);
+            var soul = template.AddToGameObjet(soulGo);
+
+            // then create the vessel
+            var agentGo = Instantiate(agentPrefab, agentParent);
+            var agent = agentGo.GetComponent<BattleVessel>();
+            agent.soul = soul;
+            agent.aiType = template.aiType;
+            agent.transform.position = pos;
+            return agent;
         }
     }
 }

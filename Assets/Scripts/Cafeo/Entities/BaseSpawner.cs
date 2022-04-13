@@ -11,6 +11,8 @@ namespace Cafeo.Entities
         public RandomMapGenerator Map => RandomMapGenerator.Instance;
         public virtual MapNode.State ListenToState { get; set; }
 
+        public Vector2 RelPos => (Vector2) transform.position -  MyNode.WorldPos;
+
         public void LateInit(int roomId)
         {
             this.roomId = roomId;
@@ -19,17 +21,18 @@ namespace Cafeo.Entities
         
         public void Start()
         {
-            Map.finishedSpawning.AddListener(OnFinishedSpawning);
+            OnFinishedSpawning();
         }
 
         public MapNode MyNode => Map.NodeById(roomId);
         
-        private void OnFinishedSpawning()
+        public void OnFinishedSpawning()
         {
             MyNode.onStateChanged.AddListener(() =>
             {
                 OnNodeStateChanged(MyNode.state);
             });
+            MyNode.counter++;
         }
 
         private void OnNodeStateChanged(MapNode.State myNodeState)
@@ -48,7 +51,7 @@ namespace Cafeo.Entities
 
         protected virtual void Activate()
         {
-            
+            MyNode.counter--;
         }
     }
 }

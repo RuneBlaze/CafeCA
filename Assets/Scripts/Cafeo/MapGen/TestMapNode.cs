@@ -8,6 +8,16 @@ namespace Cafeo.MapGen
         {
         }
 
+        public override void AfterSpawned()
+        {
+            base.AfterSpawned();
+            var dir = new[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+            foreach (var d in dir)
+            {
+                PlaceEnemySpawner("test_slime", d * 3);
+            }
+        }
+
         protected override void OnEnterState(State newState)
         {
             base.OnEnterState(newState);

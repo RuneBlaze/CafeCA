@@ -20,7 +20,7 @@ namespace Cafeo.Entities
                     var room = generator.currentRoom;
                     if (room > 0)
                     {
-                        generator.NodeById(room).ProgressState();
+                        generator.NodeById(room).counter = 0;
                         consumed = true;
                         Destroy(gameObject);
                     }

@@ -25,6 +25,11 @@ namespace Cafeo.Templates
             return (templates[id.Trim()]).Generate() as T;
         }
 
+        public T RetrieveTemplate<T>(string id) where T : class
+        {
+            return templates[id.Trim()] as T;
+        }
+
         private void Register<T>(T template) where T : WithDisplayName, ITemplate<object>
         {
             if (template.id != null)
@@ -45,6 +50,11 @@ namespace Cafeo.Templates
             foreach (var treasureTemplate in AllTemplatesOfType<TreasureTemplate>())
             {
                 Register(treasureTemplate);
+            }
+            
+            foreach (var soulTemplate in AllTemplatesOfType<SoulTemplate>())
+            {
+                Register(soulTemplate);
             }
         }
     }
