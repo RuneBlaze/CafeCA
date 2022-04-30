@@ -53,9 +53,12 @@ namespace Cafeo.Templates
             item.duration = duration;
             item.instability = instability;
             item.withPrimaryShot = withPrimaryShot;
+            // item.active = 0.3f;
+            // item.recovery = 0.05f;
             if (simpleProjectile != null)
             {
                 item.projectileType = simpleProjectile.Generate();
+                // Debug.Log(item.projectileType.shape);
                 if (pierce != -1) item.projectileType.pierce = pierce;
                 if (bounce != -1) item.projectileType.bounce = bounce;
                 if (speed >= 0) item.projectileType.speed = speed;

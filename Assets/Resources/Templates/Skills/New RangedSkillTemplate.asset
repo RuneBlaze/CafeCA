@@ -13,29 +13,37 @@ MonoBehaviour:
   m_Name: New RangedSkillTemplate
   m_EditorClassIdentifier: 
   displayName: 
-  icon: {fileID: 0}
+  id: 
+  icon: {fileID: 21300000, guid: 8c5e5033fe838ef40989eeb85a513b7f, type: 3}
+  lore: 
   tint: 0
   description: 
   mpCost: 0
   cpCost: 0
   power: 100
+  knockbackPower: 1
   powerType: 0
-  damageType: 0
-  hitType: 2
+  damageType: 2
+  hitType: 1
   hitStun: 0.2
   timePoints:
     startUp: 0
-    active: 0
-    recovery: 0
+    active: 0.3
+    recovery: 0.05
   stopOnUse: 0
   hitEffects:
     buffs: []
   orbit: 1
+  tags: 
   shots: 1
   fan: 0
   spread: 0
   duration: 0
   instability: 0
   withPrimaryShot: 0
-  simpleProjectile: {fileID: 0}
+  pierce: -1
+  bounce: -1
+  speed: -1
+  acceleration: -1
+  simpleProjectile: {fileID: 11400000, guid: 8cf068cae6fb6164d8a1bd75b8a3957f, type: 2}
   projectilePrefab: {fileID: 0}

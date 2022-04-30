@@ -1,6 +1,8 @@
 ﻿using System;
 using Cafeo.Castable;
+using Cafeo.Utility;
 using Sirenix.OdinInspector;
+using UnityEditor;
 
 namespace Cafeo.Templates
 {
@@ -23,8 +25,13 @@ namespace Cafeo.Templates
 
         public override UsableItem Generate()
         {
-            var item = new MeleeItem(2 * sizeModifier, 2 * rangeModifier);
+            var item = new MeleeItem(1 + sizeModifier, 1 + rangeModifier);
             CopyBaseParameters(item);
+            item.meleeType = meleeType;
+            item.utilityType = (UtilityType) 10f;
+            // item.active = 0.3f;
+            // item.recovery = 0.05f;
+            item.AddTag(UsableItem.ItemTag.FreeDPS);
             return item;
         }
 

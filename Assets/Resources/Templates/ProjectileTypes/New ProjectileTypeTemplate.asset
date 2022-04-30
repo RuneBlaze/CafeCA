@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: New ProjectileTypeTemplate
   m_EditorClassIdentifier: 
   displayName: 
+  id: 
   shapeType: 0
-  shapeUserData: {x: 0, y: 0, z: 0, w: 0}
+  shapeUserData: {x: 0.1, y: 0, z: 0, w: 0}
   pierce: 0
-  bounce: -1
-  hitType: 0
-  collidable: 0
+  bounce: 4
+  hitType: 2
+  collidable: 1
   timeLimit: 30
-  speed: 2
+  speed: 8
   acceleration: 0
   maxSpeed: 0
   deltaSize: 0

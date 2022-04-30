@@ -61,8 +61,8 @@ namespace Cafeo.Entities
             {
                 sizeScale = load.SizeScale;
             }
-            body.drag = 2;
-            body.mass = 5 + 10 * (int) sizeScale;
+            body.drag = 0.8f;
+            body.mass = 3 + 3 * (int) sizeScale;
             transform.localScale = 
                 sizeScale == SizeScale.Small ? Vector3.one * 0.27f : Vector3.one * (0.34f + 0.33f * (int) sizeScale);
             AfterDropped();
@@ -96,7 +96,7 @@ namespace Cafeo.Entities
 
         public void BeThrown(Vector2 dir)
         {
-            body.AddForce(dir * 10f);
+            body.AddForce(dir * 150f);
         }
 
         // public abstract class CollectableLoad

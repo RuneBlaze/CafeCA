@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1366192139214262a9f501e631dd0984, type: 3}
   m_Name: New Melee
   m_EditorClassIdentifier: 
-  displayName: New Melee
-  icon: {fileID: 0}
+  displayName: Test Sword Skill
+  id: 
+  icon: {fileID: 21300000, guid: 2e0de6718af48984fa308faeb2f03dfa, type: 3}
+  lore: 
   tint: 0
   description: 
   mpCost: 0
@@ -26,14 +28,14 @@ MonoBehaviour:
   hitStun: 0.2
   timePoints:
     startUp: 0
-    active: 0
-    recovery: 0
-  stopOnUse: 0
+    active: 0.3
+    recovery: 0.05
+  stopOnUse: 1
   hitEffects:
     buffs: []
   orbit: 1
-  tags: 01000000
-  meleeType: 2
+  tags: 02000000020000000200000002000000020000000200000002000000020000000200000002000000
+  meleeType: 5
   sizeModifier: 0
   speedModifier: 0
   rangeModifier: 0

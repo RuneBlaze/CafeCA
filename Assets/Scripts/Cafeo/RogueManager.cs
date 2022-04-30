@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using BehaviorDesigner.Runtime;
 using Cafeo.Castable;
+using Cafeo.Configs;
 using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.Gadgets;
@@ -13,7 +15,10 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Cafeo
 {
@@ -40,6 +45,9 @@ namespace Cafeo
 
         public Dictionary<int, BattleVessel> goIdToVessel = new();
 
+        public Sprite coinSprite;
+        public Sprite keySprite;
+
         protected override void Setup()
         {
             base.Setup();
@@ -54,6 +62,12 @@ namespace Cafeo
             agentPrefab = Addressables
                 .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/GenericAgent.prefab")
                 .WaitForCompletion();
+            coinSprite = Addressables
+                .LoadAssetAsync<Sprite>("Assets/Graphics/Icons/Debug/Icons_12.png")
+                .WaitForCompletion();
+            keySprite = Addressables
+                .LoadAssetAsync<Sprite>("Assets/Graphics/Icons/Debug/Icons_09.png")
+                .WaitForCompletion();
         }
 
         public IEnumerable<BattleVessel> Allies()
@@ -62,6 +76,28 @@ namespace Cafeo
             foreach (var vessel in otherAllyVessels)
             {
                 yield return vessel;
+            }
+        }
+
+        public void InitializeBattleParty()
+        {
+            Debug.Log("Initializing battle party");
+            var initialParty = InitialParty.Instance;
+            var inventories = initialParty.battleInventories;
+            var allies = Allies().ToList();
+            Assert.IsTrue(allies.Count == inventories.Count);
+            for (var i = 0; i < inventories.Count; i++)
+            {
+                allies[i].ClearHotbar();
+                var config = inventories[i];
+                int j = 0;
+                foreach (var skill in config.restSkills)
+                {
+                    var item = skill.Generate();
+                    allies[i].hotbar[j] = item;
+                    j++;
+                }
+                allies[i].SetHotboxPointer(0);
             }
         }
 
@@ -182,6 +218,52 @@ namespace Cafeo
             var collectable = go.GetComponent<Collectable>();
             collectable.LateInit(droppable);
             collectable.BeThrown(initialForce);
+        }
+
+        public void SpawnCoin(Vector2 position, Vector2 initialForce)
+        {
+            var go = Instantiate(collectablePrefab, collectableParent);
+            go.transform.position = position;
+            var collectable = go.GetComponent<Collectable>();
+            collectable.LateInit(new SmallCoin());
+            collectable.BeThrown(initialForce);
+        }
+
+        public void SpawnKey(Vector2 position, Vector2 initialForce)
+        {
+            var go = Instantiate(collectablePrefab, collectableParent);
+            go.transform.position = position;
+            var collectable = go.GetComponent<Collectable>();
+            collectable.LateInit(new DroppedKey());
+            collectable.BeThrown(initialForce);
+        }
+
+        public void PopDropInventory(Vector2 position, DropInventory inventory, Vector2 direction)
+        {
+            foreach (var charm in inventory.charms)
+            {
+                SpawnDroppable(position, charm, direction);
+            }
+            
+            foreach (var treasure in inventory.treasures)
+            {
+                SpawnDroppable(position, treasure, direction);
+            }
+            
+            foreach (var oneTimeUseItem in inventory.oneTimeUseItems)
+            {
+                SpawnDroppable(position, oneTimeUseItem, direction);
+            }
+            
+            for (int i = 0; i < inventory.coins; i++)
+            {
+                SpawnCoin(position, direction);
+            }
+            
+            for (int i = 0; i < inventory.keys; i++)
+            {
+                SpawnKey(position, direction);
+            }
         }
 
         public void SpawnDroppable(Vector2 position, IDroppable droppable)

@@ -34,6 +34,8 @@ namespace Cafeo
         public int hotbarPointer = 0;
         private AimerGroup _aimer;
 
+        public bool Dead => soul.Dead;
+
         public bool IsLeaderAlly => gameObject == RogueManager.Instance.leaderAlly;
 
         public List<StatusEffect> statusEffects = new();
@@ -166,6 +168,14 @@ namespace Cafeo
             if (state == State.Stun && stun == 0)
             {
                 EnterState(State.Idle);
+            }
+        }
+
+        public void ClearHotbar()
+        {
+            for (int i = 0; i < hotbar.Length; i++)
+            {
+                hotbar[i] = null;
             }
         }
 
@@ -766,7 +776,14 @@ namespace Cafeo
             if (soul.Dead)
             {
                 onDeath.Invoke();
-                Destroy(gameObject);
+                if (IsAlly)
+                {
+                    gameObject.SetActive(false);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
             }
 
             for (int i = 0; i < HotbarMax; i++)
@@ -945,6 +962,13 @@ namespace Cafeo
         public void Kill()
         {
             soul.hp = 0;
+        }
+
+        public void Revive()
+        {
+            gameObject.SetActive(true);
+            soul.Revive();
+            statusEffects.Clear();
         }
         
         public bool HasTreasure => treasure != null;

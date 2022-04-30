@@ -84,7 +84,7 @@ namespace BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject
             // Loop through each agent to determine the separation
             for (int i = 0; i < agents.Length; ++i) {
                 // The agent can't compare against itself
-                if (agentIndex != i) {
+                if (agentIndex != i && transforms[i] != null) {
                     // Only determine the parameters if the other agent is its neighbor
                     if (Vector3.SqrMagnitude(transforms[i].position - agentTransform.position) < neighborDistance.Value) {
                         // This agent is the neighbor of the original agent so add the separation

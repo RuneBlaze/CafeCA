@@ -20,4 +20,13 @@ MonoBehaviour:
     oneTimeUses:
     - {fileID: 11400000, guid: 6c0e07de037f4e94eb8086d52729f7d2, type: 2}
     restSkills:
-    - {fileID: 0}
+    - {fileID: 11400000, guid: a930f35bf361be1458a07e36657cdadb, type: 2}
+    - {fileID: 11400000, guid: e909a181e76505c4f9e741611f1bd8dd, type: 2}
+  - treasure: {fileID: 0}
+    oneTimeUses: []
+    restSkills:
+    - {fileID: 11400000, guid: e909a181e76505c4f9e741611f1bd8dd, type: 2}
+  - treasure: {fileID: 0}
+    oneTimeUses: []
+    restSkills:
+    - {fileID: 11400000, guid: e909a181e76505c4f9e741611f1bd8dd, type: 2}

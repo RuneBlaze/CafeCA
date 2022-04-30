@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Linq;
+using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.Utils;
 using Sirenix.OdinInspector;
@@ -27,10 +28,13 @@ namespace Cafeo.MapGen
         const int blockSize = 17;
 
         [SerializeField] private GameObject roomClearerPrefab;
+        [SerializeField] private GameObject chestPrefab;
 
         public int currentRoom = -1;
 
         public UnityEvent finishedSpawning;
+
+        public AllyParty Party => AllyParty.Instance;
 
         protected override void Setup()
         {
@@ -40,15 +44,16 @@ namespace Cafeo.MapGen
 
         public Vector2 MapCoord2WorldCoord(Vector2Int mapCoord)
         {
-            return new Vector2(mapCoord.x * blockSize, mapCoord.y * blockSize) - 
-                (new Vector2(randomMap.startPoint.x, randomMap.startPoint.y)) * blockSize + new Vector2(blockSize, blockSize) / 2f;
+            return new Vector2(mapCoord.x * blockSize, mapCoord.y * blockSize) -
+                   (new Vector2(randomMap.startPoint.x, randomMap.startPoint.y)) * blockSize +
+                   new Vector2(blockSize, blockSize) / 2f;
         }
-        
+
         public MapNode NodeById(int i)
         {
             return randomMap.nodes[i];
         }
-        
+
         public RogueManager Scene => RogueManager.Instance;
 
         private void Start()
@@ -60,12 +65,14 @@ namespace Cafeo.MapGen
                 .WaitForCompletion();
             roomClearerPrefab = Addressables.LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/RoomClearer.prefab")
                 .WaitForCompletion();
+            chestPrefab = Addressables.LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/TreasureChest.prefab")
+                .WaitForCompletion();
             randomMap.Generate();
             randomMap.WriteTextRepresentation();
-            
+
             foreach (var mapNode in randomMap.Dfs())
             {
-                Debug.Log("Node: " + mapNode.id);
+                // Debug.Log("Node: " + mapNode.id);
                 int id = mapNode.id;
                 var pos = mapNode.position;
                 var roomPos = (pos - randomMap.startPoint) * blockSize;
@@ -73,10 +80,10 @@ namespace Cafeo.MapGen
                 tilemapPlacer.PlaceBox(roomRect);
                 tilemapPlacer.EraseOpenings(roomRect, randomMap.edges[pos.x][pos.y]);
             }
-            
+
             foreach (var (lhs, rhs) in randomMap.EachEdge())
             {
-                Debug.Log("Edge: " + randomMap.NumAlphaCode(lhs.id) + " " + randomMap.NumAlphaCode(rhs.id));
+                // Debug.Log("Edge: " + randomMap.NumAlphaCode(lhs.id) + " " + randomMap.NumAlphaCode(rhs.id));
                 var go = Instantiate(rogueDoorPrefab, rogueDoorParent);
                 go.name = "Edge: " + randomMap.NumAlphaCode(lhs.id) + " " + randomMap.NumAlphaCode(rhs.id);
                 var door = go.GetComponent<RoomDoor>();
@@ -85,7 +92,8 @@ namespace Cafeo.MapGen
                 var posX = (lhs.position.x + rhs.position.x) / 2f;
                 var posY = (lhs.position.y + rhs.position.y) / 2f;
                 go.transform.position =
-                    (new Vector3(posX, posY, 0) - (new Vector3(randomMap.startPoint.x, randomMap.startPoint.y))) * blockSize + new Vector3(blockSize, blockSize) / 2f;
+                    (new Vector3(posX, posY, 0) - (new Vector3(randomMap.startPoint.x, randomMap.startPoint.y))) *
+                    blockSize + new Vector3(blockSize, blockSize) / 2f;
                 if (horizontal)
                 {
                     go.transform.position += Vector3.up * 0.5f;
@@ -95,7 +103,9 @@ namespace Cafeo.MapGen
                     go.transform.position += Vector3.right * 0.5f;
                 }
             }
-            
+
+            Scene.InitializeBattleParty();
+
             foreach (var ally in Scene.Allies())
             {
                 if (ally.IsLeaderAlly)
@@ -112,8 +122,9 @@ namespace Cafeo.MapGen
             {
                 randomMap.nodes[i].AfterSpawned();
             }
-            
+
             Scene.rogueUpdateEvent.AddListener(RogueUpdate);
+
             // aStarPath.UpdateGraphs(new Bounds(Vector3.zero, new Vector3(mapWidth, mapHeight, 0)));
         }
 
@@ -135,15 +146,16 @@ namespace Cafeo.MapGen
             var ny = normalized.y;
             // const float threshold = 0.2f;
             var f = 0.12f;
-            if ((int) (nx - f) != (int) nx || (int) (ny - f) != (int) ny)
+            if ((int)(nx - f) != (int)nx || (int)(ny - f) != (int)ny)
             {
                 return -1;
             }
-            if ((int) (nx + f) != (int) nx || (int) (ny + f) != (int) ny)
+
+            if ((int)(nx + f) != (int)nx || (int)(ny + f) != (int)ny)
             {
                 return -1;
             }
-            
+
 
             var ix = (int)nx;
             var iy = (int)ny;
@@ -171,17 +183,19 @@ namespace Cafeo.MapGen
                 {
                     return -1;
                 }
+
                 if (positions[i] == -1)
                 {
                     return -1;
                 }
             }
+
             return first;
         }
 
         private void Update()
         {
-            
+
         }
 
         private void RogueUpdate()
@@ -198,22 +212,25 @@ namespace Cafeo.MapGen
                     if (node.state == MapNode.State.Unexplored)
                     {
                         node.ProgressState();
+                        Party.BeforeRoom();
                     }
                 }
             }
-            
+
             if (currentRoom != -1)
             {
                 var node = randomMap.nodes[currentRoom];
                 if (node.state == MapNode.State.Active && node.counter <= 0)
                 {
                     node.ProgressState();
+                    Party.BeforeRoom();
                 }
             }
         }
 
 
         private bool scanned;
+
         private void LateUpdate()
         {
             if (!scanned)
@@ -230,5 +247,14 @@ namespace Cafeo.MapGen
             go.transform.position = pos;
             return go;
         }
-    }
+
+        public GameObject SpawnChest(Vector2 pos, DropInventory inventory)
+        {
+            var go = Instantiate(chestPrefab, rogueDoorParent);
+            go.transform.position = pos;
+            var chest = go.GetComponent<TreasureChest>();
+            chest.inventory = inventory;
+            return go;
+        }
+}
 }

@@ -36,10 +36,34 @@ namespace Cafeo.Data
         {
             charms.Add(charm);
         }
+        
 
-        public void Explode(Vector2 center)
+        public static DropInventory OnlyCoins(int coins)
         {
-            
+            var inventory = new DropInventory
+            {
+                coins = coins
+            };
+            return inventory;
+        }
+        
+        public static DropInventory OnlyKeys(int keys)
+        {
+            var inventory = new DropInventory
+            {
+                keys = keys
+            };
+            return inventory;
+        }
+
+        public static DropInventory CoinsAndKeys(int coins, int keys)
+        {
+            DropInventory inventory = new DropInventory
+            {
+                coins = coins,
+                keys = keys
+            };
+            return inventory;
         }
     }
 }

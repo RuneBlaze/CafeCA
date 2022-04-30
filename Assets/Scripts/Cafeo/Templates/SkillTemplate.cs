@@ -101,6 +101,13 @@ namespace Cafeo.Templates
             item.knockbackPower = knockbackPower;
         }
 
+        private void Reset()
+        {
+            tags.Add(UsableItem.ItemTag.FreeDPS);
+            timePoints.active = 0.3f;
+            timePoints.recovery = 0.05f;
+        }
+
         public abstract UsableItem Generate();
     }
 }

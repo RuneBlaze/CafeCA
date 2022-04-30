@@ -15,16 +15,41 @@ namespace Cafeo
     public class AllyParty : Singleton<AllyParty>
     {
         public RogueManager Scene => RogueManager.Instance;
-        public int gold;
-        public int keys;
+        
+        // the resources here are defined to be the stash
+        private int gold;
+
+        public int Gold => gold;
+
+        public int Keys => keys;
+
+        private int keys;
         public List<Charm> charms;
         public UnityEvent<Charm> onGainCharm;
+
+        public int ep = 100; // ep multiplied by 10
+        public UnityEvent<int> onEpChanged;
+        public UnityEvent onStashChanged;
 
         protected override void Setup()
         {
             base.Setup();
             charms = new List<Charm>();
             onGainCharm = new UnityEvent<Charm>();
+            onEpChanged = new UnityEvent<int>();
+            onStashChanged = new UnityEvent();
+        }
+
+        public void GainKeys(int count)
+        {
+            keys += count;
+            onStashChanged.Invoke();
+        }
+        
+        public void GainGold(int count)
+        {
+            gold += count;
+            onStashChanged.Invoke();
         }
 
         public void AddCharm(Charm charm)
@@ -35,6 +60,36 @@ namespace Cafeo
                 charm.InitMyself(battleVessel);
             }
             onGainCharm.Invoke(charm);
+        }
+
+        public void BeforeRoom()
+        {
+            foreach (var ally in Scene.Allies())
+            {
+                if (!ally.Dead)
+                {
+                    ally.soul.HealMpPercentage(1);
+                }
+            }
+        }
+
+        public void AfterClear()
+        {
+            int epCost = 0;
+            foreach (var ally in Scene.Allies())
+            {
+                if (ally.soul.Dead)
+                {
+                    ally.Revive();
+                    epCost += 10;
+                }
+            }
+
+            if (epCost > 0)
+            {
+                ep -= epCost;
+                onEpChanged.Invoke(ep);
+            }
         }
 
         public IEnumerable<BattleVessel> Members()

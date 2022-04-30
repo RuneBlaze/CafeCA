@@ -239,6 +239,13 @@ namespace Cafeo
             baseAttrs[10] = preset.mana;
         }
 
+        public void Revive()
+        {
+            hp = MaxHp;
+            mp = MaxMp;
+            cp = 0;
+        }
+
         // Update is called once per frame
         void Update()
         {

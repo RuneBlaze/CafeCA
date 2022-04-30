@@ -1,4 +1,5 @@
 ﻿using System;
+using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.Templates;
 using UnityEngine;
@@ -32,7 +33,7 @@ namespace Cafeo.MapGen
             this.position = position;
             this.state = State.Unexplored;
             this.onStateChanged = new UnityEvent();
-            counter = 1;
+            counter = 0;
         }
 
         protected virtual void OnExitState(State prevState)
@@ -51,6 +52,7 @@ namespace Cafeo.MapGen
                         vessel.Kill();
                     }
                 }
+                AllyParty.Instance.AfterClear();
             }
         }
 
@@ -89,15 +91,31 @@ namespace Cafeo.MapGen
             var go = Map.SpawnRoomClearer((Vector2) root.transform.position + localPos);
             go.transform.SetParent(root);
         }
-        
+
+        public void PlaceChest(Vector2 localPos, DropInventory inventory)
+        {
+            var worldPos = (Vector2)root.transform.position + localPos;
+            var go = Map.SpawnChest(worldPos, inventory);
+            go.transform.SetParent(root);
+        }
+
         public void PlaceEnemy(EnemyTemplate template, Vector2 localPos)
         {
             var go = Scene.SpawnBattleVessel(template, (Vector2) root.transform.position + localPos);
             go.transform.SetParent(root);
             counter++;
+            // Debug.Log("On death hooked");
             go.onDeath.AddListener(() =>
             {
                 counter--;
+                Debug.Log(counter);
+                if (counter <= 0)
+                {
+                    if (state == State.Active)
+                    {
+                        ProgressState();
+                    }
+                }
             });
         }
 

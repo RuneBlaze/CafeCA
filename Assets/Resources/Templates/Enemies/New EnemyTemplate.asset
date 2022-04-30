@@ -37,7 +37,7 @@ MonoBehaviour:
     mag: 10
     cut: 10
     awe: 10
-    life: 50
+    life: 20
     mana: 10
   job: {fileID: 0}
   mainWeapon: {fileID: 0}
