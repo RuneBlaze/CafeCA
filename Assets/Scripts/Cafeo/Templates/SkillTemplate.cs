@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cafeo.Castable;
+using Cafeo.Utility;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -47,6 +49,9 @@ namespace Cafeo.Templates
 
         [BoxGroup("AI Settings", centerLabel: true)]
         public List<UsableItem.ItemTag> tags;
+
+        [BoxGroup("AI Settings", centerLabel: true)]
+        public UtilitySetting utilitySetting;
         
         public enum TemplateHitType
         {
@@ -61,6 +66,74 @@ namespace Cafeo.Templates
             public float startUp;
             public float active;
             public float recovery;
+        }
+
+        public enum UtilityTypePresets
+        {
+            SingleEnemyInRange,
+            SingleEnemyInDirection,
+            Cooldown,
+            PenalizeDanger,
+        }
+
+        [Serializable]
+        public class UtilityTypeTemplate
+        {
+            public UtilityTypePresets preset;
+            public Vector4 userData = Vector4.one;
+            public float multiplier = 1;
+        }
+
+        [Serializable]
+        public class UtilitySetting : ITemplate<UtilityType>
+        {
+            public List<UtilityTypeTemplate> utilityTypes;
+            public float constantAdder;
+            public float constantMultiplier = 1;
+            public UtilityType Generate()
+            {
+                var utilities = utilityTypes.Select(it =>
+                {
+                    var ud = it.userData;
+                    UtilityType baseUtility = it.preset switch
+                    {
+                        UtilityTypePresets.SingleEnemyInDirection => new UtilityType.SingleEnemyInDirection(),
+                        UtilityTypePresets.SingleEnemyInRange => new UtilityType.SingleEnemyInRange(ud.x),
+                        UtilityTypePresets.Cooldown => new UtilityType.Cooldown(ud.x),
+                        UtilityTypePresets.PenalizeDanger => new UtilityType.PenalizeDanger(),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    return baseUtility * it.multiplier;
+                }).ToList();
+                if (utilities.Count == 0)
+                {
+                    return (UtilityType)10f;
+                }
+                UtilityType agg = utilities[0];
+                bool firstOne = true;
+                foreach (var utilityType in utilities)
+                {
+                    if (firstOne)
+                    {
+                        agg = utilityType;
+                        firstOne = false;
+                    }
+                    else
+                    {
+                        agg += utilityType;
+                    }
+                }
+                if (Math.Abs(constantMultiplier - 1) > 0.01f)
+                {
+                    return agg * constantMultiplier + (UtilityType)constantAdder;
+                }
+                return agg;
+            }
+
+            public UtilitySetting()
+            {
+                utilityTypes = new List<UtilityTypeTemplate>();
+            }
         }
         
         protected void CopyBaseParameters(UsableItem item)
@@ -99,11 +172,15 @@ namespace Cafeo.Templates
             item.orbit = orbit;
             item.tags = tags;
             item.knockbackPower = knockbackPower;
+            item.utilityType = utilitySetting.Generate();
         }
 
         private void Reset()
         {
+            tags.Clear();
             tags.Add(UsableItem.ItemTag.FreeDPS);
+            utilitySetting.utilityTypes.Clear();
+            utilitySetting.utilityTypes.Add(new UtilityTypeTemplate {preset = UtilityTypePresets.SingleEnemyInDirection});
             timePoints.active = 0.3f;
             timePoints.recovery = 0.05f;
         }

@@ -1,9 +1,11 @@
-﻿using Cafeo.Castable;
+﻿using System;
+using Cafeo.Castable;
 using UnityEngine;
 using static System.Single;
 
 namespace Cafeo.Utility
 {
+    [Serializable]
     public class UtilityType
     {
         public float multiplier = 1;

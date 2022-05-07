@@ -23,6 +23,8 @@ namespace Cafeo
         private Collider2D _collider;
         private float _timer;
         private float _traveledDistance;
+
+        public bool isMelee;
         
         public Vector2 Velocity => _body.velocity;
 
@@ -64,6 +66,7 @@ namespace Cafeo
 
         public void RegisterMeleeOwner(UsableItem item)
         {
+            isMelee = true;
             item.onCounter.AddListener(SelfDestruct);
         }
 
@@ -237,6 +240,20 @@ namespace Cafeo
             {
                 SelfDestruct();
             }
+        }
+
+        public void IncBounce(int k)
+        {
+            if (bounce >= 0)
+            {
+                bounce += k;
+            }
+        }
+
+        public void IncPierce(int k)
+        {
+            pierce = Mathf.Max(0, pierce);
+            pierce += k;
         }
 
         private void OnCollisionEnter2D(Collision2D col)

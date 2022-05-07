@@ -66,6 +66,10 @@ namespace Cafeo
                 bool isDebuff = v < 0;
                 string buffHumanize = isDebuff ? "debuff" : "buff";
                 s.displayName = $"{dst} {buffHumanize}";
+                if (!string.IsNullOrEmpty(buffNameOverride))
+                {
+                    s.displayName = buffNameOverride;
+                }
                 switch (dst)
                 {
                     case SecondaryAttr.Atk:

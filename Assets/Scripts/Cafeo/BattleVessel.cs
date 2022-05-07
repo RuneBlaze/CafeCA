@@ -92,6 +92,11 @@ namespace Cafeo
             AddForce(dir.normalized * 350f);
             ApplyStun(0.5f);
         }
+        
+        public IEnumerable<IPassiveEffect> PassiveEffects()
+        {
+            return from effect in statusEffects where effect.passiveEffect != null select effect.passiveEffect;
+        }
 
         private void Awake()
         {
@@ -187,6 +192,14 @@ namespace Cafeo
         public void ActivateItem(UsableItem item, bool secondary = false)
         {
             if (!CanUseItem(item)) return;
+            if (item.oldActive < 0)
+            {
+                item.oldActive = item.active;
+            }
+            foreach (var effect in PassiveEffects())
+            {
+                effect.InfluenceSkill(item);
+            }
             soul.mp -= item.mpCost;
             soul.cp -= item.cpCost;
             item.Setup(this);
@@ -214,6 +227,7 @@ namespace Cafeo
             if (state == State.Active)
             {
                 activeItem.OnCounter(this);
+                activeItem.Reset();
                 activeItem = null;
             }
         }

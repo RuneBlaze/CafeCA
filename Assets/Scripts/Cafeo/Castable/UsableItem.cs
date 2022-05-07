@@ -153,6 +153,8 @@ namespace Cafeo.Castable
             utilityType?.OnTryUsing(user);
         }
 
+        public float oldActive = -1; // kept track for the dynamic calculation of duration for effects
+
         public virtual void OnUse(BattleVessel user)
         {
             utilityType?.OnUse(user);
@@ -273,6 +275,11 @@ namespace Cafeo.Castable
         public bool CompareStatusTag(IStatusTag statusTag)
         {
             return Equals(statusTag);
+        }
+
+        public virtual void Reset()
+        {
+            
         }
     }
 }

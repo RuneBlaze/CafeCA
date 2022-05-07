@@ -28,9 +28,6 @@ namespace Cafeo.Templates
             var item = new MeleeItem(1 + sizeModifier, 1 + rangeModifier);
             CopyBaseParameters(item);
             item.meleeType = meleeType;
-            item.utilityType = (UtilityType) 10f;
-            // item.active = 0.3f;
-            // item.recovery = 0.05f;
             item.AddTag(UsableItem.ItemTag.FreeDPS);
             return item;
         }

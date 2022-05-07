@@ -34,7 +34,14 @@ MonoBehaviour:
   hitEffects:
     buffs: []
   orbit: 1
-  tags: 02000000020000000200000002000000020000000200000002000000020000000200000002000000
+  tags: 02000000
+  utilitySetting:
+    utilityTypes:
+    - preset: 0
+      userData: {x: 1, y: 0, z: 0, w: 0}
+      multiplier: 1
+    constantAdder: 0
+    constantMultiplier: 1
   meleeType: 5
   sizeModifier: 0
   speedModifier: 0

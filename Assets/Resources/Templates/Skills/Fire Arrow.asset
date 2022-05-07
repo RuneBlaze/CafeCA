@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68235120ec2249e6a8c0bc7c14d99e5e, type: 3}
+  m_Name: Fire Arrow
+  m_EditorClassIdentifier: 
+  displayName: "\u706B\u7130\u4E4B\u77E2"
+  id: 
+  icon: {fileID: 21300000, guid: 8c5e5033fe838ef40989eeb85a513b7f, type: 3}
+  lore: 
+  tint: 0
+  description: 
+  mpCost: 10
+  cpCost: 0
+  power: 100
+  knockbackPower: 1
+  powerType: 0
+  damageType: 0
+  hitType: 2
+  hitStun: 0.2
+  timePoints:
+    startUp: 0
+    active: 0.05
+    recovery: 0.05
+  stopOnUse: 0
+  hitEffects:
+    buffs:
+    - dst: 5
+      calcExpr: -0.1 * atk
+      duration: 5
+      buffNameOverride: "\u71C3\u70E7"
+      presetSpecifier:
+        presetName: 
+        userData: {x: 0, y: 0, z: 0, w: 0}
+      eternal: 0
+  orbit: 1
+  tags: 
+  utilitySetting:
+    utilityTypes: []
+    constantAdder: 0
+    constantMultiplier: 1
+  shots: 1
+  fan: 0
+  spread: 0
+  duration: 0
+  instability: 5
+  withPrimaryShot: 0
+  pierce: 1
+  bounce: -1
+  speed: -1
+  acceleration: -1
+  simpleProjectile: {fileID: 11400000, guid: 9bd0eb72b7bbc7d45a2034fb0b889e03, type: 2}
+  projectilePrefab: {fileID: 0}

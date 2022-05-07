@@ -22,6 +22,7 @@ MonoBehaviour:
     restSkills:
     - {fileID: 11400000, guid: a930f35bf361be1458a07e36657cdadb, type: 2}
     - {fileID: 11400000, guid: e909a181e76505c4f9e741611f1bd8dd, type: 2}
+    - {fileID: 11400000, guid: 9d514de3433303a4c9a844d12841a37e, type: 2}
   - treasure: {fileID: 0}
     oneTimeUses: []
     restSkills:
