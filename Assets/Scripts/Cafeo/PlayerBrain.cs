@@ -114,7 +114,7 @@ namespace Cafeo
             }
 
             bool usedItem = false;
-            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.Z))
             {
                 usedItem = true;
                 vessel.ActivateItem();

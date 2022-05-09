@@ -49,6 +49,16 @@ namespace Cafeo.UI
                     Db.Generate<IDroppable>(id));
             });
             
+            RegisterCommand("spawnGood",new [] { ArgType.String, ArgType.Int }, objects =>
+            {
+                var id = objects[0] as string;
+                var price = (int) objects[1];
+                var droppable = Scene.SpawnDroppable((Vector2) Scene.player.transform.position 
+                                     + VectorUtils.OnUnitCircle(Random.Range(0, 4 * Mathf.PI)) * 2, 
+                    Db.Generate<IDroppable>(id));
+                droppable.AttachPrice(price);
+            });
+            
             RegisterCommand("killAllies", new ArgType[] {} , _ =>
             {
                 foreach (var ally in Scene.Allies())

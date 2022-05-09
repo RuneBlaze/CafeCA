@@ -45,10 +45,22 @@ namespace Cafeo
             keys += count;
             onStashChanged.Invoke();
         }
-        
+
+        public void LoseKeys(int count)
+        {
+            keys -= count;
+            onStashChanged.Invoke();
+        }
+
         public void GainGold(int count)
         {
             gold += count;
+            onStashChanged.Invoke();
+        }
+
+        public void LoseGold(int count)
+        {
+            gold -= count;
             onStashChanged.Invoke();
         }
 

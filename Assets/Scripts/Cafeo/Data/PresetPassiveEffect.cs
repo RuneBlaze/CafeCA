@@ -31,5 +31,9 @@ namespace Cafeo.Data
         public abstract void EverySec(BattleVessel owner);
         public abstract void InfluenceProjectile(Projectile projectile);
         public abstract void InfluenceSkill(UsableItem item);
+        public virtual void OnDamage(BattleVessel owner)
+        {
+            
+        }
     }
 }

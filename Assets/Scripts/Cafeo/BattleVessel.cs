@@ -48,7 +48,25 @@ namespace Cafeo
         public float dashTimer;
         public float effectTimer;
         public DropInventory drops;
-        
+
+        public float startupMod;
+        public float activeMod;
+        public float recoveryMod;
+
+        public int evaMod; // evasion percentage
+        public int Eva => evaMod;
+
+        public int magEvaMod; // magic evasion percentage
+        public int MagEva => magEvaMod;
+
+        public int critMod;
+        public int Crit => critMod;
+
+        public float knockbackMod;
+        public float KnockbackScale => 1 + knockbackMod;
+        public float pushbackMod;
+        public float PushbackScale => 1 + pushbackMod;
+
         public AimerGroup Aimer => _aimer;
 
         public Treasure treasure;

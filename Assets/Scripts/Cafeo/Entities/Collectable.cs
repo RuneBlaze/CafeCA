@@ -13,12 +13,11 @@ namespace Cafeo.Entities
         public SizeScale sizeScale = SizeScale.Small;
         private IDroppable load;
         private float pickupWait = 1.0f; // time until this item can be picked up
-
         private SpriteRenderer sprite;
-
         private Color disabledColor;
-        // public CollectableLoad load;
-        
+
+        public int price = 0;
+
         public enum SizeScale
         {
             Small,
@@ -32,6 +31,13 @@ namespace Cafeo.Entities
             body = GetComponent<Rigidbody2D>();
         }
 
+        public void AttachPrice(int coins)
+        {
+            price = coins;
+            var tag = Scene.AttachLabel(transform);
+            tag.text = $"$ {price}";
+        }
+
         private void OnCollisionEnter2D(Collision2D col)
         {
             if (pickupWait > 0)
@@ -42,16 +48,32 @@ namespace Cafeo.Entities
             {
                 if (load != null)
                 {
-                    OnCollect(Scene.GetVesselFromGameObject(col.gameObject));
-                    Destroy(gameObject);
+                    if (price > 0)
+                    {
+                        if (col.gameObject == Scene.player.gameObject)
+                        {
+                            // only the player can buy the items
+                            var party = AllyParty.Instance;
+                            if (party.Gold >= price)
+                            {
+                                party.LoseGold(price);
+                                OnCollect(Scene.GetVesselFromGameObject(col.gameObject));
+                                Destroy(gameObject);
+                            }
+                            // .LoseGold();
+                        }
+                    }
+                    else
+                    {
+                        OnCollect(Scene.GetVesselFromGameObject(col.gameObject));
+                        Destroy(gameObject);
+                    }
                 }
             }
         }
 
         public virtual void Start()
         {
-            // Assert.IsNotNull(load);
-            
             collider = GetComponent<Collider2D>();
             sprite = GetComponent<SpriteRenderer>();
             disabledColor = new Color(1, 1, 1, 0.5f);

@@ -31,6 +31,7 @@ namespace Cafeo
         private GameObject popupPrefab;
         private GameObject collectablePrefab;
         private GameObject agentPrefab;
+        private GameObject entityLabelPrefab;
         [HideInInspector] public GameObject leaderAlly;
         public UnityEvent rogueUpdateEvent = new();
         [SerializeField] private Transform popupParent;
@@ -67,6 +68,9 @@ namespace Cafeo
                 .WaitForCompletion();
             keySprite = Addressables
                 .LoadAssetAsync<Sprite>("Assets/Graphics/Icons/Debug/Icons_09.png")
+                .WaitForCompletion();
+            entityLabelPrefab = Addressables
+                .LoadAssetAsync<GameObject>("Assets/Data/RoguePrefabs/EntityLabel.prefab")
                 .WaitForCompletion();
         }
 
@@ -211,13 +215,14 @@ namespace Cafeo
             popup.SetText(text);
         }
 
-        public void SpawnDroppable(Vector2 position, IDroppable droppable, Vector2 initialForce)
+        public Collectable SpawnDroppable(Vector2 position, IDroppable droppable, Vector2 initialForce)
         {
             var go = Instantiate(collectablePrefab, collectableParent);
             go.transform.position = position;
             var collectable = go.GetComponent<Collectable>();
             collectable.LateInit(droppable);
             collectable.BeThrown(initialForce);
+            return collectable;
         }
 
         public void SpawnCoin(Vector2 position, Vector2 initialForce)
@@ -266,9 +271,9 @@ namespace Cafeo
             }
         }
 
-        public void SpawnDroppable(Vector2 position, IDroppable droppable)
+        public Collectable SpawnDroppable(Vector2 position, IDroppable droppable)
         {
-            SpawnDroppable(position, droppable, Vector2.zero);
+            return SpawnDroppable(position, droppable, Vector2.zero);
         }
 
         public BattleVessel CalcLeaderAlly()
@@ -376,6 +381,14 @@ namespace Cafeo
             agent.aiType = template.aiType;
             agent.transform.position = pos;
             return agent;
+        }
+
+        public TextMesh AttachLabel(Transform parent)
+        {
+            var go = Instantiate(entityLabelPrefab, parent);
+            var label = go.GetComponent<TextMesh>();
+            go.transform.localPosition = Vector3.zero + Vector3.down * 0.5f;
+            return label;
         }
     }
 }

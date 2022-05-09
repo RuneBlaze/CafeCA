@@ -5,6 +5,7 @@ using Cafeo.Data;
 using Cafeo.Utility;
 using UnityEngine;
 using UnityEngine.Events;
+using Random = Unity.Mathematics.Random;
 
 namespace Cafeo.Castable
 {
@@ -227,6 +228,30 @@ namespace Cafeo.Castable
             ApplyHitEffects(user, target);
         }
 
+        public enum HitOutcome
+        {
+            Hit,
+            Miss,
+            Critical,
+        }
+
+        public virtual HitOutcome CalcOutcome(BattleVessel user, BattleVessel target)
+        {
+            // first roll for hit or miss
+            int outcome = UnityEngine.Random.Range(0, 100);
+            if (outcome < target.Eva)
+            {
+                return HitOutcome.Miss;
+            }
+
+            if (outcome > 100 - user.Crit)
+            {
+                return HitOutcome.Critical;
+            }
+
+            return HitOutcome.Hit;
+        }
+
         public virtual void ApplyCalculatedDamage(BattleVessel user, BattleVessel target, float stun, Vector2 knockback)
         {
             // deal HP, deal MP damage, etc.
@@ -237,27 +262,31 @@ namespace Cafeo.Castable
             }
             else
             {
-                var damage = powerType switch
+                var outcome = CalcOutcome(user, target);
+                if (outcome != HitOutcome.Miss)
                 {
-                    PowerType.Physical => Scene.CalculateDamageMelee(user, target, this),
-                    PowerType.Ranged => Scene.CalculateDamageRanged(user, target, this),
-                    _ => Scene.CalculateDamageMelee(user, target, this, true)
-                };
+                    var damage = powerType switch
+                    {
+                        PowerType.Physical => Scene.CalculateDamageMelee(user, target, this),
+                        PowerType.Ranged => Scene.CalculateDamageRanged(user, target, this),
+                        _ => Scene.CalculateDamageMelee(user, target, this, true)
+                    };
 
-                switch (damageType)
-                {
-                    case DamageType.Null:
-                        break;
-                    case DamageType.HpDamage:
-                        target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Hp);
-                        break;
-                    case DamageType.MpDamage:
-                        target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Mp);
-                        break;
-                    case DamageType.HpRecovery:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    switch (damageType)
+                    {
+                        case DamageType.Null:
+                            break;
+                        case DamageType.HpDamage:
+                            target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Hp);
+                            break;
+                        case DamageType.MpDamage:
+                            target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Mp);
+                            break;
+                        case DamageType.HpRecovery:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
             }
         }
