@@ -1,6 +1,7 @@
 ﻿using System;
 using BehaviorDesigner.Runtime;
 using Cafeo.Castable;
+using Cafeo.Data;
 using Cafeo.Utils;
 using UnityEngine;
 
@@ -73,6 +74,11 @@ namespace Cafeo.Aimer
                     tossAimer.Item = tossItem;
                     tossAimer.Refresh();
                     break;
+                case OneTimeUseItem oneTimeUseItem:
+                    RequestAimer(oneTimeUseItem.underlying);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(item), item, null);
             }
         }
 

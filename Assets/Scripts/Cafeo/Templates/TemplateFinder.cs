@@ -35,6 +35,7 @@ namespace Cafeo.Templates
             if (template.id != null)
             {
                 templates[template.id.Trim()] = template;
+                Debug.Log($"Registered {template.GetType().Name} with id {template.id}");
             }
         }
         
@@ -56,6 +57,18 @@ namespace Cafeo.Templates
             {
                 Register(soulTemplate);
             }
+            
+            foreach (var oneTimeUseTemplate in AllTemplatesOfType<OneTimeUseTemplate>())
+            {
+                Register(oneTimeUseTemplate);
+            }
+            
+            foreach (var skillTemplate in AllTemplatesOfType<SkillTemplate>())
+            {
+                Register(skillTemplate);
+            }
+            
+            
         }
     }
 }

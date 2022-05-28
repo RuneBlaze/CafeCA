@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2648bc93d0a44958736f262b373cdae, type: 3}
   m_Name: New OneTimeUseTemplate
   m_EditorClassIdentifier: 
-  displayName: New OneTimeUseTemplate
-  icon: {fileID: 0}
+  displayName: Shuriken
+  id: shuriken
+  icon: {fileID: 21300000, guid: e7bf34a834730ee48a675da832585383, type: 3}
+  lore: 
   tint: 0
-  skill: {fileID: 0}
+  skill: {fileID: 11400000, guid: 9d514de3433303a4c9a844d12841a37e, type: 2}
+  charges: 15

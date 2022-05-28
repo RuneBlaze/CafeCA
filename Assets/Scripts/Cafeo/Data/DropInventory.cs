@@ -65,5 +65,39 @@ namespace Cafeo.Data
             };
             return inventory;
         }
+        
+        public static DropInventory OneTimeUseItems(List<OneTimeUseItem> items)
+        {
+            DropInventory inventory = new DropInventory
+            {
+                oneTimeUseItems = items
+            };
+            return inventory;
+        }
+        
+        public static DropInventory SingleItem(OneTimeUseItem item)
+        {
+            DropInventory inventory = new DropInventory
+            {
+                oneTimeUseItems = new List<OneTimeUseItem> { item }
+            };
+            return inventory;
+        }
+
+        public static DropInventory operator +(DropInventory lhs, DropInventory rhs)
+        {
+            var inventory = new DropInventory
+            {
+                coins = lhs.coins + rhs.coins,
+                keys = lhs.keys + rhs.keys
+            };
+            inventory.oneTimeUseItems.AddRange(lhs.oneTimeUseItems);
+            inventory.oneTimeUseItems.AddRange(rhs.oneTimeUseItems);
+            inventory.treasures.AddRange(lhs.treasures);
+            inventory.treasures.AddRange(rhs.treasures);
+            inventory.charms.AddRange(lhs.charms);
+            inventory.charms.AddRange(rhs.charms);
+            return inventory;
+        }
     }
 }

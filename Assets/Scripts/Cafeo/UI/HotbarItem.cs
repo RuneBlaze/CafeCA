@@ -1,4 +1,5 @@
 ﻿using Cafeo.Castable;
+using Cafeo.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,11 +8,14 @@ namespace Cafeo.UI
     public class HotbarItem : MonoBehaviour
     {
         [SerializeField] private Image image;
+        [SerializeField] private Text restCount;
         public void SetItem(UsableItem item, bool onUse)
         {
             if (item == null)
             {
+                image.sprite = null;
                 image.color = Color.grey;
+                restCount.text = "";
                 return;
             }
 
@@ -38,6 +42,15 @@ namespace Cafeo.UI
             else
             {
                 image.color = Color.white;
+            }
+            
+            if (item is OneTimeUseItem oneTimeUseItem)
+            {
+                restCount.text = oneTimeUseItem.charges.ToString();
+            }
+            else
+            {
+                restCount.text = "";
             }
         }
     }

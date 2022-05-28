@@ -939,6 +939,7 @@ namespace Cafeo
         
         public bool CanUseItem(UsableItem item)
         {
+            if (item == null) return false;
             if (item.HasTag(UsableItem.ItemTag.Dash))
             {
                 return CanDash;

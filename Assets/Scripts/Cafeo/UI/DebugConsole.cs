@@ -68,6 +68,13 @@ namespace Cafeo.UI
                 }
             });
             
+            RegisterCommand("gainItem", new [] {ArgType.String}, objects =>
+            {
+                var id = objects[0] as string;
+                var itemTemplate = TemplateFinder.Instance.RetrieveTemplate<OneTimeUseTemplate>(id);
+                Scene.player.TryGainOneTimeUse(itemTemplate.Generate());
+            });
+            
             RegisterCommand("revive", new ArgType[] {}, _ =>
             {
                 foreach (var ally in Scene.Allies())
