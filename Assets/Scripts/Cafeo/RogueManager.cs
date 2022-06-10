@@ -380,6 +380,7 @@ namespace Cafeo
             agent.soul = soul;
             agent.aiType = template.aiType;
             agent.transform.position = pos;
+            template.ModifyVessel(agent);
             return agent;
         }
 

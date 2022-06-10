@@ -10,18 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 177202acf53e430bb78a4fa0edf1ede4, type: 3}
-  m_Name: New WearableTemplate
+  m_Name: BoyBasicSneaker
   m_EditorClassIdentifier: 
-  displayName: New WearableTemplate
-  id: 
-  icon: {fileID: 21300000, guid: f81ad0e0cb6d5fb4485a3a97b45fe128, type: 3}
+  displayName: BoyBasicSneaker
+  id: garment:b_basic_sneaker
+  icon: {fileID: 0}
+  lore: 
   tint: 0
   description: 
   lines: 32
-  sizeBias: 2
-  garmentKind: 4
+  sizeBias: 0
+  garmentKind: 10
   composition: 0
-  color: 0
+  color: 4
   colorModifier: 0
   styleAttributes:
     seriousness: 0

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177202acf53e430bb78a4fa0edf1ede4, type: 3}
+  m_Name: BasicSocks
+  m_EditorClassIdentifier: 
+  displayName: BasicSocks
+  id: garment:basic_socks
+  icon: {fileID: 0}
+  lore: 
+  tint: 0
+  description: 
+  lines: 2
+  sizeBias: 0
+  garmentKind: 9
+  composition: 4
+  color: 0
+  colorModifier: 0
+  styleAttributes:
+    seriousness: 0
+    structure: 0
+    heaviness: 0
+  styleElements: 0

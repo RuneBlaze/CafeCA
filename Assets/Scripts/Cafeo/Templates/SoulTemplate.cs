@@ -49,5 +49,10 @@ namespace Cafeo.Templates
             baseAttrs.CopyTo(soul.baseAttrs);
             return soul;
         }
+
+        public virtual void ModifyVessel(BattleVessel vessel)
+        {
+            
+        }
     }
 }

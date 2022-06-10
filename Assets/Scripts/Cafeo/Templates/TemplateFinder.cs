@@ -20,6 +20,9 @@ namespace Cafeo.Templates
 
         private Dictionary<string, ITemplate<object>> templates;
 
+        public List<WearableTemplate> wearableTemplates;
+        public List<FashionShopTemplate> fashionShopTemplates;
+
         public T Generate<T>(string id) where T: class
         {
             return (templates[id.Trim()]).Generate() as T;
@@ -43,6 +46,7 @@ namespace Cafeo.Templates
         {
             base.Setup();
             templates = new Dictionary<string, ITemplate<object>>();
+            wearableTemplates = new List<WearableTemplate>();
             foreach (var charmTemplate in AllTemplatesOfType<CharmTemplate>())
             {
                 Register(charmTemplate);
@@ -68,7 +72,16 @@ namespace Cafeo.Templates
                 Register(skillTemplate);
             }
             
+            foreach (var fashionShopTemplate in AllTemplatesOfType<FashionShopTemplate>())
+            {
+                Register(fashionShopTemplate);
+                fashionShopTemplates.Add(fashionShopTemplate);
+            }
             
+            foreach (var wearableTemplate in AllTemplatesOfType<WearableTemplate>())
+            {
+                wearableTemplates.Add(wearableTemplate);
+            }
         }
     }
 }

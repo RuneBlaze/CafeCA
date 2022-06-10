@@ -74,6 +74,7 @@ namespace Cafeo.Templates
             SingleEnemyInDirection,
             Cooldown,
             PenalizeDanger,
+            Disregarding,
         }
 
         [Serializable]
@@ -101,6 +102,7 @@ namespace Cafeo.Templates
                         UtilityTypePresets.SingleEnemyInRange => new UtilityType.SingleEnemyInRange(ud.x),
                         UtilityTypePresets.Cooldown => new UtilityType.Cooldown(ud.x),
                         UtilityTypePresets.PenalizeDanger => new UtilityType.PenalizeDanger(),
+                        UtilityTypePresets.Disregarding => new UtilityType.Disregarding(),
                         _ => throw new ArgumentOutOfRangeException()
                     };
                     return baseUtility * it.multiplier;
@@ -178,7 +180,7 @@ namespace Cafeo.Templates
         private void Reset()
         {
             tags.Clear();
-            tags.Add(UsableItem.ItemTag.FreeDPS);
+            // tags.Add(UsableItem.ItemTag.FreeDPS);
             utilitySetting.utilityTypes.Clear();
             utilitySetting.utilityTypes.Add(new UtilityTypeTemplate {preset = UtilityTypePresets.SingleEnemyInDirection});
             timePoints.active = 0.3f;

@@ -10,7 +10,7 @@ namespace Cafeo.Castable
     {
         public float radius = 0.2f;
         public float distance = 2f;
-        public float bodyThrust = 8f;
+        public float bodyThrust = 32f;
         public MeleeType meleeType;
         private Collider2D[] _results = new Collider2D[10];
         private float lastUse = NegativeInfinity;
@@ -151,6 +151,7 @@ namespace Cafeo.Castable
                     proj = CreateMeleeProjectile(bodyRushType, user, user.transform.position, Vector2.zero);
                     proj.RegisterMeleeOwner(this);
                     proj.MoveUnder(user);
+                    // Debug.Log(aimDirection.normalized);
                     user.AddForce(aimDirection.normalized * bodyThrust);
                     break;
             }

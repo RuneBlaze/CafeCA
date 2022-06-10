@@ -14,7 +14,7 @@ namespace Cafeo.MapGen
             var dir = new[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
             foreach (var d in dir)
             {
-                PlaceEnemySpawner("test_slime", d * 3);
+                PlaceEnemySpawner("skeleton_archer", d * 3);
             }
         }
 

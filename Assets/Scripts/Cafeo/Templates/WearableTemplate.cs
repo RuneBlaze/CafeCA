@@ -60,6 +60,26 @@ namespace Cafeo.Templates
             Girls = 1 << 6,
         }
 
+        public FashionLine EffectiveLine
+        {
+            get
+            {
+                var line = lines;
+                // if unisex, then both men and women. If children, then both boys and girls
+                if ((int)(line & FashionLine.Unisex) != 0)
+                {
+                    line |= FashionLine.Men | FashionLine.Women;
+                }
+
+                if ((int)(line & FashionLine.Children) != 0)
+                {
+                    line |= FashionLine.Boys | FashionLine.Girls;
+                }
+
+                return line;
+            }
+        }
+
         public enum SizeBias
         {
             None,
@@ -86,6 +106,11 @@ namespace Cafeo.Templates
             Jewelry,
             UndergarmentBottom,
             UndergarmentTop,
+        }
+
+        public static bool IsShoe(GarmentKind kind)
+        {
+            return kind is GarmentKind.Sneakers or GarmentKind.Boots or GarmentKind.Slippers;
         }
 
         [Flags]
@@ -194,6 +219,8 @@ namespace Cafeo.Templates
         {
             None = 0,
             Romantic = 1 << 1,
+            Minimalistic = 1 << 2,
+            Preppy = 1 << 3,
         }
     }
 }

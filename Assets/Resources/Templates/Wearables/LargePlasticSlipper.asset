@@ -9,22 +9,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 261a7b863cc24cf5b7828efb2c3d6320, type: 3}
-  m_Name: New WearableWeaponTemplate
+  m_Script: {fileID: 11500000, guid: 177202acf53e430bb78a4fa0edf1ede4, type: 3}
+  m_Name: LargePlasticSlipper
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: LargePlasticSlipper
+  id: garment:l_plastic_slipper
   icon: {fileID: 0}
+  lore: 
   tint: 0
   description: 
-  lines: 0
-  sizeBias: 0
-  garmentKind: 4
-  composition: 2048
-  color: 3
+  lines: 4
+  sizeBias: 2
+  garmentKind: 12
+  composition: 64
+  color: 0
   colorModifier: 0
   styleAttributes:
     seriousness: 0
     structure: 0
     heaviness: 0
   styleElements: 0
-  associatedSkill: {fileID: 0}

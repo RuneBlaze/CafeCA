@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using Cafeo.Fashion;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Cafeo.Templates
 {
-    public class FashionShopTemplate : WithDisplayName
+    public class FashionShopTemplate : WithDisplayName, ITemplate<FashionBrand>
     {
         [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
         public WearableTemplate.FashionLine lines;
@@ -39,5 +40,16 @@ namespace Cafeo.Templates
         
         [BoxGroup("Historical Attributes", centerLabel: true)] [Range(0, 2)]
         public float scarcity = 1;
+
+        public string GenName()
+        {
+            var r = Random.Range(0, 999);
+            return $"{displayName} {r}";
+        }
+
+        public FashionBrand Generate()
+        {
+            return FashionBrand.FromTemplate(this);
+        }
     }
 }

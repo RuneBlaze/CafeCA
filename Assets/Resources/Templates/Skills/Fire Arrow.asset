@@ -42,9 +42,12 @@ MonoBehaviour:
         userData: {x: 0, y: 0, z: 0, w: 0}
       eternal: 0
   orbit: 1
-  tags: 
+  tags: 02000000
   utilitySetting:
-    utilityTypes: []
+    utilityTypes:
+    - preset: 1
+      userData: {x: 1, y: 1, z: 1, w: 1}
+      multiplier: 1
     constantAdder: 0
     constantMultiplier: 1
   shots: 1

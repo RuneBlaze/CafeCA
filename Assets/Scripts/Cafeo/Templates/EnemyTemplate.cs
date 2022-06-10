@@ -20,5 +20,16 @@ namespace Cafeo.Templates
             // soul.aiType = aiType;
             return soul;
         }
+
+        public override void ModifyVessel(BattleVessel vessel)
+        {
+            base.ModifyVessel(vessel);
+            for (var i = 0; i < skills.Count; i++)
+            {
+                var sk = skills[i].Generate();
+                vessel.hotbar[i] = sk;
+                Debug.Log("Added skill " + sk.name + " to hotbar");
+            }
+        }
     }
 }

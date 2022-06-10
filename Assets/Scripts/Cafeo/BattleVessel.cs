@@ -293,7 +293,7 @@ namespace Cafeo
 
         private void DebugSetup()
         {
-            hotbar = new UsableItem[HotbarMax];
+            // hotbar = new UsableItem[HotbarMax];
             if (IsPlayer)
             {
                 InitPlayerHotBar();
@@ -302,72 +302,72 @@ namespace Cafeo
             {
                 if (IsAlly)
                 {
-                    if (aiType == "ranged")
-                    {
-                        hotbar[0] = new RangedItem
-                        {
-                            projectileType = new ProjectileType
-                            {
-                                shape = new ProjectileType.RectShape(0.05f, 0.6f),
-                                collidable = true,
-                                speed = 17f,
-                                density = 50,
-                                pierce = 1,
-                                bounce = 0,
-                                bullet = true,
-                            },
-                            name = "测试用弓箭",
-                        };
-                        hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
-                        hotbar[0].AddTag(UsableItem.ItemTag.Approach);
-                    }
-                    else
-                    {
-                        // melee type ally initializer
-                        var sword = new MeleeItem(1f, 1f)
-                        {
-                            name = "测试长剑",
-                            meleeType = MeleeItem.MeleeType.BroadSword,
-                            active = 0.3f,
-                            recovery = 0.05f,
-                        };
-                        sword.utilityType += (UtilityType) 10f;
-                        hotbar[0] = sword;
-                        hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
-                        hotbar[1] = new RangedItem
-                        {
-                            projectileType = new ProjectileType
-                            {
-                                shape = new ProjectileType.RectShape(1.2f, 0.23f),
-                                collidable = false,
-                                speed = 7f,
-                                pierce = 3,
-                                bounce = 1,
-                                timeLimit = 0.4f,
-                            },
-                            startUp = 0.1f,
-                            name = "测试用剑气",
-                            withPrimaryShot = true,
-                            utilityType = new UtilityType.SingleEnemyInDirection()
-                        };
-                        hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
-                    }
-                }
-                else
-                {
-                    var rushSkill = new MeleeItem(0.2f, 1)
-                    {
-                        bodyThrust = 500f,
-                        name = "测试用冲刺",
-                        active = 0.5f,
-                        recovery = 0.5f,
-                        meleeType = MeleeItem.MeleeType.BodyRush,
-                    };
-                    rushSkill.utilityType = new UtilityType.Disregarding();
-                    hotbar[1] = rushSkill;
-                    hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
-                    SetHotboxPointer(1);
-                }
+                    // if (aiType == "ranged")
+                    // {
+                    //     hotbar[0] = new RangedItem
+                    //     {
+                    //         projectileType = new ProjectileType
+                    //         {
+                    //             shape = new ProjectileType.RectShape(0.05f, 0.6f),
+                    //             collidable = true,
+                
+                    //     bodyThrust = 500f,
+                    //     name = "测试用冲刺",
+                    //     active = 0.5f,
+                    //     recovery = 0.5f,
+                    //     meleeType = MeleeItem.MeleeType.BodyRush,
+                    //     utilityType = new UtilityType.Disregarding()
+                    // };
+                    // hotbar[1] = rushSkill;
+                    // hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
+                    // SetHotboxPointer(1);
+                }    //             speed = 17f,
+                    //             density = 50,
+                    //             pierce = 1,
+                    //             bounce = 0,
+                    //             bullet = true,
+                    //         },
+                    //         name = "测试用弓箭",
+                    //     };
+                    //     hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                    //     hotbar[0].AddTag(UsableItem.ItemTag.Approach);
+                    // }
+                    // else
+                    // {
+                    //     // melee type ally initializer
+                    //     var sword = new MeleeItem(1f, 1f)
+                    //     {
+                    //         name = "测试长剑",
+                    //         meleeType = MeleeItem.MeleeType.BroadSword,
+                    //         active = 0.3f,
+                    //         recovery = 0.05f,
+                    //     };
+                    //     sword.utilityType += (UtilityType) 10f;
+                    //     hotbar[0] = sword;
+                    //     hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                    //     hotbar[1] = new RangedItem
+                    //     {
+                    //         projectileType = new ProjectileType
+                    //         {
+                    //             shape = new ProjectileType.RectShape(1.2f, 0.23f),
+                    //             collidable = false,
+                    //             speed = 7f,
+                    //             pierce = 3,
+                    //             bounce = 1,
+                    //             timeLimit = 0.4f,
+                    //         },
+                    //         startUp = 0.1f,
+                    //         name = "测试用剑气",
+                    //         withPrimaryShot = true,
+                    //         utilityType = new UtilityType.SingleEnemyInDirection()
+                    //     };
+                    //     hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
+                    // }
+                // }
+                // else
+                // {
+                    // var rushSkill = new MeleeItem(0.2f, 1)
+                    // {
             }
 
             if (IsPlayer)

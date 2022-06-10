@@ -9,14 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8af123800112445c930a05d544b8de53, type: 3}
-  m_Name: New FashionShopTemplate
+  m_Script: {fileID: 11500000, guid: 177202acf53e430bb78a4fa0edf1ede4, type: 3}
+  m_Name: MensBasicSneaker
   m_EditorClassIdentifier: 
-  displayName: New FashionShopTemplate
-  lines: 12
+  displayName: Mens Basic Sneaker
+  id: garment:m_basic_sneaker
+  icon: {fileID: 0}
+  lore: 
+  tint: 0
+  description: 
+  lines: 4
   sizeBias: 0
-  garmentKinds: 0700000002000000
-  composition: 0
+  garmentKind: 10
+  composition: 514
   color: 0
   colorModifier: 0
   styleAttributes:
@@ -24,6 +29,3 @@ MonoBehaviour:
     structure: 0
     heaviness: 0
   styleElements: 0
-  prestige: 1
-  constructionQuality: 3
-  scarcity: 1
