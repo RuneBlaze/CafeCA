@@ -1,8 +1,10 @@
-﻿using Cafeo.Templates;
+﻿using System;
+using Cafeo.Templates;
 using UnityEngine;
 
 namespace Cafeo.Data
 {
+    [Serializable]
     public abstract record GarmentSize
     {
         public enum LetterSize
@@ -57,6 +59,7 @@ namespace Cafeo.Data
         // public abstract WearableTemplate.GarmentPosition ForPosition();
         public abstract string Localize();
         
+        [Serializable]
         public record ShoeSize : GarmentSize
         {
             public readonly int millimeters;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cafeo.Data;
+using Cafeo.Namer;
 using Cafeo.Templates;
 using Cafeo.Utils;
 using Sirenix.Utilities;
@@ -22,6 +23,7 @@ namespace Cafeo.Fashion
         public WearableTemplate.GarmentColorModifier colorModifier;
         public WearableTemplate.GarmentStyleAttributes styleAttributes;
         public WearableTemplate.GarmentStyleElements styleElements;
+        public NamingStyle namingStyle;
         public int prestige;
         public float constructionQuality;
         public float scarcity;
@@ -33,7 +35,8 @@ namespace Cafeo.Fashion
             WearableTemplate.GarmentMaterial composition, WearableTemplate.GarmentColor color,
             WearableTemplate.GarmentColorModifier colorModifier,
             WearableTemplate.GarmentStyleAttributes styleAttributes,
-            WearableTemplate.GarmentStyleElements styleElements, int prestige, float constructionQuality,
+            WearableTemplate.GarmentStyleElements styleElements, NamingStyle namingStyle, int prestige,
+            float constructionQuality,
             float scarcity)
         {
             this.displayName = displayName;
@@ -49,6 +52,7 @@ namespace Cafeo.Fashion
             this.prestige = prestige;
             this.constructionQuality = constructionQuality;
             this.scarcity = scarcity;
+            this.namingStyle = namingStyle;
             this.collections = new Dictionary<int, List<WearableSeries>>();
         }
 
@@ -57,6 +61,7 @@ namespace Cafeo.Fashion
             return new FashionBrand(template.GenName(), template.lines, template.garmentKinds, template.sizeBias,
                 template.composition,
                 template.color, template.colorModifier, template.styleAttributes, template.styleElements,
+                template.GenNamingStyle(),
                 template.prestige, template.constructionQuality, template.scarcity);
         }
 
@@ -191,7 +196,10 @@ namespace Cafeo.Fashion
                 colors.Add(template.color);
             }
 
-            return new WearableSeries(sizing.ToList(), colors, displayName, l, template.garmentKind, this,
+            var rawName = namingStyle.NameSome(template.garmentKind);
+
+            return new WearableSeries(sizing.ToList(), colors, $"{displayName} {rawName}", l, template.garmentKind,
+                this,
                 template.composition, template.colorModifier, template.styleAttributes, styleElements,
                 constructionQuality + Random.Range(-0.5f, 0.5f),
                 prestige + Random.Range(-0.5f, 0.5f),
@@ -216,6 +224,7 @@ namespace Cafeo.Fashion
                 Debug.Log("I have nothing to design for season " + fashionSeason);
                 return;
             }
+
             for (int i = 0; i < items; i++)
             {
                 var template = feasible.RandomElement();

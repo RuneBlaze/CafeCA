@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Ally
   - Enemy
+  - TownExterior
+  - TownInner
+  - TownInterior
+  - TownAgent
   layers:
   - Default
   - TransparentFX

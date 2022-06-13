@@ -57,7 +57,6 @@ namespace Cafeo.Fashion
                 fashionBrand.DesignFor(currentSeason);
             }
             onSeasonChange.Invoke();
-            // Debug.Log("Season " + currentSeason);
         }
     }
 }

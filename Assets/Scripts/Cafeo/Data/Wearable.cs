@@ -22,6 +22,9 @@ namespace Cafeo.Data
             this.cutQuality = cutQuality;
         }
 
+        public int Layer => WearableTemplate.GarmentKind2Layering(this.series.kind);
+        public WearableTemplate.GarmentPosition Position => WearableTemplate.GarmentKind2Position(series.kind);
+
         public float CalcFit(AgentSoul soul)
         {
             return size.CalcFit(soul);

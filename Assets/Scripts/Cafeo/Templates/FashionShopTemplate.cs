@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Cafeo.Fashion;
+using Cafeo.Namer;
+using Cafeo.Utils;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -41,10 +44,23 @@ namespace Cafeo.Templates
         [BoxGroup("Historical Attributes", centerLabel: true)] [Range(0, 2)]
         public float scarcity = 1;
 
+        [BoxGroup("Concept", centerLabel: true)]
+        public FashionBrandConcept concept;
+
         public string GenName()
         {
-            var r = Random.Range(0, 999);
-            return $"{displayName} {r}";
+            return concept switch
+            {
+                FashionBrandConcept.FastFashion => FashionBrandNamer.fastFashionBrands.RandomElement(),
+                FashionBrandConcept.WarriorMen => FashionBrandNamer.largeMenBrands.RandomElement(),
+                FashionBrandConcept.SportsBrand => FashionBrandNamer.sportsBrands.RandomElement(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        public NamingStyle GenNamingStyle()
+        {
+            return new NamingStyle.NumericsNamingStyle();
         }
 
         public FashionBrand Generate()

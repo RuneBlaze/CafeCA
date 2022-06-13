@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Cafeo.Data;
+using Cafeo.Templates;
 using Cafeo.Utils;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -48,9 +50,6 @@ namespace Cafeo
         public float carved = 0.5f;
         public float maleFeatureProminence = 1f;
         public float femaleFeatureProminence = 1f;
-
-        // public int gold;
-        // public string aiType;
 
         [SerializeField] private AgentPreset preset;
 
@@ -219,8 +218,49 @@ namespace Cafeo
             {
                 ConsumePreset();
             }
+
+            InitClothes();
         }
-        
+
+        private void InitClothes()
+        {
+            clothes = new Dictionary<WearableTemplate.GarmentPosition, List<Wearable>>();
+            foreach (var value in Enum.GetValues(typeof(WearableTemplate.GarmentPosition)))
+            {
+                var pos = (WearableTemplate.GarmentPosition) value;
+                clothes[pos] = new List<Wearable>();
+            }
+        }
+
+        public bool PutOn(Wearable wearable)
+        {
+            var layer = wearable.Layer;
+            var position = wearable.Position;
+            var positions = new List<WearableTemplate.GarmentPosition>();
+            foreach (var value in Enum.GetValues(typeof(WearableTemplate.GarmentPosition)))
+            {
+                var pos = (WearableTemplate.GarmentPosition) value;
+                if (position.HasFlag(pos))
+                {
+                    positions.Add(pos);
+                }
+            }
+            foreach (var garmentPosition in positions)
+            {
+                var listOfClothes = clothes[garmentPosition];
+                if (listOfClothes[^1].Layer >= layer)
+                {
+                    return false;
+                }
+            }
+            foreach (var garmentPosition in positions)
+            {
+                var listOfClothes = clothes[garmentPosition];
+                listOfClothes.Add(wearable);
+            }
+            return true;
+        }
+
         [Button("Consume Preset")]
 
         private void ConsumePreset()
@@ -253,6 +293,7 @@ namespace Cafeo
         }
         
         public bool Dead => hp <= 0;
-    }
 
+        public Dictionary<WearableTemplate.GarmentPosition, List<Wearable>> clothes;
+    }
 }

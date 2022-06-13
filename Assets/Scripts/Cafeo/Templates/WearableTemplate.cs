@@ -150,6 +150,33 @@ namespace Cafeo.Templates
             };
         }
 
+        public static int GarmentKind2Layering(GarmentKind kind)
+        {
+            // those that should be closer to the skin has lower value
+            // those that should be outer layer has higher value
+            return kind switch
+            {
+                GarmentKind.Weapon => 9,
+                GarmentKind.Tee => 2,
+                GarmentKind.Shirt => 3,
+                GarmentKind.Cardigan => 5,
+                GarmentKind.Coat => 6,
+                GarmentKind.Pant => 3,
+                GarmentKind.Blouse => 3,
+                GarmentKind.Dress => 3,
+                GarmentKind.Skirt => 3,
+                GarmentKind.Socks => 0,
+                GarmentKind.Sneakers => 5,
+                GarmentKind.Boots => 5,
+                GarmentKind.Slippers => 5,
+                GarmentKind.Hat => 5,
+                GarmentKind.Jewelry => 12,
+                GarmentKind.UndergarmentBottom => 0,
+                GarmentKind.UndergarmentTop => 0,
+                _ => 5,
+            };
+        }
+
         [System.Flags]
         public enum GarmentMaterial
         {
