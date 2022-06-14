@@ -3,11 +3,13 @@ using Cafeo.Utils;
 namespace Cafeo.World
 {
     /// <summary>
-    /// Abstract "real estate developer" that takes an empty map node and populates it.
-    /// It does not populate them with agents. They will "move in" later.
+    ///     Abstract "real estate developer" that takes an empty map node and populates it.
+    ///     It does not populate them with agents. They will "move in" later.
     /// </summary>
     public abstract class RealEstateDev
     {
+        public abstract void Furnish(TownOuterNode region);
+
         public class Mall : RealEstateDev
         {
             public override void Furnish(TownOuterNode region)
@@ -55,7 +57,5 @@ namespace Cafeo.World
                 region.color = Palette.milkYellow;
             }
         }
-
-        public abstract void Furnish(TownOuterNode region);
     }
 }

@@ -4,10 +4,9 @@ namespace Cafeo.Utils
 {
     public class WaitForRogueSeconds : CustomYieldInstruction
     {
-        public override bool keepWaiting => _timer < seconds;
+        private float _timer;
 
         public float seconds;
-        private float _timer;
 
         public WaitForRogueSeconds(float seconds)
         {
@@ -15,14 +14,12 @@ namespace Cafeo.Utils
             RogueManager.Instance.rogueUpdateEvent.AddListener(Handler);
         }
 
+        public override bool keepWaiting => _timer < seconds;
+
         private void Handler()
         {
             _timer += Time.deltaTime;
-            if (!keepWaiting)
-            {
-                RogueManager.Instance.rogueUpdateEvent.RemoveListener(Handler);
-            }
+            if (!keepWaiting) RogueManager.Instance.rogueUpdateEvent.RemoveListener(Handler);
         }
-        
     }
 }

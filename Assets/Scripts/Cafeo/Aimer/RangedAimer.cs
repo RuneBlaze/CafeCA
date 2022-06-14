@@ -1,8 +1,4 @@
-﻿using System;
-using BehaviorDesigner.Runtime;
-using Cafeo.Castable;
-using Cafeo.Utils;
-using UnityEngine;
+﻿using Cafeo.Castable;
 
 namespace Cafeo.Aimer
 {

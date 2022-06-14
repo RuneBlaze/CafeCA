@@ -7,6 +7,7 @@ namespace Cafeo.Entities
     {
         public DropInventory inventory;
         private bool consumed;
+
         private void OnCollisionEnter2D(Collision2D col)
         {
             var scene = RogueManager.Instance;

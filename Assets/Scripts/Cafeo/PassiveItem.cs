@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace Cafeo
+﻿namespace Cafeo
 {
     public class PassiveItem : AbstractItem
     {
@@ -11,21 +8,14 @@ namespace Cafeo
         {
             var user = owner;
             if (owner.IsAlly)
-            {
                 foreach (var ally in RogueManager.Instance.Allies())
-                {
-                    initEffects.Apply(owner, ally, 0);
-                }
-            }
+                    initEffects.Apply(owner, ally);
             else
-            {
-                initEffects.Apply(owner, owner, 0);
-            }
+                initEffects.Apply(owner, owner);
         }
 
         public void TearDown(BattleVessel owner)
         {
-            
         }
     }
 }

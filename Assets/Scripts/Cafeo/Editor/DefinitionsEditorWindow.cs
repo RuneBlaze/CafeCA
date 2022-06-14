@@ -35,7 +35,8 @@ namespace Cafeo.Editor
             return tree;
         }
 
-        protected void AddCreateButtonToToolbar<T>(string buttonLabelSuffix, string directoryPath) where T : WithDisplayName
+        protected void AddCreateButtonToToolbar<T>(string buttonLabelSuffix, string directoryPath)
+            where T : WithDisplayName
         {
             if (SirenixEditorGUI.ToolbarButton(new GUIContent("+" + buttonLabelSuffix)))
             {
@@ -51,17 +52,14 @@ namespace Cafeo.Editor
         protected override void OnBeginDrawEditors()
         {
             base.OnBeginDrawEditors();
-            var selected = this.MenuTree.Selection.FirstOrDefault();
-            var toolbarHeight = this.MenuTree.Config.SearchToolbarHeight;
+            var selected = MenuTree.Selection.FirstOrDefault();
+            var toolbarHeight = MenuTree.Config.SearchToolbarHeight;
 
             // Draws a toolbar with the name of the currently selected menu item.
             SirenixEditorGUI.BeginHorizontalToolbar(toolbarHeight);
             {
-                if (selected != null)
-                {
-                    GUILayout.Label(selected.Name);
-                }
-                
+                if (selected != null) GUILayout.Label(selected.Name);
+
                 AddCreateButtonToToolbar<SkillTemplate>("Skill", "Skills");
                 AddCreateButtonToToolbar<SkillTreeTemplate>("Skill Tree", "SkillTrees");
                 AddCreateButtonToToolbar<WearableTemplate>("Wearable", "Wearables");

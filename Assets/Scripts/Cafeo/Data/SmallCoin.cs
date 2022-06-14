@@ -1,4 +1,5 @@
-﻿using Cafeo.Entities;
+﻿using System;
+using Cafeo.Entities;
 using UnityEngine;
 
 namespace Cafeo.Data
@@ -7,6 +8,7 @@ namespace Cafeo.Data
     {
         public Sprite Icon => RogueManager.Instance.coinSprite;
         public Collectable.SizeScale SizeScale => Collectable.SizeScale.Small;
+
         public void OnPickedUp(BattleVessel vessel)
         {
             // var scene = RogueManager.Instance;
@@ -15,7 +17,7 @@ namespace Cafeo.Data
 
         public void OnDrop(BattleVessel owner)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

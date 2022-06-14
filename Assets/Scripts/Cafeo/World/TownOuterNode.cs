@@ -4,14 +4,38 @@ using UnityEngine;
 namespace Cafeo.World
 {
     /// <summary>
-    /// 
     /// </summary>
     public class TownOuterNode : TownNode
     {
         public List<TownInnerNode> interiorLocations;
         public TownRegion region;
-        public override TownRegion Region => region;
         public Color color;
+        public override TownRegion Region => region;
+
+        public IEnumerable<TownOuterNode> OuterNeighbors
+        {
+            get
+            {
+                foreach (var townOuterNode in region.OuterNeighbors(this)) yield return townOuterNode;
+            }
+        }
+
+        public IEnumerable<TownInteriorNode> InnerNeighbors
+        {
+            get
+            {
+                foreach (var townInnerNode in interiorLocations) yield return townInnerNode.Default;
+            }
+        }
+
+        public IEnumerable<TownNode> Neighbors
+        {
+            get
+            {
+                foreach (var townOuterNode in OuterNeighbors) yield return townOuterNode;
+                foreach (var townInnerNode in InnerNeighbors) yield return townInnerNode;
+            }
+        }
 
         protected override void Awake()
         {
@@ -34,40 +58,6 @@ namespace Cafeo.World
                 interiorLocations.Add(innerNode);
                 innerNode.Refresh();
                 innerNode.parent = this;
-            }
-        }
-
-        public IEnumerable<TownOuterNode> OuterNeighbors
-        {
-            get
-            {
-                foreach (var townOuterNode in region.OuterNeighbors(this)) yield return townOuterNode;
-            }
-        }
-
-        public IEnumerable<TownInteriorNode> InnerNeighbors
-        {
-            get
-            {
-                foreach (var townInnerNode in interiorLocations)
-                {
-                    yield return townInnerNode.Default;
-                }
-            }
-        }
-
-        public IEnumerable<TownNode> Neighbors
-        {
-            get
-            {
-                foreach (var townOuterNode in OuterNeighbors)
-                {
-                    yield return townOuterNode;
-                }
-                foreach (var townInnerNode in InnerNeighbors)
-                {
-                    yield return townInnerNode;
-                }
             }
         }
     }

@@ -1,9 +1,4 @@
-﻿using BehaviorDesigner.Runtime;
-using BehaviorDesigner.Runtime.Tasks;
-using BehaviorDesigner.Runtime.Tasks.Movement;
-using BehaviorDesigner.Runtime.Tasks.Movement.AstarPathfindingProject;
-using Cafeo.Castable;
-using UnityEngine;
+﻿using BehaviorDesigner.Runtime.Tasks;
 
 namespace Cafeo.Tasks
 {
@@ -17,12 +12,12 @@ namespace Cafeo.Tasks
         // [BehaviorDesigner.Runtime.Tasks.Tooltip("The distance that the agent is within to be considered 'close enough' to the target")]
         // public SharedFloat preferredDistance;
         // public SharedFloat maxRunningTime;
-        
+
         // private BattleVessel vessel;
         // private int mask;
         // public SharedFloat zoningSkillInterval;
         // private float timer;
-        
+
 
         // public override void OnStart()
         // {
@@ -34,9 +29,8 @@ namespace Cafeo.Tasks
         //     vessel.Brain.ClearQueue();
         //     vessel.Brain.SwitchToItemSatisfying(it => it.HasTag(UsableItem.ItemTag.Approach));
         // }
-        
-        
-        
+
+
         // Seek the destination. Return success once the agent has reached the destination.
         // Return running if the agent hasn't reached the destination yet
         // In general, we want to move towards the target until we have a clear sight of the

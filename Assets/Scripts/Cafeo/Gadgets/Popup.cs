@@ -1,5 +1,4 @@
-﻿using System;
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 
 namespace Cafeo.Gadgets
@@ -13,16 +12,15 @@ namespace Cafeo.Gadgets
         {
             textMesh.color = textColor;
             transform.DOMoveY(transform.position.y + 1, 1.2f).SetEase(Ease.OutBack);
-            DOTween.To(() => textMesh.color, 
-                    x => textMesh.color = x, 
+            DOTween.To(() => textMesh.color,
+                    x => textMesh.color = x,
                     new Color(textColor.r, textColor.b, textColor.b, 0), 1.21f)
                 .OnComplete(() => Destroy(gameObject));
         }
-        
+
         public void SetText(string text)
         {
             textMesh.text = text;
         }
-
     }
 }

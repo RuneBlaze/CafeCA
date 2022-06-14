@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using Cafeo;
 using Cafeo.Utils;
 
 namespace Cafeo.TestItems
@@ -8,7 +7,7 @@ namespace Cafeo.TestItems
     {
         public static IEnumerator GunnerRegen(BattleVessel user)
         {
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 yield return new WaitForRogueSeconds(1);
                 user.ApplyHealMp(25);

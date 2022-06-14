@@ -1,31 +1,23 @@
-﻿
-using System;
-using System.Linq;
+﻿using System.Linq;
 using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.Utils;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
-using Random = UnityEngine.Random;
 
 namespace Cafeo.MapGen
 {
     public class RandomMapGenerator : Singleton<RandomMapGenerator>
     {
+        private const int blockSize = 17;
         public int mapSeed;
         public int mapWidth;
         public int mapHeight;
-        private RandomMap randomMap;
-        private float timer;
         [SerializeField] private TilemapPlacer tilemapPlacer;
         [SerializeField] private AstarPath aStarPath;
-
-        private GameObject rogueDoorPrefab;
         [SerializeField] public Transform rogueDoorParent;
-        const int blockSize = 17;
 
         [SerializeField] private GameObject roomClearerPrefab;
         [SerializeField] private GameObject chestPrefab;
@@ -33,26 +25,15 @@ namespace Cafeo.MapGen
         public int currentRoom = -1;
 
         public UnityEvent finishedSpawning;
+        private RandomMap randomMap;
+
+        private GameObject rogueDoorPrefab;
+
+
+        private bool scanned;
+        private float timer;
 
         public AllyParty Party => AllyParty.Instance;
-
-        protected override void Setup()
-        {
-            base.Setup();
-            finishedSpawning = new UnityEvent();
-        }
-
-        public Vector2 MapCoord2WorldCoord(Vector2Int mapCoord)
-        {
-            return new Vector2(mapCoord.x * blockSize, mapCoord.y * blockSize) -
-                   (new Vector2(randomMap.startPoint.x, randomMap.startPoint.y)) * blockSize +
-                   new Vector2(blockSize, blockSize) / 2f;
-        }
-
-        public MapNode NodeById(int i)
-        {
-            return randomMap.nodes[i];
-        }
 
         public RogueManager Scene => RogueManager.Instance;
 
@@ -73,7 +54,7 @@ namespace Cafeo.MapGen
             foreach (var mapNode in randomMap.Dfs())
             {
                 // Debug.Log("Node: " + mapNode.id);
-                int id = mapNode.id;
+                var id = mapNode.id;
                 var pos = mapNode.position;
                 var roomPos = (pos - randomMap.startPoint) * blockSize;
                 var roomRect = new RectInt(roomPos, new Vector2Int(blockSize, blockSize));
@@ -92,40 +73,59 @@ namespace Cafeo.MapGen
                 var posX = (lhs.position.x + rhs.position.x) / 2f;
                 var posY = (lhs.position.y + rhs.position.y) / 2f;
                 go.transform.position =
-                    (new Vector3(posX, posY, 0) - (new Vector3(randomMap.startPoint.x, randomMap.startPoint.y))) *
+                    (new Vector3(posX, posY, 0) - new Vector3(randomMap.startPoint.x, randomMap.startPoint.y)) *
                     blockSize + new Vector3(blockSize, blockSize) / 2f;
                 if (horizontal)
-                {
                     go.transform.position += Vector3.up * 0.5f;
-                }
                 else
-                {
                     go.transform.position += Vector3.right * 0.5f;
-                }
             }
 
             Scene.InitializeBattleParty();
 
             foreach (var ally in Scene.Allies())
-            {
                 if (ally.IsLeaderAlly)
-                {
                     ally.transform.position = MapCoord2WorldCoord(randomMap.startPoint);
-                }
                 else
-                {
                     ally.transform.position = MapCoord2WorldCoord(randomMap.startPoint) + Random.insideUnitCircle * 2f;
-                }
-            }
 
-            for (int i = 1; i < randomMap.nodes.Count; i++)
-            {
-                randomMap.nodes[i].AfterSpawned();
-            }
+            for (var i = 1; i < randomMap.nodes.Count; i++) randomMap.nodes[i].AfterSpawned();
 
             Scene.rogueUpdateEvent.AddListener(RogueUpdate);
 
             // aStarPath.UpdateGraphs(new Bounds(Vector3.zero, new Vector3(mapWidth, mapHeight, 0)));
+        }
+
+        private void Update()
+        {
+        }
+
+        private void LateUpdate()
+        {
+            if (!scanned)
+            {
+                scanned = true;
+                Rescan();
+            }
+            // Debug.Log(World2Room(Scene.leaderAlly.transform.position));
+        }
+
+        protected override void Setup()
+        {
+            base.Setup();
+            finishedSpawning = new UnityEvent();
+        }
+
+        public Vector2 MapCoord2WorldCoord(Vector2Int mapCoord)
+        {
+            return new Vector2(mapCoord.x * blockSize, mapCoord.y * blockSize) -
+                   new Vector2(randomMap.startPoint.x, randomMap.startPoint.y) * blockSize +
+                   new Vector2(blockSize, blockSize) / 2f;
+        }
+
+        public MapNode NodeById(int i)
+        {
+            return randomMap.nodes[i];
         }
 
         private void Rescan()
@@ -141,20 +141,14 @@ namespace Cafeo.MapGen
         {
             // return new Vector2(mapCoord.x * blockSize, mapCoord.y * blockSize) - 
             //     (new Vector2(randomMap.startPoint.x, randomMap.startPoint.y)) * blockSize + new Vector2(blockSize, blockSize) / 2f;
-            var normalized = (pos) / blockSize + new Vector2(randomMap.startPoint.x, randomMap.startPoint.y);
+            var normalized = pos / blockSize + new Vector2(randomMap.startPoint.x, randomMap.startPoint.y);
             var nx = normalized.x;
             var ny = normalized.y;
             // const float threshold = 0.2f;
             var f = 0.12f;
-            if ((int)(nx - f) != (int)nx || (int)(ny - f) != (int)ny)
-            {
-                return -1;
-            }
+            if ((int)(nx - f) != (int)nx || (int)(ny - f) != (int)ny) return -1;
 
-            if ((int)(nx + f) != (int)nx || (int)(ny + f) != (int)ny)
-            {
-                return -1;
-            }
+            if ((int)(nx + f) != (int)nx || (int)(ny + f) != (int)ny) return -1;
 
 
             var ix = (int)nx;
@@ -164,10 +158,7 @@ namespace Cafeo.MapGen
             //     return -1;
             // }
 
-            if (randomMap.IsOccupied(new Vector2Int(ix, iy)))
-            {
-                return randomMap.geometry[ix][iy];
-            }
+            if (randomMap.IsOccupied(new Vector2Int(ix, iy))) return randomMap.geometry[ix][iy];
 
             return -1;
         }
@@ -177,25 +168,14 @@ namespace Cafeo.MapGen
             var positions = Scene.Allies().Select(it => World2Room(it.transform.position)).ToList();
             // return the consensus of the positions or -1 if there is no consensus
             var first = positions.First();
-            for (int i = 0; i < positions.Count; i++)
+            for (var i = 0; i < positions.Count; i++)
             {
-                if (positions[i] != first)
-                {
-                    return -1;
-                }
+                if (positions[i] != first) return -1;
 
-                if (positions[i] == -1)
-                {
-                    return -1;
-                }
+                if (positions[i] == -1) return -1;
             }
 
             return first;
-        }
-
-        private void Update()
-        {
-
         }
 
         private void RogueUpdate()
@@ -228,19 +208,6 @@ namespace Cafeo.MapGen
             }
         }
 
-
-        private bool scanned;
-
-        private void LateUpdate()
-        {
-            if (!scanned)
-            {
-                scanned = true;
-                Rescan();
-            }
-            // Debug.Log(World2Room(Scene.leaderAlly.transform.position));
-        }
-
         public GameObject SpawnRoomClearer(Vector2 pos)
         {
             var go = Instantiate(roomClearerPrefab, rogueDoorParent);
@@ -256,5 +223,5 @@ namespace Cafeo.MapGen
             chest.inventory = inventory;
             return go;
         }
-}
+    }
 }

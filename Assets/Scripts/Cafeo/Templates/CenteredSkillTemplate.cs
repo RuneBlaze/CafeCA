@@ -7,6 +7,12 @@ namespace Cafeo.Templates
     {
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public float explodeRange;
+
+        private void Reset()
+        {
+            hitType = TemplateHitType.HitAllies;
+        }
+
         public override UsableItem Generate()
         {
             var item = new TossItem
@@ -16,11 +22,6 @@ namespace Cafeo.Templates
                 maxDistance = 0
             };
             return item;
-        }
-        
-        private void Reset()
-        {
-            hitType = TemplateHitType.HitAllies;
         }
     }
 }

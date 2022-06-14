@@ -7,19 +7,37 @@ namespace Cafeo
     [Serializable]
     public class ProjectileType
     {
-        
-        [Serializable]
-        public abstract class ProjectileShape
-        {
-            public abstract Collider2D CreateCollider(GameObject gameObject);
-        }
-
         public enum PrimitiveShapes
         {
             Circle,
             Box,
-            Rect,
+            Rect
         }
+
+        public int pierce;
+        public int bounce = -1;
+        public bool hitAllies;
+        public bool hitEnemies;
+        public bool collidable;
+        public float timeLimit = 30f;
+        public float speed = 2f;
+        public float acceleration;
+        public float maxSpeed;
+        public float deltaSize;
+        public float maxSize;
+        public float density = 32f;
+        public bool kineticBody;
+        public float initialSpin;
+        public float boomerang;
+        public Vector2 initialFacing = Vector2.zero;
+        public float bounciness = 0.8f;
+        public bool bullet;
+        public bool followOwner;
+        public float homingRadius = 2f;
+        public float homingStrength;
+        public RotateType rotate;
+
+        public ProjectileShape shape;
 
         public static ProjectileShape CreatePrimitiveShape(PrimitiveShapes shapeType, Vector4 userData)
         {
@@ -30,6 +48,12 @@ namespace Cafeo
                 PrimitiveShapes.Rect => new RectShape(userData[0], userData[1]),
                 _ => throw new ArgumentOutOfRangeException(nameof(shapeType), shapeType, null)
             };
+        }
+
+        [Serializable]
+        public abstract class ProjectileShape
+        {
+            public abstract Collider2D CreateCollider(GameObject gameObject);
         }
 
         [Serializable]
@@ -75,6 +99,8 @@ namespace Cafeo
             public float height = 0.6f;
             public bool centering;
 
+            public Vector3[] vertices;
+
             public RectShape(float width, float height, bool centering = true)
             {
                 this.width = width;
@@ -82,20 +108,16 @@ namespace Cafeo
                 this.centering = centering;
             }
 
-            public Vector3[] vertices;
-
             public override Collider2D CreateCollider(GameObject gameObject)
             {
                 vertices = new Vector3[4];
                 var component = gameObject.AddComponent<BoxCollider2D>();
                 component.size = new Vector2(width, height);
-                if (!centering)
-                {
-                    component.offset = new Vector2(0, -height / 2 - 0.1f);
-                }
+                if (!centering) component.offset = new Vector2(0, -height / 2 - 0.1f);
                 return component;
             }
         }
+
         [Serializable]
         public class CustomShape : ProjectileShape
         {
@@ -118,10 +140,7 @@ namespace Cafeo
                 var src = prefab.GetComponent<PolygonCollider2D>();
                 var dst = gameObject.AddComponent<PolygonCollider2D>();
                 dst.points = src.points;
-                for (int i = 0; i < dst.points.Length; i++)
-                {
-                    dst.points[i] *= scale;
-                }
+                for (var i = 0; i < dst.points.Length; i++) dst.points[i] *= scale;
                 dst.offset = src.offset * scale;
                 vertices = new Vector3[dst.points.Length];
                 return dst;
@@ -138,7 +157,6 @@ namespace Cafeo
         {
             public ScytheShape() : base("Assets/Data/Shapes/Scythe.prefab")
             {
-                
             }
         }
 
@@ -146,7 +164,6 @@ namespace Cafeo
         {
             public GreatSwordShape() : base("Assets/Data/Shapes/GreatSword.prefab")
             {
-                
             }
         }
 
@@ -171,29 +188,5 @@ namespace Cafeo
                 this.speed = speed;
             }
         }
-
-        public ProjectileShape shape;
-        public int pierce;
-        public int bounce = -1;
-        public bool hitAllies;
-        public bool hitEnemies;
-        public bool collidable;
-        public float timeLimit = 30f;
-        public float speed = 2f;
-        public float acceleration;
-        public float maxSpeed;
-        public float deltaSize;
-        public float maxSize;
-        public float density = 32f;
-        public bool kineticBody = false;
-        public float initialSpin = 0;
-        public float boomerang = 0;
-        public Vector2 initialFacing = Vector2.zero;
-        public RotateType rotate;
-        public float bounciness = 0.8f;
-        public bool bullet;
-        public bool followOwner;
-        public float homingRadius = 2f;
-        public float homingStrength = 0;
     }
 }

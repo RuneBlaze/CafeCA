@@ -1,23 +1,10 @@
-﻿using System;
-using Cafeo.Data;
+﻿using Cafeo.Data;
 using UnityEngine;
-using UnityEngine.Assertions;
-using Random = UnityEngine.Random;
 
 namespace Cafeo.Entities
 {
     public class Collectable : MonoBehaviour
     {
-        private Rigidbody2D body;
-        private Collider2D collider;
-        public SizeScale sizeScale = SizeScale.Small;
-        private IDroppable load;
-        private float pickupWait = 1.0f; // time until this item can be picked up
-        private SpriteRenderer sprite;
-        private Color disabledColor;
-
-        public int price = 0;
-
         public enum SizeScale
         {
             Small,
@@ -25,27 +12,42 @@ namespace Cafeo.Entities
             Large
         }
 
-        public void LateInit(IDroppable droppable)
+        public SizeScale sizeScale = SizeScale.Small;
+
+        public int price;
+        private Rigidbody2D body;
+        private Collider2D collider;
+        private Color disabledColor;
+        private IDroppable load;
+        private float pickupWait = 1.0f; // time until this item can be picked up
+        private SpriteRenderer sprite;
+
+        protected RogueManager Scene => RogueManager.Instance;
+
+        public virtual void Start()
         {
-            load = droppable;
-            body = GetComponent<Rigidbody2D>();
+            collider = GetComponent<Collider2D>();
+            sprite = GetComponent<SpriteRenderer>();
+            disabledColor = new Color(1, 1, 1, 0.5f);
+            RogueManager.Instance.rogueUpdateEvent.AddListener(OnRogueUpdate);
+            sprite.sprite = load.Icon;
+            if (load != null) sizeScale = load.SizeScale;
+            body.drag = 0.8f;
+            body.mass = 3 + 3 * (int)sizeScale;
+            transform.localScale =
+                sizeScale == SizeScale.Small ? Vector3.one * 0.27f : Vector3.one * (0.34f + 0.33f * (int)sizeScale);
+            AfterDropped();
         }
 
-        public void AttachPrice(int coins)
+        private void Update()
         {
-            price = coins;
-            var tag = Scene.AttachLabel(transform);
-            tag.text = $"$ {price}";
+            sprite.color = pickupWait > 0 ? disabledColor : Color.white;
         }
 
         private void OnCollisionEnter2D(Collision2D col)
         {
-            if (pickupWait > 0)
-            {
-                return;
-            }
+            if (pickupWait > 0) return;
             if (col.collider.CompareTag("Ally"))
-            {
                 if (load != null)
                 {
                     if (price > 0)
@@ -69,25 +71,19 @@ namespace Cafeo.Entities
                         Destroy(gameObject);
                     }
                 }
-            }
         }
 
-        public virtual void Start()
+        public void LateInit(IDroppable droppable)
         {
-            collider = GetComponent<Collider2D>();
-            sprite = GetComponent<SpriteRenderer>();
-            disabledColor = new Color(1, 1, 1, 0.5f);
-            RogueManager.Instance.rogueUpdateEvent.AddListener(OnRogueUpdate);
-            sprite.sprite = load.Icon;
-            if (load != null)
-            {
-                sizeScale = load.SizeScale;
-            }
-            body.drag = 0.8f;
-            body.mass = 3 + 3 * (int) sizeScale;
-            transform.localScale = 
-                sizeScale == SizeScale.Small ? Vector3.one * 0.27f : Vector3.one * (0.34f + 0.33f * (int) sizeScale);
-            AfterDropped();
+            load = droppable;
+            body = GetComponent<Rigidbody2D>();
+        }
+
+        public void AttachPrice(int coins)
+        {
+            price = coins;
+            var tag = Scene.AttachLabel(transform);
+            tag.text = $"$ {price}";
         }
 
         public void AfterDropped()
@@ -95,19 +91,9 @@ namespace Cafeo.Entities
             body.AddForce(Random.insideUnitCircle * Random.Range(0, 2) * 10f);
         }
 
-        protected RogueManager Scene => RogueManager.Instance;
-
         protected virtual void OnCollect(BattleVessel collector)
         {
-            if (load.CanBePickedUp(collector))
-            {
-                load.OnPickedUp(collector);
-            }
-        }
-
-        private void Update()
-        {
-            sprite.color = pickupWait > 0 ? disabledColor : Color.white;
+            if (load.CanBePickedUp(collector)) load.OnPickedUp(collector);
         }
 
         private void OnRogueUpdate()

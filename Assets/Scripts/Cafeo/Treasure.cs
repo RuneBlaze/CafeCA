@@ -7,17 +7,17 @@ namespace Cafeo
     // 宝物
     public class Treasure : IDroppable, IStatusTag
     {
-        public BattleVessel owner;
         public string displayName;
-        public bool leaderEquipped;
-        public RogueManager Scene => RogueManager.Instance;
         public HitEffects leaderEffect;
-        public HitEffects otherEffects;
+        public bool leaderEquipped;
 
         public AbstractItem leaderSkill;
+        public HitEffects otherEffects;
         public AbstractItem otherSkill;
+        public BattleVessel owner;
 
-        public Treasure(string displayName, HitEffects leaderEffect, HitEffects otherEffects, AbstractItem leaderSkill, AbstractItem otherSkill, Sprite icon)
+        public Treasure(string displayName, HitEffects leaderEffect, HitEffects otherEffects, AbstractItem leaderSkill,
+            AbstractItem otherSkill, Sprite icon)
         {
             this.displayName = displayName;
             this.leaderEffect = leaderEffect;
@@ -30,6 +30,8 @@ namespace Cafeo
             otherEffects.statusTag = this;
         }
 
+        public RogueManager Scene => RogueManager.Instance;
+
         //
         // public Treasure(string displayName, AbstractItem leaderSkill, AbstractItem nonLeaderSkill, Sprite icon)
         // {
@@ -39,16 +41,14 @@ namespace Cafeo
         //     Icon = icon;
         // }
 
-        public Sprite Icon { get; private set; }
+        public Sprite Icon { get; }
         public Collectable.SizeScale SizeScale => Collectable.SizeScale.Large;
+
         public void OnPickedUp(BattleVessel vessel)
         {
             if (vessel.IsAlly)
             {
-                if (vessel.HasTreasure)
-                {
-                    vessel.DropTreasure();
-                }
+                if (vessel.HasTreasure) vessel.DropTreasure();
                 vessel.treasure = this;
                 vessel.onGainTreasure.Invoke(this);
                 var scene = RogueManager.Instance;
@@ -57,10 +57,7 @@ namespace Cafeo
                 {
                     leaderEquipped = true;
                     leaderEffect.Apply(vessel, vessel);
-                    foreach (var ally in scene.Allies())
-                    {
-                        otherEffects.Apply(leader, ally);
-                    }
+                    foreach (var ally in scene.Allies()) otherEffects.Apply(leader, ally);
                 }
                 else
                 {
@@ -78,6 +75,11 @@ namespace Cafeo
             TearDown(from);
         }
 
+        public bool CompareStatusTag(IStatusTag statusTag)
+        {
+            return Equals(statusTag);
+        }
+
         public void TearDown(BattleVessel vessel)
         {
             if (vessel.IsAlly)
@@ -88,10 +90,7 @@ namespace Cafeo
                 {
                     leaderEquipped = true;
                     leaderEffect.TearDown(vessel);
-                    foreach (var ally in scene.Allies())
-                    {
-                        otherEffects.TearDown(ally);
-                    }
+                    foreach (var ally in scene.Allies()) otherEffects.TearDown(ally);
                 }
                 else
                 {
@@ -102,11 +101,6 @@ namespace Cafeo
             {
                 vessel.drops.treasures.Remove(this);
             }
-        }
-
-        public bool CompareStatusTag(IStatusTag statusTag)
-        {
-            return Equals(statusTag);
         }
     }
 }

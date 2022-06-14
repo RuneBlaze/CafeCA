@@ -9,6 +9,7 @@ namespace Cafeo.Tasks
     {
         private AimerGroup _aimer;
         public SharedVariable<GameObject> targetObject;
+
         public override void OnStart()
         {
             _aimer = GetComponent<AimerGroup>();

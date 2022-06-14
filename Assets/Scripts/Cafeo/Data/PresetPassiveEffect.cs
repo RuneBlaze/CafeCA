@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Cafeo.Castable;
 using Cafeo.PresetEffects;
 using UnityEngine;
@@ -15,6 +14,17 @@ namespace Cafeo.Data
             this.userData = userData;
         }
 
+        public abstract void InitMyself(BattleVessel owner);
+        public abstract void TearDown(BattleVessel owner);
+        public abstract void EveryTick(BattleVessel owner);
+        public abstract void EverySec(BattleVessel owner);
+        public abstract void InfluenceProjectile(Projectile projectile);
+        public abstract void InfluenceSkill(UsableItem item);
+
+        public virtual void OnDamage(BattleVessel owner)
+        {
+        }
+
         public static PresetPassiveEffect FromPreset(string presetName, Vector4 userData)
         {
             return presetName switch
@@ -23,17 +33,6 @@ namespace Cafeo.Data
                 "generic_projectile" => new MoreBounceEffect(userData),
                 _ => throw new NotImplementedException($"{presetName} is not a valid preset name")
             };
-        }
-
-        public abstract void InitMyself(BattleVessel owner);
-        public abstract void TearDown(BattleVessel owner);
-        public abstract void EveryTick(BattleVessel owner);
-        public abstract void EverySec(BattleVessel owner);
-        public abstract void InfluenceProjectile(Projectile projectile);
-        public abstract void InfluenceSkill(UsableItem item);
-        public virtual void OnDamage(BattleVessel owner)
-        {
-            
         }
     }
 }

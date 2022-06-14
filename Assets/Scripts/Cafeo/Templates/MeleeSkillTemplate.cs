@@ -1,8 +1,5 @@
-﻿using System;
-using Cafeo.Castable;
-using Cafeo.Utility;
+﻿using Cafeo.Castable;
 using Sirenix.OdinInspector;
-using UnityEditor;
 
 namespace Cafeo.Templates
 {
@@ -13,15 +10,20 @@ namespace Cafeo.Templates
 
         [BoxGroup("Melee Specification", centerLabel: true)]
         public float sizeModifier;
-        
+
         [BoxGroup("Melee Specification", centerLabel: true)]
         public float speedModifier;
-        
+
         [BoxGroup("Melee Specification", centerLabel: true)]
         public float rangeModifier;
 
         [BoxGroup("Melee Specification", centerLabel: true)]
         public SkillTemplate additionalSkill;
+
+        private void Reset()
+        {
+            hitType = TemplateHitType.HitEnemies;
+        }
 
         public override UsableItem Generate()
         {
@@ -30,11 +32,6 @@ namespace Cafeo.Templates
             item.meleeType = meleeType;
             item.AddTag(UsableItem.ItemTag.FreeDPS);
             return item;
-        }
-
-        private void Reset()
-        {
-            hitType = TemplateHitType.HitEnemies;
         }
     }
 }

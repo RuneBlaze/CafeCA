@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using BehaviorDesigner.Runtime.ObjectDrawers;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -8,34 +6,6 @@ namespace Cafeo.Templates
 {
     public class WearableTemplate : WithIcon
     {
-        [BoxGroup("Basic Info", centerLabel: true)]
-        [HideLabel, TextArea(4, 14)]
-        public string description;
-
-        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
-        public FashionLine lines;
-        
-        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
-        public SizeBias sizeBias = SizeBias.None;
-        
-        [BoxGroup("Basic Info", centerLabel: true)] [EnumPaging]
-        public GarmentKind garmentKind = GarmentKind.Shirt;
-
-        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
-        public GarmentMaterial composition;
-
-        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
-        public GarmentColor color;
-        
-        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
-        public GarmentColorModifier colorModifier;
-
-        [BoxGroup("Style", centerLabel: true)] [EnumToggleButtons]
-        public GarmentStyleAttributes styleAttributes;
-        
-        [BoxGroup("Style", centerLabel: true)] [EnumToggleButtons]
-        public GarmentStyleElements styleElements;
-
         // [BoxGroup("Historical Attributes", centerLabel: true)]
         // public int yearDesigned;
         //
@@ -49,7 +19,7 @@ namespace Cafeo.Templates
         // [BoxGroup("Historical Attributes", centerLabel: true)] [Range(0, 5)]
         // public float constructionQuality = 2;
 
-        [System.Flags]
+        [Flags]
         public enum FashionLine
         {
             Unisex = 1 << 1,
@@ -57,34 +27,42 @@ namespace Cafeo.Templates
             Women = 1 << 3,
             Children = 1 << 4,
             Boys = 1 << 5,
-            Girls = 1 << 6,
+            Girls = 1 << 6
         }
 
-        public FashionLine EffectiveLine
+        public enum FashionSeason
         {
-            get
-            {
-                var line = lines;
-                // if unisex, then both men and women. If children, then both boys and girls
-                if ((int)(line & FashionLine.Unisex) != 0)
-                {
-                    line |= FashionLine.Men | FashionLine.Women;
-                }
-
-                if ((int)(line & FashionLine.Children) != 0)
-                {
-                    line |= FashionLine.Boys | FashionLine.Girls;
-                }
-
-                return line;
-            }
+            NoSpecific,
+            SpringSummer,
+            AutumnWinter,
+            Cruise
         }
 
-        public enum SizeBias
+        public enum GarmentColor
+        {
+            Raw,
+            White,
+            Black,
+            Red,
+            Blue,
+            Green,
+            Yellow,
+            Purple,
+            Orange,
+            Brown,
+            Gray
+        }
+
+        public enum GarmentColorModifier
         {
             None,
-            ForSmall,
-            ForLarge,
+            Pastel,
+            Light,
+            Dark,
+            Neutral,
+            Patterned,
+            DarkBlend,
+            LightBlend
         }
 
         public enum GarmentKind
@@ -105,12 +83,23 @@ namespace Cafeo.Templates
             Hat,
             Jewelry,
             UndergarmentBottom,
-            UndergarmentTop,
+            UndergarmentTop
         }
 
-        public static bool IsShoe(GarmentKind kind)
+        [Flags]
+        public enum GarmentMaterial
         {
-            return kind is GarmentKind.Sneakers or GarmentKind.Boots or GarmentKind.Slippers;
+            Leather = 1 << 1,
+            Cotton = 1 << 2,
+            Silk = 1 << 3,
+            Metal = 1 << 4,
+            Wood = 1 << 5,
+            Plastic = 1 << 6,
+            Glass = 1 << 7,
+            Paper = 1 << 8,
+            Rubber = 1 << 9,
+            Stone = 1 << 10,
+            Polyester = 1 << 11
         }
 
         [Flags]
@@ -122,7 +111,69 @@ namespace Cafeo.Templates
             UpperBody = 1 << 4,
             LowerBody = 1 << 5,
             Back = 1 << 6,
-            Other = 1 << 7,
+            Other = 1 << 7
+        }
+
+        [Flags]
+        public enum GarmentStyleElements
+        {
+            None = 0,
+            Romantic = 1 << 1,
+            Minimalistic = 1 << 2,
+            Preppy = 1 << 3
+        }
+
+        public enum SizeBias
+        {
+            None,
+            ForSmall,
+            ForLarge
+        }
+
+        [BoxGroup("Basic Info", centerLabel: true)] [HideLabel] [TextArea(4, 14)]
+        public string description;
+
+        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
+        public FashionLine lines;
+
+        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
+        public SizeBias sizeBias = SizeBias.None;
+
+        [BoxGroup("Basic Info", centerLabel: true)] [EnumPaging]
+        public GarmentKind garmentKind = GarmentKind.Shirt;
+
+        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
+        public GarmentMaterial composition;
+
+        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
+        public GarmentColor color;
+
+        [BoxGroup("Basic Info", centerLabel: true)] [EnumToggleButtons]
+        public GarmentColorModifier colorModifier;
+
+        [BoxGroup("Style", centerLabel: true)] [EnumToggleButtons]
+        public GarmentStyleAttributes styleAttributes;
+
+        [BoxGroup("Style", centerLabel: true)] [EnumToggleButtons]
+        public GarmentStyleElements styleElements;
+
+        public FashionLine EffectiveLine
+        {
+            get
+            {
+                var line = lines;
+                // if unisex, then both men and women. If children, then both boys and girls
+                if ((int)(line & FashionLine.Unisex) != 0) line |= FashionLine.Men | FashionLine.Women;
+
+                if ((int)(line & FashionLine.Children) != 0) line |= FashionLine.Boys | FashionLine.Girls;
+
+                return line;
+            }
+        }
+
+        public static bool IsShoe(GarmentKind kind)
+        {
+            return kind is GarmentKind.Sneakers or GarmentKind.Boots or GarmentKind.Slippers;
         }
 
         public static GarmentPosition GarmentKind2Position(GarmentKind kind)
@@ -146,7 +197,7 @@ namespace Cafeo.Templates
                 GarmentKind.Jewelry => GarmentPosition.Other,
                 GarmentKind.UndergarmentBottom => GarmentPosition.LowerBody,
                 GarmentKind.UndergarmentTop => GarmentPosition.UpperBody,
-                _ => GarmentPosition.Other,
+                _ => GarmentPosition.Other
             };
         }
 
@@ -173,81 +224,18 @@ namespace Cafeo.Templates
                 GarmentKind.Jewelry => 12,
                 GarmentKind.UndergarmentBottom => 0,
                 GarmentKind.UndergarmentTop => 0,
-                _ => 5,
+                _ => 5
             };
-        }
-
-        [System.Flags]
-        public enum GarmentMaterial
-        {
-            Leather = 1 << 1,
-            Cotton = 1 << 2,
-            Silk = 1 << 3,
-            Metal = 1 << 4,
-            Wood = 1 << 5,
-            Plastic = 1 << 6,
-            Glass = 1 << 7,
-            Paper = 1 << 8,
-            Rubber = 1 << 9,
-            Stone = 1 << 10,
-            Polyester = 1 << 11,
-        }
-
-        public enum GarmentColor
-        {
-            Raw,
-            White,
-            Black,
-            Red,
-            Blue,
-            Green,
-            Yellow,
-            Purple,
-            Orange,
-            Brown,
-            Gray,
-        }
-
-        public enum GarmentColorModifier
-        {
-            None,
-            Pastel,
-            Light,
-            Dark,
-            Neutral,
-            Patterned,
-            DarkBlend,
-            LightBlend,
-        }
-
-        public enum FashionSeason
-        {
-            NoSpecific,
-            SpringSummer,
-            AutumnWinter,
-            Cruise,
         }
 
         [Serializable]
         public class GarmentStyleAttributes
         {
-            [Range(-2, 2)]
-            public float seriousness;
-            
-            [Range(-2, 2)]
-            public float structure;
-            
-            [Range(-2, 2)]
-            public float heaviness;
-        }
+            [Range(-2, 2)] public float seriousness;
 
-        [Flags]
-        public enum GarmentStyleElements
-        {
-            None = 0,
-            Romantic = 1 << 1,
-            Minimalistic = 1 << 2,
-            Preppy = 1 << 3,
+            [Range(-2, 2)] public float structure;
+
+            [Range(-2, 2)] public float heaviness;
         }
     }
 }

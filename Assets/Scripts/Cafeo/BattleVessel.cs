@@ -6,7 +6,6 @@ using Cafeo.Castable;
 using Cafeo.Data;
 using Cafeo.Entities;
 using Cafeo.TestItems;
-using Cafeo.UI;
 using Cafeo.Utility;
 using Cafeo.Utils;
 using Drawing;
@@ -19,28 +18,24 @@ using Random = UnityEngine.Random;
 
 namespace Cafeo
 {
-    [RequireComponent(typeof(BoxCollider2D)), RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(BoxCollider2D))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class BattleVessel : MonoBehaviour, IRogueUpdate
     {
-        public AgentSoul soul;
-        private Rigidbody2D _body;
-        private BoxCollider2D _collider;
-        public bool IsPlayer { get; private set; }
+        public enum State
+        {
+            Idle,
+            StartUp,
+            Active,
+            Stun
+        }
 
-        private SpriteRenderer _sprite;
+        public const int HotbarMax = 10;
+        public const int TransientMax = 3;
+        public AgentSoul soul;
 
         public UsableItem[] hotbar = new UsableItem[HotbarMax];
-        public OneTimeUseItem[] oneTimeUseItems;
-        public int hotbarPointer = 0;
-        private AimerGroup _aimer;
-
-        public bool Dead => soul.Dead;
-
-        public bool IsLeaderAlly => gameObject == RogueManager.Instance.leaderAlly;
-
-        public List<StatusEffect> statusEffects = new();
-
-        public GenericBrain Brain { get; private set; }
+        public int hotbarPointer;
 
         public UnityEvent<State> enterState;
         public UnityEvent onDeath;
@@ -54,67 +49,88 @@ namespace Cafeo
         public float recoveryMod;
 
         public int evaMod; // evasion percentage
-        public int Eva => evaMod;
 
         public int magEvaMod; // magic evasion percentage
-        public int MagEva => magEvaMod;
 
         public int critMod;
-        public int Crit => critMod;
 
         public float knockbackMod;
-        public float KnockbackScale => 1 + knockbackMod;
         public float pushbackMod;
-        public float PushbackScale => 1 + pushbackMod;
-
-        public AimerGroup Aimer => _aimer;
-
-        public Treasure treasure;
 
         public UnityEvent<Treasure> onGainTreasure;
         public UnityEvent<Treasure> onLoseTreasure;
 
-        public const int HotbarMax = 10;
-        public const int TransientMax = 3;
+        public string aiType;
+        private Rigidbody2D _body;
+        private BoxCollider2D _collider;
 
-        public enum State
-        {
-            Idle,
-            StartUp,
-            Active,
-            Stun,
-        }
-        
-        [ShowInInspector]
-        public float Atk => soul.Atk + statusEffects.Sum(it => it.atk);
-        [ShowInInspector]
-        public float Def => soul.Def + statusEffects.Sum(it => it.def);
-        [ShowInInspector]
-        public float Mat => soul.Mat + statusEffects.Sum(it => it.mat);
-        [ShowInInspector]
-        public float Mdf => soul.Mdf + statusEffects.Sum(it => it.mdf);
-        [ShowInInspector]
-        public float Dex => soul.Dex;
+        private SpriteRenderer _sprite;
+        private UsableItem activeItem;
+        private float invincible;
 
-        [ShowInInspector]
-        public float Spd => 10 + statusEffects.Sum(it => it.spd);
+        private float itemTimer;
+        public OneTimeUseItem[] oneTimeUseItems;
+        private State state;
+
+        public List<StatusEffect> statusEffects = new();
+        private float stun;
+
+        public Treasure treasure;
+        public bool IsPlayer { get; private set; }
+
+        public bool Dead => soul.Dead;
+
+        public bool IsLeaderAlly => gameObject == RogueManager.Instance.leaderAlly;
+
+        public GenericBrain Brain { get; private set; }
+        public int Eva => evaMod;
+        public int MagEva => magEvaMod;
+        public int Crit => critMod;
+        public float KnockbackScale => 1 + knockbackMod;
+        public float PushbackScale => 1 + pushbackMod;
+
+        public AimerGroup Aimer { get; private set; }
+
+        [ShowInInspector] public float Atk => soul.Atk + statusEffects.Sum(it => it.atk);
+
+        [ShowInInspector] public float Def => soul.Def + statusEffects.Sum(it => it.def);
+
+        [ShowInInspector] public float Mat => soul.Mat + statusEffects.Sum(it => it.mat);
+
+        [ShowInInspector] public float Mdf => soul.Mdf + statusEffects.Sum(it => it.mdf);
+
+        [ShowInInspector] public float Dex => soul.Dex;
+
+        [ShowInInspector] public float Spd => 10 + statusEffects.Sum(it => it.spd);
 
         public float MaxDash => 3f;
         public bool CanDash => dashTimer >= MaxDash;
 
-        public string aiType;
-        public void TryDash(Vector2 dir)
+        public bool CanTakeAction => state == State.Idle && !statusEffects.Any(it => it.paralyzed);
+
+        public RogueManager Scene => RogueManager.Instance;
+
+        public bool IsAlly => soul.alignment > 0;
+        public bool IsEnemy => !IsAlly;
+
+        private float NormalizedSpd => Spd / 10;
+        public UtilityEnv UtilityEnv { get; private set; }
+
+        public float Radius => soul.HeightScore * 0.5f * Mathf.Sqrt(2);
+        public float halfSideLength => soul.HeightScore * 0.5f;
+
+        public bool IsOneTimeUseFull
         {
-            if (!CanDash) return;
-            dashTimer = 0;
-            AddForce(dir.normalized * 350f);
-            ApplyStun(0.5f);
+            get
+            {
+                for (var i = 0; i < TransientMax; i++)
+                    if (hotbar[7 + i] == null)
+                        return false;
+                return true;
+            }
         }
-        
-        public IEnumerable<IPassiveEffect> PassiveEffects()
-        {
-            return from effect in statusEffects where effect.passiveEffect != null select effect.passiveEffect;
-        }
+
+        public bool HasTreasure => treasure != null;
 
         private void Awake()
         {
@@ -123,11 +139,120 @@ namespace Cafeo
             statusEffects = new List<StatusEffect>();
             enterState = new UnityEvent<State>();
             drops = new DropInventory();
-            
+
             onGainTreasure = new UnityEvent<Treasure>();
             onLoseTreasure = new UnityEvent<Treasure>();
-            
+
             onDeath = new UnityEvent();
+        }
+
+        public void Start()
+        {
+            Assert.IsNotNull(soul);
+            if (IsEnemy) DuplicateSoul();
+            state = State.Idle;
+            UtilityEnv = gameObject.AddComponent<UtilityEnv>();
+            if (IsEnemy) UtilityEnv.simple = true;
+            _body = GetComponent<Rigidbody2D>();
+            _collider = GetComponent<BoxCollider2D>();
+            _sprite = GetComponent<SpriteRenderer>();
+            Aimer = GetComponent<AimerGroup>();
+            // Scene.vessels.Add(this);
+
+            if (Scene.player == this) IsPlayer = true;
+            SetupMyself();
+            DebugColorize();
+            DebugSetup();
+        }
+
+        private void LateUpdate()
+        {
+            // draw debug gauge
+            if (IsEnemy)
+            {
+                var width = 1.3f;
+                var position = transform.position;
+                var x = position.x;
+                var y = position.y;
+                DrawGauge(Draw.ingame, x - width / 2, y + halfSideLength + 0.2f, width, 0.15f,
+                    soul.hp, soul.MaxHp, Palette.purple, Palette.red, 0f);
+            }
+        }
+
+        public void RogueUpdate()
+        {
+            SyncPhysics();
+            for (var i = statusEffects.Count - 1; i >= 0; i--)
+            {
+                var effect = statusEffects[i];
+                effect.Update();
+                if (effect.Finished)
+                {
+                    OnStatusEffectExpired(effect);
+                    effect.OnEnd();
+                    statusEffects.RemoveAt(i);
+                }
+            }
+
+            invincible -= Time.deltaTime;
+            invincible = Mathf.Max(invincible, 0);
+
+            switch (state)
+            {
+                case State.Idle:
+                    break;
+                case State.StartUp:
+                    itemTimer += Time.deltaTime;
+                    if (itemTimer > activeItem.startUp) EnterState(State.Active);
+                    break;
+                case State.Active:
+                    itemTimer += Time.deltaTime;
+                    if (itemTimer > activeItem.active)
+                        ApplyActiveItemStun();
+                    else
+                        activeItem.DuringActive(this, itemTimer);
+                    break;
+                case State.Stun:
+                    stun -= Time.deltaTime;
+                    if (stun <= 0)
+                    {
+                        stun = 0;
+                        EnterState(State.Idle);
+                    }
+
+                    break;
+            }
+
+            dashTimer += Time.deltaTime;
+            dashTimer = Mathf.Clamp(dashTimer, 0, MaxDash);
+
+            if (soul.Dead)
+            {
+                onDeath.Invoke();
+                if (IsAlly)
+                    gameObject.SetActive(false);
+                else
+                    Destroy(gameObject);
+            }
+
+            for (var i = 0; i < HotbarMax; i++)
+                if (hotbar[i]?.ShouldDiscard == true)
+                    hotbar[i] = null;
+
+            UpdatePassiveEffects();
+        }
+
+        public void TryDash(Vector2 dir)
+        {
+            if (!CanDash) return;
+            dashTimer = 0;
+            AddForce(dir.normalized * 350f);
+            ApplyStun(0.5f);
+        }
+
+        public IEnumerable<IPassiveEffect> PassiveEffects()
+        {
+            return from effect in statusEffects where effect.passiveEffect != null select effect.passiveEffect;
         }
 
         public void PickupDrop(Collectable collectable)
@@ -158,17 +283,14 @@ namespace Cafeo
             itemTimer = 0;
             ExitState(this.state);
             this.state = state;
-            
+
             enterState.Invoke(state);
 
-            if (state == State.Idle)
-            {
-                _aimer.locked = false;
-            }
-            
+            if (state == State.Idle) Aimer.locked = false;
+
             if (state == State.StartUp)
             {
-                _aimer.locked = true;
+                Aimer.locked = true;
                 activeItem.OnTryUsing(this);
             }
 
@@ -178,28 +300,16 @@ namespace Cafeo
                 OnUseItem(activeItem);
             }
 
-            if (state == State.StartUp && activeItem.startUp == 0)
-            {
-                EnterState(State.Active);
-            }
+            if (state == State.StartUp && activeItem.startUp == 0) EnterState(State.Active);
 
-            if (state == State.Active && activeItem.active == 0)
-            {
-                ApplyActiveItemStun();
-            }
+            if (state == State.Active && activeItem.active == 0) ApplyActiveItemStun();
 
-            if (state == State.Stun && stun == 0)
-            {
-                EnterState(State.Idle);
-            }
+            if (state == State.Stun && stun == 0) EnterState(State.Idle);
         }
 
         public void ClearHotbar()
         {
-            for (int i = 0; i < hotbar.Length; i++)
-            {
-                hotbar[i] = null;
-            }
+            for (var i = 0; i < hotbar.Length; i++) hotbar[i] = null;
         }
 
         private void OnUseItem(UsableItem item)
@@ -210,14 +320,8 @@ namespace Cafeo
         public void ActivateItem(UsableItem item, bool secondary = false)
         {
             if (!CanUseItem(item)) return;
-            if (item.oldActive < 0)
-            {
-                item.oldActive = item.active;
-            }
-            foreach (var effect in PassiveEffects())
-            {
-                effect.InfluenceSkill(item);
-            }
+            if (item.oldActive < 0) item.oldActive = item.active;
+            foreach (var effect in PassiveEffects()) effect.InfluenceSkill(item);
             soul.mp -= item.mpCost;
             soul.cp -= item.cpCost;
             item.Setup(this);
@@ -238,8 +342,6 @@ namespace Cafeo
             ActivateItem(hotbar[hotbarPointer]);
         }
 
-        public bool CanTakeAction => state == State.Idle &&! statusEffects.Any(it => it.paralyzed);
-
         private void ExitState(State state)
         {
             if (state == State.Active)
@@ -250,38 +352,11 @@ namespace Cafeo
             }
         }
 
-        public RogueManager Scene => RogueManager.Instance;
-
         private void DuplicateSoul()
         {
             var newSoul = gameObject.AddComponent<AgentSoul>();
             soul.CopyTo(newSoul);
             soul = newSoul;
-        }
-        
-        public void Start()
-        {
-            Assert.IsNotNull(soul);
-            if (IsEnemy)
-            {
-                DuplicateSoul();
-            }
-            state = State.Idle;
-            utilityEnv = gameObject.AddComponent<UtilityEnv>();
-            if (IsEnemy) utilityEnv.simple = true;
-            _body = GetComponent<Rigidbody2D>();
-            _collider = GetComponent<BoxCollider2D>();
-            _sprite = GetComponent<SpriteRenderer>();
-            _aimer = GetComponent<AimerGroup>();
-            // Scene.vessels.Add(this);
-            
-            if (Scene.player == this)
-            {
-                IsPlayer = true;
-            }
-            SetupMyself();
-            DebugColorize();
-            DebugSetup();
         }
 
         public void StopMoving()
@@ -310,7 +385,7 @@ namespace Cafeo
                     //         {
                     //             shape = new ProjectileType.RectShape(0.05f, 0.6f),
                     //             collidable = true,
-                
+
                     //     bodyThrust = 500f,
                     //     name = "测试用冲刺",
                     //     active = 0.5f,
@@ -321,59 +396,56 @@ namespace Cafeo
                     // hotbar[1] = rushSkill;
                     // hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
                     // SetHotboxPointer(1);
-                }    //             speed = 17f,
-                    //             density = 50,
-                    //             pierce = 1,
-                    //             bounce = 0,
-                    //             bullet = true,
-                    //         },
-                    //         name = "测试用弓箭",
-                    //     };
-                    //     hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
-                    //     hotbar[0].AddTag(UsableItem.ItemTag.Approach);
-                    // }
-                    // else
-                    // {
-                    //     // melee type ally initializer
-                    //     var sword = new MeleeItem(1f, 1f)
-                    //     {
-                    //         name = "测试长剑",
-                    //         meleeType = MeleeItem.MeleeType.BroadSword,
-                    //         active = 0.3f,
-                    //         recovery = 0.05f,
-                    //     };
-                    //     sword.utilityType += (UtilityType) 10f;
-                    //     hotbar[0] = sword;
-                    //     hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
-                    //     hotbar[1] = new RangedItem
-                    //     {
-                    //         projectileType = new ProjectileType
-                    //         {
-                    //             shape = new ProjectileType.RectShape(1.2f, 0.23f),
-                    //             collidable = false,
-                    //             speed = 7f,
-                    //             pierce = 3,
-                    //             bounce = 1,
-                    //             timeLimit = 0.4f,
-                    //         },
-                    //         startUp = 0.1f,
-                    //         name = "测试用剑气",
-                    //         withPrimaryShot = true,
-                    //         utilityType = new UtilityType.SingleEnemyInDirection()
-                    //     };
-                    //     hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
-                    // }
+                } //             speed = 17f,
+                //             density = 50,
+                //             pierce = 1,
+                //             bounce = 0,
+                //             bullet = true,
+                //         },
+                //         name = "测试用弓箭",
+                //     };
+                //     hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                //     hotbar[0].AddTag(UsableItem.ItemTag.Approach);
                 // }
                 // else
                 // {
-                    // var rushSkill = new MeleeItem(0.2f, 1)
-                    // {
+                //     // melee type ally initializer
+                //     var sword = new MeleeItem(1f, 1f)
+                //     {
+                //         name = "测试长剑",
+                //         meleeType = MeleeItem.MeleeType.BroadSword,
+                //         active = 0.3f,
+                //         recovery = 0.05f,
+                //     };
+                //     sword.utilityType += (UtilityType) 10f;
+                //     hotbar[0] = sword;
+                //     hotbar[0].AddTag(UsableItem.ItemTag.FreeDPS);
+                //     hotbar[1] = new RangedItem
+                //     {
+                //         projectileType = new ProjectileType
+                //         {
+                //             shape = new ProjectileType.RectShape(1.2f, 0.23f),
+                //             collidable = false,
+                //             speed = 7f,
+                //             pierce = 3,
+                //             bounce = 1,
+                //             timeLimit = 0.4f,
+                //         },
+                //         startUp = 0.1f,
+                //         name = "测试用剑气",
+                //         withPrimaryShot = true,
+                //         utilityType = new UtilityType.SingleEnemyInDirection()
+                //     };
+                //     hotbar[1].AddTag(UsableItem.ItemTag.FreeDPS);
+                // }
+                // }
+                // else
+                // {
+                // var rushSkill = new MeleeItem(0.2f, 1)
+                // {
             }
 
-            if (IsPlayer)
-            {
-                _aimer.autoAim = false;
-            }
+            if (IsPlayer) Aimer.autoAim = false;
         }
 
         private void InitPlayerHotBar()
@@ -394,13 +466,13 @@ namespace Cafeo
                     collidable = true,
                     speed = 9f,
                     pierce = 1,
-                    bounce = 1,
+                    bounce = 1
                 },
                 fan = 3,
                 spread = 60,
                 shots = 3,
                 duration = 0.5f,
-                name = "测试用散射针",
+                name = "测试用散射针"
             };
 
             hotbar[9] = new MeleeItem(1f, 1f)
@@ -408,7 +480,7 @@ namespace Cafeo
                 name = "测试镰刀",
                 meleeType = MeleeItem.MeleeType.Scythe,
                 active = 0.5f,
-                recovery = 0.1f,
+                recovery = 0.1f
             };
 
             hotbar[5] = new MeleeItem(1f, 1f)
@@ -416,7 +488,7 @@ namespace Cafeo
                 name = "测试大剑",
                 meleeType = MeleeItem.MeleeType.GreatSword,
                 active = 0.5f,
-                recovery = 0.1f,
+                recovery = 0.1f
             };
 
             var sword = new MeleeItem(1f, 1f)
@@ -424,7 +496,7 @@ namespace Cafeo
                 name = "测试长剑",
                 meleeType = MeleeItem.MeleeType.BroadSword,
                 active = 0.3f,
-                recovery = 0.05f,
+                recovery = 0.05f
             };
 
             var testBoomerang = new RangedItem
@@ -438,29 +510,29 @@ namespace Cafeo
                     bounce = 30,
                     initialSpin = 360,
                     bounciness = 1f,
-                    boomerang = 1f,
+                    boomerang = 1f
                 },
                 shots = 1,
-                name = "测试用回旋镖",
+                name = "测试用回旋镖"
             };
 
             var testGun = new RangedItem
             {
-                projectileType = new ProjectileType()
+                projectileType = new ProjectileType
                 {
                     shape = new ProjectileType.CircleShape(0.03f),
                     collidable = true,
                     speed = 15f,
                     pierce = 1,
                     bounce = 0,
-                    bullet = true,
+                    bullet = true
                 },
                 shots = 1,
                 name = "测试用枪",
                 active = 0f,
                 recovery = 0.05f,
                 instability = 20,
-                mpCost = 5,
+                mpCost = 5
             };
             hotbar[0] = testGun;
 
@@ -470,9 +542,9 @@ namespace Cafeo
                 name = "测试用冲刺",
                 active = 0.5f,
                 recovery = 0.1f,
-                meleeType = MeleeItem.MeleeType.BodyRush,
+                meleeType = MeleeItem.MeleeType.BodyRush
             };
-            string preset = "gun";
+            var preset = "gun";
             if (preset == "sword")
             {
                 hotbar[0] = sword;
@@ -485,13 +557,14 @@ namespace Cafeo
                         speed = 7f,
                         pierce = 3,
                         bounce = 1,
-                        timeLimit = 0.4f,
+                        timeLimit = 0.4f
                     },
                     startUp = 0.1f,
                     name = "测试用剑气",
-                    withPrimaryShot = true,
+                    withPrimaryShot = true
                 };
-            } else if (preset == "bow")
+            }
+            else if (preset == "bow")
             {
                 hotbar[0] = new RangedItem
                 {
@@ -503,39 +576,40 @@ namespace Cafeo
                         density = 50,
                         pierce = 1,
                         bounce = 0,
-                        bullet = true,
+                        bullet = true
                     },
-                    name = "测试用弓箭",
+                    name = "测试用弓箭"
                 };
-                
+
                 hotbar[1] = new RangedItem
                 {
-                    projectileType = ((RangedItem) hotbar[0]).projectileType,
+                    projectileType = ((RangedItem)hotbar[0]).projectileType,
                     duration = 0.5f,
                     shots = 4,
                     name = "连射",
-                    startUp = 0.7f,
+                    startUp = 0.7f
                 };
-            } else if (preset == "gun")
+            }
+            else if (preset == "gun")
             {
                 hotbar[0] = testGun;
-                hotbar[1] = new TossItem()
+                hotbar[1] = new TossItem
                 {
                     maxDistance = 0,
                     coroutineFactory = SkillPresets.GunnerRegen,
-                    name = "装填",
+                    name = "装填"
                     // active = Single.PositiveInfinity,
                 };
                 hotbar[2] = new RangedItem
                 {
-                    projectileType = new ProjectileType()
+                    projectileType = new ProjectileType
                     {
                         shape = new ProjectileType.CircleShape(0.03f),
                         collidable = true,
                         speed = 15f,
                         pierce = 1,
                         bounce = 0,
-                        bullet = true,
+                        bullet = true
                     },
                     shots = 40,
                     duration = 3f,
@@ -543,13 +617,14 @@ namespace Cafeo
                     active = 0f,
                     recovery = 0.5f,
                     instability = 30,
-                    mpCost = 5,
+                    mpCost = 5
                 };
             }
+
             hotbar[9] = new TossItem
             {
                 name = "测试用自我中心 Buff", maxDistance = 0, alwaysSplash = true,
-                power = 0,
+                power = 0
             };
             hotbar[9].hitEffects.buffs.Add(
                 new HitEffects.BuffExpr(HitEffects.SecondaryAttr.Atk, "0.2 * mat", 5f));
@@ -558,7 +633,7 @@ namespace Cafeo
             {
                 name = "测试用回复", maxDistance = 0, alwaysSplash = true,
                 damageType = UsableItem.DamageType.HpRecovery,
-                power = 30,
+                power = 30
             };
             hotbar[8].SetHitAllies();
             SetHotboxPointer(9);
@@ -579,58 +654,38 @@ namespace Cafeo
         {
             hotbarPointer = i;
             hotbar[hotbarPointer].Setup(this);
-            _aimer.RequestAimer(hotbar[hotbarPointer]);
+            Aimer.RequestAimer(hotbar[hotbarPointer]);
         }
 
         public void TrySetHotboxPointer(int i)
         {
-            if (hotbar[i] == null)
-            {
-                return;
-            }
-            
+            if (hotbar[i] == null) return;
+
             SetHotboxPointer(i);
         }
 
         private void DebugColorize()
         {
             if (soul.alignment > 0)
-            {
                 _sprite.color = Color.blue;
-            }
             else
-            {
                 _sprite.color = Color.yellow / 2 + Color.red;
-            }
-            
+
             if (IsPlayer) _sprite.color = Color.green;
         }
-        
-        public bool IsAlly => soul.alignment > 0;
-        public bool IsEnemy => !IsAlly;
 
         private void SetupMyself()
         {
             transform.localScale = soul.HeightScore * Vector3.one;
             _body.mass = soul.Weight;
-            if (IsAlly)
-            {
-                gameObject.layer = LayerMask.NameToLayer("Allies");
-            }
-            if (IsEnemy)
-            {
-                gameObject.layer = LayerMask.NameToLayer("Enemies");
-            }
+            if (IsAlly) gameObject.layer = LayerMask.NameToLayer("Allies");
+            if (IsEnemy) gameObject.layer = LayerMask.NameToLayer("Enemies");
             gameObject.tag = IsAlly ? "Ally" : "Enemy";
             Scene.RegisterVessel(this);
             if (IsPlayer)
-            {
                 Brain = gameObject.AddComponent<PlayerBrain>();
-            }
             else
-            {
                 Brain = gameObject.AddComponent<PlaceholderBrain>();
-            }
             Brain.Vessel = this;
             dashTimer = MaxDash;
 
@@ -641,8 +696,6 @@ namespace Cafeo
         {
             _body.drag = 1.5f / NormalizedSpd;
         }
-
-        private float NormalizedSpd => Spd / 10;
 
         public void Move(Vector2 direction, float lerp = 4f)
         {
@@ -655,30 +708,16 @@ namespace Cafeo
             _body.velocity = myVel;
         }
 
-        private float itemTimer = 0;
-        private float stun = 0;
-        private float invincible = 0;
-        private State state;
-        private UsableItem activeItem;
-        private UtilityEnv utilityEnv;
-        public UtilityEnv UtilityEnv => utilityEnv;
-
         public void ApplyStun(float duration)
         {
             Assert.IsTrue(duration > 0);
-            if (state == State.Active && activeItem.isArts)
-            {
-                return;
-            }
+            if (state == State.Active && activeItem.isArts) return;
 
-            if (state == State.Active && itemTimer < activeItem.active)
-            {
-                activeItem.OnInterrupt(this);
-            }
+            if (state == State.Active && itemTimer < activeItem.active) activeItem.OnInterrupt(this);
             stun = Mathf.Max(stun, duration);
             EnterState(State.Stun);
         }
-        
+
         public void ApplyInvincible(float duration)
         {
             Assert.IsTrue(duration > 0);
@@ -688,31 +727,28 @@ namespace Cafeo
         public Vector2 CalcArrowSpawnLoc(UsableItem item)
         {
             var radius = soul.HeightScore * 0.1f * Mathf.Sqrt(2);
-            var dir = _aimer.CalcDirection(item);
-            return (Vector2) transform.position  + dir * radius;
+            var dir = Aimer.CalcDirection(item);
+            return (Vector2)transform.position + dir * radius;
         }
-        
-        public float Radius => soul.HeightScore * 0.5f * Mathf.Sqrt(2);
-        public float halfSideLength => soul.HeightScore * 0.5f;
 
         public Vector2 CalcAimDirection(UsableItem item)
         {
-            return _aimer.CalcDirection(item);
+            return Aimer.CalcDirection(item);
         }
 
         public BattleVessel CalcAimTarget(UsableItem item)
         {
-            return _aimer.CalcTargetObject(item)?.GetComponent<BattleVessel>();
+            return Aimer.CalcTargetObject(item)?.GetComponent<BattleVessel>();
         }
 
         public Vector2 CalcArrowSpawnLoc()
         {
             return CalcArrowSpawnLoc(activeItem);
         }
-        
+
         public void AddStatus(StatusEffect status)
         {
-            int curCount = statusEffects.Count(it => 
+            var curCount = statusEffects.Count(it =>
                 it.statusTag != null && it.statusTag.CompareStatusTag(status.statusTag));
             if (curCount < status.maxStack)
             {
@@ -732,12 +768,8 @@ namespace Cafeo
         public void RemoveStatus(Predicate<StatusEffect> pred)
         {
             foreach (var statusEffect in statusEffects)
-            {
                 if (pred(statusEffect))
-                {
                     statusEffect.OnEnd();
-                }
-            }
 
             statusEffects.RemoveAll(pred);
         }
@@ -752,125 +784,35 @@ namespace Cafeo
             Scene.CreatePopup(transform.position, item.name, Palette.milkYellow);
         }
 
-        public void RogueUpdate()
-        {
-            SyncPhysics();
-            for (int i = statusEffects.Count - 1; i >= 0; i--)
-            {
-                var effect = statusEffects[i];
-                effect.Update();
-                if (effect.Finished)
-                {
-                    OnStatusEffectExpired(effect);
-                    effect.OnEnd();
-                    statusEffects.RemoveAt(i);
-                }
-            }
-
-            invincible -= Time.deltaTime;
-            invincible = Mathf.Max(invincible, 0);
-
-            switch (state)
-            {
-                case State.Idle:
-                    break;
-                case State.StartUp:
-                    itemTimer += Time.deltaTime;
-                    if (itemTimer > activeItem.startUp)
-                    {
-                        EnterState(State.Active);
-                    }
-                    break;
-                case State.Active:
-                    itemTimer += Time.deltaTime;
-                    if (itemTimer > activeItem.active)
-                    {
-                        ApplyActiveItemStun();
-                    }
-                    else
-                    {
-                        activeItem.DuringActive(this, itemTimer);
-                    }
-                    break;
-                case State.Stun:
-                    stun -= Time.deltaTime;
-                    if (stun <= 0)
-                    {
-                        stun = 0;
-                        EnterState(State.Idle);
-                    }
-                    break;
-            }
-
-            dashTimer += Time.deltaTime;
-            dashTimer = Mathf.Clamp(dashTimer, 0, MaxDash);
-
-            if (soul.Dead)
-            {
-                onDeath.Invoke();
-                if (IsAlly)
-                {
-                    gameObject.SetActive(false);
-                }
-                else
-                {
-                    Destroy(gameObject);
-                }
-            }
-
-            for (int i = 0; i < HotbarMax; i++)
-            {
-                if (hotbar[i]?.ShouldDiscard == true)
-                {
-                    hotbar[i] = null;
-                }
-            }
-
-            UpdatePassiveEffects();
-        }
-
         private void UpdatePassiveEffects()
         {
             if (Mathf.RoundToInt(effectTimer) != Mathf.RoundToInt(effectTimer + Time.deltaTime))
-            {
                 foreach (var status in statusEffects)
-                {
                     status.passiveEffect?.EverySec(this);
-                }
-            }
             effectTimer += Time.deltaTime;
-            foreach (var status in statusEffects)
-            {
-                status.passiveEffect?.EveryTick(this);
-            }
+            foreach (var status in statusEffects) status.passiveEffect?.EveryTick(this);
         }
 
         public void ApplyActiveItemStun()
         {
             activeItem.OnEndUse(this);
             if (activeItem.recovery > 0)
-            {
                 ApplyStun(activeItem.recovery);
-            }
             else
-            {
                 EnterState(State.Idle);
-            }
         }
 
-        public void ApplyDamage(int damage, float stun, Vector2 knockback, 
+        public void ApplyDamage(int damage, float stun, Vector2 knockback,
             AgentSoul.ResourceType resourceType = AgentSoul.ResourceType.Hp)
         {
             if (invincible > 0) return;
             if (stun > 0)
             {
                 ApplyStun(stun);
-                ApplyInvincible(stun/2);
+                ApplyInvincible(stun / 2);
             }
-            if (knockback.magnitude > 0)
-            {
-                _body.AddForce(knockback, ForceMode2D.Impulse);
-            }
+
+            if (knockback.magnitude > 0) _body.AddForce(knockback, ForceMode2D.Impulse);
             damage = ModifyDamage(damage);
             GainCp(3);
             soul.TakeDamage(damage, resourceType);
@@ -914,8 +856,8 @@ namespace Cafeo
 
         public float BodyDistance(BattleVessel other)
         {
-            return Mathf.Max(0,Vector3.Distance(transform.position, other.transform.position) - other.Radius -
-                               Radius);
+            return Mathf.Max(0, Vector3.Distance(transform.position, other.transform.position) - other.Radius -
+                                Radius);
         }
 
         public void AddForce(Vector2 force)
@@ -923,63 +865,30 @@ namespace Cafeo
             _body.AddForce(force, ForceMode2D.Impulse);
         }
 
-        private void LateUpdate()
-        {
-            // draw debug gauge
-            if (IsEnemy)
-            {
-                float width = 1.3f;
-                var position = transform.position;
-                var x = position.x;
-                var y = position.y;
-                DrawGauge(Draw.ingame, x - width/2, y + halfSideLength + 0.2f, width, 0.15f, 
-                    soul.hp, soul.MaxHp, Palette.purple, Palette.red, 0f);
-            }
-        }
-        
         public bool CanUseItem(UsableItem item)
         {
             if (item == null) return false;
-            if (item.HasTag(UsableItem.ItemTag.Dash))
-            {
-                return CanDash;
-            }
+            if (item.HasTag(UsableItem.ItemTag.Dash)) return CanDash;
             return soul.mp >= item.mpCost && soul.cp >= item.cpCost;
         }
-        
+
         public bool IsFacing(BattleVessel other, float tol)
         {
             Vector2 pos = other.transform.position - transform.position;
-            var delta = VectorUtils.DegreesBetween(pos.normalized, _aimer.RangedAimer.transform.right);
+            var delta = VectorUtils.DegreesBetween(pos.normalized, Aimer.RangedAimer.transform.right);
             return Mathf.Abs(delta) < tol;
         }
 
         public bool TryGainOneTimeUse(OneTimeUseItem item)
         {
-            for (int i = 0; i < TransientMax; i++)
-            {
+            for (var i = 0; i < TransientMax; i++)
                 if (hotbar[7 + i] == null)
                 {
                     hotbar[7 + i] = item;
                     return true;
                 }
-            }
-            return false;
-        }
 
-        public bool IsOneTimeUseFull
-        {
-            get
-            {
-                for (int i = 0; i < TransientMax; i++)
-                {
-                    if (hotbar[7 + i] == null)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
+            return false;
         }
 
         public void DropTreasure()
@@ -987,7 +896,7 @@ namespace Cafeo
             Assert.IsNotNull(treasure);
             treasure.OnDrop(this);
             onLoseTreasure.Invoke(treasure);
-            Scene.SpawnDroppable(transform.position, treasure, 
+            Scene.SpawnDroppable(transform.position, treasure,
                 VectorUtils.OnUnitCircle(Random.Range(0, 4 * Mathf.PI)));
             treasure = null;
         }
@@ -1003,7 +912,5 @@ namespace Cafeo
             soul.Revive();
             statusEffects.Clear();
         }
-        
-        public bool HasTreasure => treasure != null;
     }
 }

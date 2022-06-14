@@ -4,22 +4,19 @@ namespace Cafeo
 {
     public abstract class AbstractItem
     {
-        public Sprite icon;
-        public string name;
+        public int b;
         public string description;
         private int exp;
+        public Sprite icon;
         public int k;
-        public int b;
+        public string name;
 
         public int Level
         {
             get
             {
-                int x = 0;
-                while (exp < Mathf.Pow(b, x) + k)
-                {
-                    x++;
-                }
+                var x = 0;
+                while (exp < Mathf.Pow(b, x) + k) x++;
 
                 return x + 1;
             }

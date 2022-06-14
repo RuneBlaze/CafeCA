@@ -1,5 +1,4 @@
-﻿using System;
-using Cafeo.Castable;
+﻿using Cafeo.Castable;
 using Sirenix.OdinInspector;
 
 namespace Cafeo.Templates
@@ -8,12 +7,17 @@ namespace Cafeo.Templates
     {
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public float explodeRange;
-        
+
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public float maxDistance;
 
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public bool alwaysSplash;
+
+        private void Reset()
+        {
+            hitType = TemplateHitType.HitAllies;
+        }
 
         public override UsableItem Generate()
         {
@@ -23,11 +27,6 @@ namespace Cafeo.Templates
             item.maxDistance = maxDistance;
             item.alwaysSplash = alwaysSplash;
             return item;
-        }
-
-        private void Reset()
-        {
-            hitType = TemplateHitType.HitAllies;
         }
     }
 }

@@ -8,23 +8,18 @@ namespace Cafeo.Castable
 {
     public class RangedItem : UsableItem
     {
-        public ProjectileType projectileType;
-        
-        public int shots = 1;
-        public int shotMod = 0;
-        public int EffectiveShots => shots + shotMod;
-        public int fan = 0;
-        public int fanMod = 0;
-        public int EffectiveFan => fan + fanMod;
-        public int spread = 0;
-        public int spreadMod = 0;
-        public int EffectiveSpread => spread + spreadMod;
         public float duration = 0;
-        public float durationMod = 0;
-        public float EffectiveDuration => duration + durationMod;
+        public float durationMod;
+        public int fan = 0;
+        public int fanMod;
         public float instability = 0;
-        public float instabilityMod = 0;
-        public float EffectiveInstability => instability + instabilityMod;
+        public float instabilityMod;
+        public ProjectileType projectileType;
+        public int shotMod;
+
+        public int shots = 1;
+        public int spread = 0;
+        public int spreadMod;
         public bool withPrimaryShot;
 
         public RangedItem(ProjectileType projectileType)
@@ -41,8 +36,13 @@ namespace Cafeo.Castable
             shape = new ProjectileType.CircleShape()
         })
         {
-            
         }
+
+        public int EffectiveShots => shots + shotMod;
+        public int EffectiveFan => fan + fanMod;
+        public int EffectiveSpread => spread + spreadMod;
+        public float EffectiveDuration => duration + durationMod;
+        public float EffectiveInstability => instability + instabilityMod;
 
         public override void Setup(BattleVessel user)
         {
@@ -67,14 +67,8 @@ namespace Cafeo.Castable
                 var proj = Scene.CreateProjectile(projectileType, user,
                     arrowSpawnLoc,
                     user.CalcAimDirection(this).Rotate(a));
-                proj.onHit.AddListener(it =>
-                {
-                    ApplyEffect(user, it, proj.transform.position, proj);
-                });
-                foreach (var effect in user.PassiveEffects())
-                {
-                    effect.InfluenceProjectile(proj);
-                }
+                proj.onHit.AddListener(it => { ApplyEffect(user, it, proj.transform.position, proj); });
+                foreach (var effect in user.PassiveEffects()) effect.InfluenceProjectile(proj);
             }
             else
             {
@@ -82,22 +76,13 @@ namespace Cafeo.Castable
                     arrowSpawnLoc,
                     user.CalcAimDirection(this).Rotate(a));
                 foreach (var proj in projs)
-                {
-                    proj.onHit.AddListener(it =>
-                    {
-                        ApplyEffect(user, it, proj.transform.position, proj);
-                    });
-                }
+                    proj.onHit.AddListener(it => { ApplyEffect(user, it, proj.transform.position, proj); });
                 foreach (var effect in user.PassiveEffects())
-                {
-                    foreach (var proj in projs)
-                    {
-                        effect.InfluenceProjectile(proj);
-                    }
-                }
+                foreach (var proj in projs)
+                    effect.InfluenceProjectile(proj);
             }
         }
-        
+
         public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
         {
             base.ApplyEffect(user, target, hitSource, hitProj);
@@ -109,9 +94,9 @@ namespace Cafeo.Castable
 
         private IEnumerator MultiShotLogic(BattleVessel user)
         {
-            var interval = EffectiveDuration / (EffectiveShots+1);
+            var interval = EffectiveDuration / (EffectiveShots + 1);
             ShootOnce(user);
-            for (int i = 0; i < EffectiveShots - 1; i++)
+            for (var i = 0; i < EffectiveShots - 1; i++)
             {
                 yield return new WaitForRogueSeconds(interval);
                 ShootOnce(user);
@@ -121,16 +106,10 @@ namespace Cafeo.Castable
         public override void OnUse(BattleVessel user)
         {
             base.OnUse(user);
-            if (EffectiveDuration == 0 && projectileType != null && EffectiveShots == 1)
-            {
-                ShootOnce(user);
-            }
+            if (EffectiveDuration == 0 && projectileType != null && EffectiveShots == 1) ShootOnce(user);
 
-            if (withPrimaryShot)
-            {
-                user.UsePrimaryShot();
-            }
-            
+            if (withPrimaryShot) user.UsePrimaryShot();
+
             // user.StopMoving();
         }
 

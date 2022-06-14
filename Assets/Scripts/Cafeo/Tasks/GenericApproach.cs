@@ -12,20 +12,24 @@ namespace Cafeo.Tasks
     [TaskCategory("Rogue")]
     public class GenericApproach : IAstarAIMovement
     {
-        [BehaviorDesigner.Runtime.Tasks.Tooltip("The GameObject that the agent is moving towards")]
-        public SharedGameObject target;
-        public SharedFloat preferredDistance;
-        public SharedFloat tolerance;
-        public float timeLimit = -1f;
-        protected int mask;
-        public SharedFloat zoningSkillInterval;
-        
-        protected BattleVessel vessel;
-        protected float timer;
         protected float atDestinationTimer;
+        protected int mask;
+        public SharedFloat preferredDistance;
 
         protected float retargetTimer;
+
+        [BehaviorDesigner.Runtime.Tasks.Tooltip("The GameObject that the agent is moving towards")]
+        public SharedGameObject target;
+
+        public float timeLimit = -1f;
+        protected float timer;
+        public SharedFloat tolerance;
         private UtilityEnv utilityEnv;
+
+        protected BattleVessel vessel;
+        public SharedFloat zoningSkillInterval;
+
+        public RogueManager Scene => RogueManager.Instance;
 
         public override void OnStart()
         {
@@ -42,13 +46,10 @@ namespace Cafeo.Tasks
             vessel.Brain.ClearQueue();
             vessel.Brain.SwitchToItemSatisfying(it => it.HasTag(UsableItem.ItemTag.Approach));
         }
-        
+
         public override TaskStatus OnUpdate()
         {
-            if (target.Value == null)
-            {
-                return TaskStatus.Failure;
-            }
+            if (target.Value == null) return TaskStatus.Failure;
             bool inSight = MovementUtility.LineOfSight(transform,
                 Vector3.zero, target.Value,
                 Vector3.zero, true, mask, true);
@@ -57,20 +58,18 @@ namespace Cafeo.Tasks
             var rhs = rm.GetVesselFromGameObject(target.Value);
             var distance = lhs.BodyDistance(rhs);
             if (HasArrived())
-            {
                 atDestinationTimer += Time.deltaTime;
-            }
             else
-            {
                 atDestinationTimer = 0;
-            }
 
             var pd = preferredDistance.Value;
-            if (inSight && (pd > 1 && Mathf.Abs(distance - pd) < 0.5f) || (pd <= 1 && distance < pd) || atDestinationTimer > 0.5f)
+            if ((inSight && pd > 1 && Mathf.Abs(distance - pd) < 0.5f) || (pd <= 1 && distance < pd) ||
+                atDestinationTimer > 0.5f)
             {
                 atDestinationTimer = 0;
                 return TaskStatus.Success;
             }
+
             timer += Time.deltaTime;
             retargetTimer += Time.deltaTime;
             if (retargetTimer > 1)
@@ -78,11 +77,13 @@ namespace Cafeo.Tasks
                 retargetTimer = 0;
                 TryRetargeting();
             }
+
             if (timeLimit > 0 && timer > timeLimit)
             {
                 timer = 0;
                 return TaskStatus.Success;
             }
+
             if (timer > zoningSkillInterval.Value)
             {
                 // Debug.Log("Use Zoning Skill");
@@ -101,14 +102,14 @@ namespace Cafeo.Tasks
             // s.t. one can raycast to the targetPos
             Vector2 bestPoint = transform.position;
             float bestScore = 1231234; // find minimum
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
-                var diff = targetPos - (Vector2) transform.position;
+                var diff = targetPos - (Vector2)transform.position;
                 var candidatePoint = targetPos
                                      - VectorUtils.RotateVector(diff.normalized, i * 90) * distance;
                 Vector2 actualPoint = SamplePosition(candidatePoint);
                 // score = actualPoint's distance to targetPos * 2 + my distance to actualPoint
-                var score = (actualPoint - targetPos).magnitude * 2 + 
+                var score = (actualPoint - targetPos).magnitude * 2 +
                             ((Vector2)transform.position - actualPoint).magnitude;
                 if (score < bestScore)
                 {
@@ -116,9 +117,10 @@ namespace Cafeo.Tasks
                     bestPoint = actualPoint;
                 }
             }
+
             return bestPoint;
         }
-        
+
         private Vector3 Target()
         {
             if (target.Value != null)
@@ -127,13 +129,11 @@ namespace Cafeo.Tasks
                 var inGrid = FindSuitableCloseDistancePoint(targetObject.transform.position, preferredDistance.Value);
                 return inGrid;
             }
-           
+
             return transform.position;
         }
-        
-        public RogueManager Scene => RogueManager.Instance;
-        
-        void UseZoningSkill()
+
+        private void UseZoningSkill()
         {
             vessel.Brain.QueueItemOfTag(UsableItem.ItemTag.Approach);
         }
@@ -141,10 +141,7 @@ namespace Cafeo.Tasks
         private void TryRetargeting()
         {
             var bestAlternative = utilityEnv.bestTargetEnemy;
-            if (bestAlternative != null)
-            {
-                vessel.Brain.TrySetTargetObject(bestAlternative.gameObject);
-            }
+            if (bestAlternative != null) vessel.Brain.TrySetTargetObject(bestAlternative.gameObject);
         }
 
         public override void OnReset()

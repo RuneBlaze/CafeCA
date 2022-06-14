@@ -11,7 +11,7 @@ namespace Cafeo.Editor
         {
             var window = GetWindow<InitialConditionEditorWindow>();
         }
-        
+
         protected override OdinMenuTree BuildMenuTree()
         {
             var tree = new OdinMenuTree(true);

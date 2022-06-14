@@ -9,6 +9,7 @@ namespace Cafeo.UI
     {
         [SerializeField] private Image image;
         [SerializeField] private Text restCount;
+
         public void SetItem(UsableItem item, bool onUse)
         {
             if (item == null)
@@ -20,12 +21,9 @@ namespace Cafeo.UI
             }
 
             if (item.icon != null)
-            {
                 // Debug.Log("Sprite already set");
                 image.sprite = item.icon;
-            }
             else
-            {
                 image.color = item switch
                 {
                     RangedItem => Color.yellow,
@@ -33,25 +31,16 @@ namespace Cafeo.UI
                     TossItem => Color.green,
                     _ => image.color
                 };
-            }
 
             if (!onUse)
-            {
                 image.color = Color.white * 0.5f;
-            }
             else
-            {
                 image.color = Color.white;
-            }
-            
+
             if (item is OneTimeUseItem oneTimeUseItem)
-            {
                 restCount.text = oneTimeUseItem.charges.ToString();
-            }
             else
-            {
                 restCount.text = "";
-            }
         }
     }
 }

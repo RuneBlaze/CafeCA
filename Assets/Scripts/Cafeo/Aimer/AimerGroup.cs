@@ -9,57 +9,55 @@ namespace Cafeo.Aimer
 {
     public class AimerGroup : MonoBehaviour
     {
-        private RangedAimer rangedAimer;
-        private MeleeAimer meleeAimer;
-        private TossAimer tossAimer;
-
         public bool autoAim;
         public bool locked;
+        private MeleeAimer meleeAimer;
 
-        public RangedAimer RangedAimer => rangedAimer;
-        public TossAimer TossAimer => tossAimer;
+        public RangedAimer RangedAimer { get; private set; }
+
+        public TossAimer TossAimer { get; private set; }
 
         public void Awake()
         {
-            rangedAimer = GetComponentInChildren<RangedAimer>();
-            rangedAimer.Setup();
-            rangedAimer.Hide();
+            RangedAimer = GetComponentInChildren<RangedAimer>();
+            RangedAimer.Setup();
+            RangedAimer.Hide();
 
             meleeAimer = GetComponentInChildren<MeleeAimer>();
             meleeAimer.Setup();
             meleeAimer.Hide();
 
-            tossAimer = GetComponentInChildren<TossAimer>();
-            tossAimer.Setup();
-            tossAimer.Hide();
-            
+            TossAimer = GetComponentInChildren<TossAimer>();
+            TossAimer.Setup();
+            TossAimer.Hide();
+
             autoAim = true;
         }
 
         private void Update()
         {
-            rangedAimer.autoAim = autoAim;
+            RangedAimer.autoAim = autoAim;
             meleeAimer.autoAim = autoAim;
-            tossAimer.autoAim = autoAim;
-            
-            rangedAimer.locked = locked;
+            TossAimer.autoAim = autoAim;
+
+            RangedAimer.locked = locked;
             meleeAimer.locked = locked;
-            tossAimer.locked = locked;
+            TossAimer.locked = locked;
         }
 
         public void RequestAimer(UsableItem item)
         {
-            rangedAimer.Hide();
+            RangedAimer.Hide();
             meleeAimer.Hide();
-            tossAimer.Hide();
+            TossAimer.Hide();
             var targetTag = item.targetTag;
             switch (item)
             {
                 case RangedItem rangedItem:
-                    rangedAimer.SetupTargetTag(targetTag);
-                    rangedAimer.Show();
-                    rangedAimer.Item = rangedItem;
-                    rangedAimer.Refresh();
+                    RangedAimer.SetupTargetTag(targetTag);
+                    RangedAimer.Show();
+                    RangedAimer.Item = rangedItem;
+                    RangedAimer.Refresh();
                     break;
                 case MeleeItem meleeItem:
                     meleeAimer.SetupTargetTag(targetTag);
@@ -68,11 +66,11 @@ namespace Cafeo.Aimer
                     meleeAimer.Refresh();
                     break;
                 case TossItem tossItem:
-                    tossAimer.SetupTargetTag(targetTag);
-                    tossAimer.SetMaxDistance(tossItem.maxDistance);
-                    tossAimer.Show();
-                    tossAimer.Item = tossItem;
-                    tossAimer.Refresh();
+                    TossAimer.SetupTargetTag(targetTag);
+                    TossAimer.SetMaxDistance(tossItem.maxDistance);
+                    TossAimer.Show();
+                    TossAimer.Item = tossItem;
+                    TossAimer.Refresh();
                     break;
                 case OneTimeUseItem oneTimeUseItem:
                     RequestAimer(oneTimeUseItem.underlying);
@@ -83,38 +81,38 @@ namespace Cafeo.Aimer
         }
 
         public void SetupTargetTag(string targetTag)
-        { 
-            rangedAimer.Setup();
-           rangedAimer.SetupTargetTag(targetTag);
+        {
+            RangedAimer.Setup();
+            RangedAimer.SetupTargetTag(targetTag);
         }
 
         public Vector2 CalcDirection(UsableItem item)
         {
             return item switch
             {
-                RangedItem rangedItem => rangedAimer.transform.right,
+                RangedItem rangedItem => RangedAimer.transform.right,
                 MeleeItem => meleeAimer.transform.right,
-                TossItem => tossAimer.transform.right,
-                _ => rangedAimer.transform.right
+                TossItem => TossAimer.transform.right,
+                _ => RangedAimer.transform.right
             };
         }
 
         public BehaviorTree GetBehaviourTree(UsableItem item)
         {
-            return (item switch
+            return item switch
             {
-                RangedItem rangedItem => rangedAimer.BehaviorTree,
+                RangedItem rangedItem => RangedAimer.BehaviorTree,
                 MeleeItem => meleeAimer.BehaviorTree,
-                TossItem => tossAimer.BehaviorTree,
+                TossItem => TossAimer.BehaviorTree,
                 _ => null
-            });
+            };
         }
 
         public void SetAllTargetObject(GameObject go)
         {
-            rangedAimer.BehaviorTree.SetVariableValue("TargetObject", go);
+            RangedAimer.BehaviorTree.SetVariableValue("TargetObject", go);
             meleeAimer.BehaviorTree.SetVariableValue("TargetObject", go);
-            tossAimer.BehaviorTree.SetVariableValue("TargetObject", go);
+            TossAimer.BehaviorTree.SetVariableValue("TargetObject", go);
         }
 
         public GameObject CalcTargetObject(UsableItem item)
@@ -132,10 +130,10 @@ namespace Cafeo.Aimer
             var delta = VectorUtils.DegreesBetween(pos.normalized, dir);
             return Mathf.Abs(delta) < tol;
         }
-        
+
         public GameObject CalcRangedTarget()
         {
-            return rangedAimer.TargetObject;
+            return RangedAimer.TargetObject;
         }
     }
 }

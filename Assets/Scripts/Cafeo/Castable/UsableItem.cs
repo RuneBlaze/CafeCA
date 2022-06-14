@@ -5,13 +5,49 @@ using Cafeo.Data;
 using Cafeo.Utility;
 using UnityEngine;
 using UnityEngine.Events;
-using Random = Unity.Mathematics.Random;
+using Random = UnityEngine.Random;
 
 namespace Cafeo.Castable
 {
     [Serializable]
     public class UsableItem : AbstractItem, IStatusTag
     {
+        public enum DamageType
+        {
+            HpDamage,
+            MpDamage,
+            HpRecovery,
+            Null
+        }
+
+        public enum HitOutcome
+        {
+            Hit,
+            Miss,
+            Critical
+        }
+
+        public enum ItemTag
+        {
+            Approach, // this skill is useful for approaching
+            StapleDPS, // for dealing damage reliably
+            FreeDPS, // for easy damage
+            Dash
+        }
+
+        public enum PowerType
+        {
+            Physical,
+            Ranged,
+            Magic
+        }
+
+        public static UsableItem dashSkill = new()
+        {
+            tags = { ItemTag.Approach, ItemTag.Dash },
+            utilityType = new UtilityType.DashUtility()
+        };
+
         public float startUp;
         public float active;
         public float recovery = 0.5f;
@@ -22,7 +58,7 @@ namespace Cafeo.Castable
         public float baseDamage;
 
         public int orbit = 1;
-        public int orientation = 0;
+        public int orientation;
 
         public bool hitAllies;
         public bool hitEnemies = true;
@@ -31,29 +67,6 @@ namespace Cafeo.Castable
         public float hitStun = 0.2f;
 
         public UtilityType utilityType;
-        public virtual bool ShouldDiscard => false;
-        
-        public UsableItem()
-        {
-            damageType = DamageType.Null;
-            powerType = PowerType.Physical;
-            hitEffects = new HitEffects();
-        }
-
-        public enum PowerType
-        {
-            Physical,
-            Ranged,
-            Magic,
-        }
-
-        public enum DamageType
-        {
-            HpDamage,
-            MpDamage,
-            HpRecovery,
-            Null,
-        }
 
         public PowerType powerType;
         public DamageType damageType;
@@ -65,50 +78,52 @@ namespace Cafeo.Castable
         public UnityEvent onCounter;
         public HitEffects hitEffects;
 
-        public static UsableItem dashSkill = new()
-        {
-            tags = { ItemTag.Approach, ItemTag.Dash },
-            utilityType = new UtilityType.DashUtility(),
-        };
-
-        public enum ItemTag
-        {
-            Approach, // this skill is useful for approaching
-            StapleDPS, // for dealing damage reliably
-            FreeDPS, // for easy damage
-            Dash,
-        }
-        
         public List<ItemTag> tags = new();
-        
+        public int targetLayerMask = -1;
+        public string targetTag;
+
+        public float oldActive = -1; // kept track for the dynamic calculation of duration for effects
+        private Coroutine activeCoroutine;
+        private bool coroutineDone;
+
+        public Func<BattleVessel, IEnumerator> coroutineFactory;
+        public IEnumerator coroutineOnStart;
+
+        public UsableItem()
+        {
+            damageType = DamageType.Null;
+            powerType = PowerType.Physical;
+            hitEffects = new HitEffects();
+        }
+
+        public virtual bool ShouldDiscard => false;
+
         /* <summary>If this skill upon use, should have UI indication that it has been used.</summary>*/
         public bool Announcing => !tags.Contains(ItemTag.FreeDPS) && !tags.Contains(ItemTag.Dash);
+
+        public RogueManager Scene => RogueManager.Instance;
+
+        public bool CompareStatusTag(IStatusTag statusTag)
+        {
+            return Equals(statusTag);
+        }
 
         public void AddTag(ItemTag tag)
         {
             tags.Add(tag);
         }
-        
+
         public bool HasTag(ItemTag tag)
         {
             return tags.Contains(tag);
         }
 
-        public Func<BattleVessel, IEnumerator> coroutineFactory;
-        public IEnumerator coroutineOnStart;
-        
-        public RogueManager Scene => RogueManager.Instance;
-        public int targetLayerMask = -1;
-        public string targetTag;
-        private bool coroutineDone;
-        private Coroutine activeCoroutine;
-        
         // called when the skill is being switched to
         public virtual void Setup(BattleVessel user)
         {
             onCounter = new UnityEvent();
             hitEffects.statusTag = this;
-            
+
             var hitLayers = new List<string>();
             if (hitAllies)
             {
@@ -131,14 +146,11 @@ namespace Cafeo.Castable
             }
 
             if (hitAllies)
-            {
-                user.Aimer.TossAimer.BehaviorTree.SetVariableValue("TargetObject", 
+                user.Aimer.TossAimer.BehaviorTree.SetVariableValue("TargetObject",
                     user.UtilityEnv.targetAlly != null ? user.UtilityEnv.targetAlly.gameObject : null);
-            }
             else
-            {
-                user.Aimer.TossAimer.BehaviorTree.SetVariableValue("TargetObject", user.Brain.RetrieveTargetEnemy()?.gameObject);
-            }
+                user.Aimer.TossAimer.BehaviorTree.SetVariableValue("TargetObject",
+                    user.Brain.RetrieveTargetEnemy()?.gameObject);
         }
 
         private IEnumerator WrappedCoroutine(BattleVessel user)
@@ -154,17 +166,12 @@ namespace Cafeo.Castable
             utilityType?.OnTryUsing(user);
         }
 
-        public float oldActive = -1; // kept track for the dynamic calculation of duration for effects
-
         public virtual void OnUse(BattleVessel user)
         {
             utilityType?.OnUse(user);
             user.UtilityEnv.justUsed = this;
-            if (coroutineFactory != null)
-            {
-                coroutineOnStart = coroutineFactory.Invoke(user);
-            }
-            
+            if (coroutineFactory != null) coroutineOnStart = coroutineFactory.Invoke(user);
+
             if (coroutineOnStart != null)
             {
                 coroutineDone = false;
@@ -174,36 +181,31 @@ namespace Cafeo.Castable
 
             orientation++;
             orientation %= orbit;
-            
+
             if (stopOnUse) user.StopMoving();
         }
 
         public virtual void OnCounter(BattleVessel user)
         {
-            
         }
 
         public virtual void OnInterrupt(BattleVessel user)
         {
             onCounter.Invoke();
-            if (activeCoroutine != null)
-            {
-                user.StopCoroutine(activeCoroutine);
-            }
+            if (activeCoroutine != null) user.StopCoroutine(activeCoroutine);
         }
 
         public virtual void DuringActive(BattleVessel user, float timer)
         {
         }
-        
+
         public virtual void OnEndUse(BattleVessel user)
         {
-            
         }
 
         public virtual void ApplyHitEffects(BattleVessel user, BattleVessel target)
         {
-            hitEffects.Apply(user, target, levelOffset: Level - 1);
+            hitEffects.Apply(user, target, Level - 1);
             // foreach (var buff in hitEffects.buffs)
             // {
             //     var statusEffect = buff.CalcStatus(user, target);
@@ -228,26 +230,13 @@ namespace Cafeo.Castable
             ApplyHitEffects(user, target);
         }
 
-        public enum HitOutcome
-        {
-            Hit,
-            Miss,
-            Critical,
-        }
-
         public virtual HitOutcome CalcOutcome(BattleVessel user, BattleVessel target)
         {
             // first roll for hit or miss
-            int outcome = UnityEngine.Random.Range(0, 100);
-            if (outcome < target.Eva)
-            {
-                return HitOutcome.Miss;
-            }
+            var outcome = Random.Range(0, 100);
+            if (outcome < target.Eva) return HitOutcome.Miss;
 
-            if (outcome > 100 - user.Crit)
-            {
-                return HitOutcome.Critical;
-            }
+            if (outcome > 100 - user.Crit) return HitOutcome.Critical;
 
             return HitOutcome.Hit;
         }
@@ -277,7 +266,7 @@ namespace Cafeo.Castable
                         case DamageType.Null:
                             break;
                         case DamageType.HpDamage:
-                            target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Hp);
+                            target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback);
                             break;
                         case DamageType.MpDamage:
                             target.ApplyDamage(Mathf.RoundToInt(damage), stun, knockback, AgentSoul.ResourceType.Mp);
@@ -301,14 +290,8 @@ namespace Cafeo.Castable
             ApplyEffect(user, target, Vector2.zero, null);
         }
 
-        public bool CompareStatusTag(IStatusTag statusTag)
-        {
-            return Equals(statusTag);
-        }
-
         public virtual void Reset()
         {
-            
         }
     }
 }

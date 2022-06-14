@@ -1,5 +1,4 @@
-﻿using System;
-using Cafeo.MapGen;
+﻿using Cafeo.MapGen;
 using UnityEngine;
 
 namespace Cafeo.Entities
@@ -7,6 +6,7 @@ namespace Cafeo.Entities
     public class RoomClearer : MonoBehaviour
     {
         private bool consumed;
+
         private void OnCollisionEnter2D(Collision2D col)
         {
             if (consumed) return;

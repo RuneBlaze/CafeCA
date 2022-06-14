@@ -1,6 +1,4 @@
 ﻿using System;
-using Cafeo.Templates;
-using UnityEngine;
 
 namespace Cafeo.Data
 {
@@ -18,8 +16,10 @@ namespace Cafeo.Data
             Xl,
             Xxl,
             Xxxl,
-            Xxxxl,
+            Xxxxl
         }
+
+        public const float ADULT_TOL = 7.5f;
 
         public static int LetterSize2ChildHeight(LetterSize size)
         {
@@ -35,17 +35,17 @@ namespace Cafeo.Data
         {
             return 160 + 5 * (int)size - (int)LetterSize.S;
         }
-        
+
         public static float MenHeight2LetterSize(float height)
         {
             return (height - 160) / 5 + (int)LetterSize.S;
         }
-        
+
         public static int LetterSize2WomenHeight(LetterSize size)
         {
             return 155 + 5 * (int)size - (int)LetterSize.S;
         }
-        
+
         public static float WomenHeight2LetterSize(float height)
         {
             return (height - 155) / 5 + (int)LetterSize.S;
@@ -56,9 +56,10 @@ namespace Cafeo.Data
         // -0.5 - 0 means undersized but wearable
         // 0 - 0.5 means oversized but wearable
         public abstract float CalcFit(AgentSoul soul);
+
         // public abstract WearableTemplate.GarmentPosition ForPosition();
         public abstract string Localize();
-        
+
         [Serializable]
         public record ShoeSize : GarmentSize
         {
@@ -68,10 +69,10 @@ namespace Cafeo.Data
             {
                 this.millimeters = millimeters;
             }
-            
+
             public int EuropeanSize()
             {
-                return ((millimeters * 2) - 100) / 10;
+                return (millimeters * 2 - 100) / 10;
             }
 
             public override float CalcFit(AgentSoul soul)
@@ -105,18 +106,17 @@ namespace Cafeo.Data
                 var heightDiff = letter - idealHeight;
                 return heightDiff / 5f;
             }
+
             public override string Localize()
             {
                 return $"{LetterSize2ChildHeight(size)} {size}";
             }
         }
-        
-        public const float ADULT_TOL = 7.5f;
 
         public record MenSize : GarmentSize
         {
             public readonly LetterSize size;
-            
+
             public MenSize(LetterSize size)
             {
                 this.size = size;

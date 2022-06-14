@@ -8,13 +8,13 @@ namespace Cafeo.Templates
         [BoxGroup("Basic Info", centerLabel: true)]
         // [AssetsOnly]
         [AssetSelector(Paths = "Assets/Graphics/Icons")]
-        [HideLabel, PreviewField(55)]
+        [HideLabel]
+        [PreviewField(55)]
         public Sprite icon;
 
-        [BoxGroup("Basic Info", centerLabel: true)]
-        [TextArea(4, 14)]
+        [BoxGroup("Basic Info", centerLabel: true)] [TextArea(4, 14)]
         public string lore;
-        
+
         [BoxGroup("Basic Info", centerLabel: true)] [ProgressBar(0, 255)]
         public int tint;
     }

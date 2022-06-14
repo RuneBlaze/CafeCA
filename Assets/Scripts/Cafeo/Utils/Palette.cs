@@ -1,15 +1,9 @@
-﻿using System.Drawing;
-using Color = UnityEngine.Color;
+﻿using UnityEngine;
 
 namespace Cafeo.Utils
 {
     public static class Palette
     {
-
-        public static Color HexColor(int r, int g, int b)
-        {
-            return new Color(r / 255f, g / 255f, b / 255f);
-        }
         // we use pico8 palette
         public static Color black = HexColor(0, 0, 0);
         public static Color deepBlue = HexColor(0x1d, 0x2b, 0x53);
@@ -27,6 +21,11 @@ namespace Cafeo.Utils
         public static Color clayPurple = HexColor(0x83, 0x76, 0x9c);
         public static Color pink = HexColor(0xff, 0x77, 0xa8);
         public static Color milkYellow = HexColor(0xff, 0xcc, 0xaa);
+
+        public static Color HexColor(int r, int g, int b)
+        {
+            return new Color(r / 255f, g / 255f, b / 255f);
+        }
 
         public static Color SwapAlpha(Color color, float alpha)
         {

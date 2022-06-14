@@ -13,42 +13,52 @@ namespace Cafeo.Templates
 
         [BoxGroup("Basic Info", centerLabel: true)]
         public int pierce;
+
         [BoxGroup("Basic Info", centerLabel: true)]
         public int bounce = -1;
+
         [BoxGroup("Basic Info", centerLabel: true)]
         public SkillTemplate.TemplateHitType hitType;
+
         [BoxGroup("Basic Info", centerLabel: true)]
         public bool collidable;
+
         [BoxGroup("Basic Info", centerLabel: true)]
         public float timeLimit = 30f;
-        [BoxGroup("Speed", centerLabel: true)]
-        public float speed = 2f;
-        [BoxGroup("Speed", centerLabel: true)]
-        public float acceleration;
-        [BoxGroup("Speed", centerLabel: true)]
-        public float maxSpeed;
+
+        [BoxGroup("Speed", centerLabel: true)] public float speed = 2f;
+
+        [BoxGroup("Speed", centerLabel: true)] public float acceleration;
+
+        [BoxGroup("Speed", centerLabel: true)] public float maxSpeed;
+
         [BoxGroup("Size Change", centerLabel: true)]
         public float deltaSize;
+
         [BoxGroup("Size Change", centerLabel: true)]
         public float maxSize;
+
         [BoxGroup("Physics Properties", centerLabel: true)]
         public float density = 32f;
+
         [BoxGroup("Physics Properties", centerLabel: true)]
-        public bool kineticBody = false;
+        public bool kineticBody;
+
         [BoxGroup("Physics Properties", centerLabel: true)]
         public bool bullet;
+
         [BoxGroup("Physics Properties", centerLabel: true)]
         public float bounciness = 0.8f;
-        [BoxGroup("Misc", centerLabel: true)]
-        public float initialSpin = 0;
-        [BoxGroup("Misc", centerLabel: true)]
-        public float boomerang = 0;
-        [BoxGroup("Misc", centerLabel: true)]
-        public bool followOwner;
-        [BoxGroup("Misc", centerLabel: true)]
-        public float homingRadius = 2f;
-        [BoxGroup("Misc", centerLabel: true)]
-        public float homingStrength = 0;
+
+        [BoxGroup("Misc", centerLabel: true)] public float initialSpin;
+
+        [BoxGroup("Misc", centerLabel: true)] public float boomerang;
+
+        [BoxGroup("Misc", centerLabel: true)] public bool followOwner;
+
+        [BoxGroup("Misc", centerLabel: true)] public float homingRadius = 2f;
+
+        [BoxGroup("Misc", centerLabel: true)] public float homingStrength;
 
         public ProjectileType Generate()
         {
@@ -58,7 +68,8 @@ namespace Cafeo.Templates
                 pierce = pierce,
                 bounce = bounce,
                 hitAllies = hitType is SkillTemplate.TemplateHitType.HitAllies or SkillTemplate.TemplateHitType.HitBoth,
-                hitEnemies = hitType is SkillTemplate.TemplateHitType.HitEnemies or SkillTemplate.TemplateHitType.HitBoth,
+                hitEnemies =
+                    hitType is SkillTemplate.TemplateHitType.HitEnemies or SkillTemplate.TemplateHitType.HitBoth,
                 collidable = collidable,
                 timeLimit = timeLimit,
                 speed = speed,

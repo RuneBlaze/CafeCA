@@ -8,17 +8,15 @@ namespace Cafeo.Data
     [Serializable]
     public class WearableSeries
     {
-        // public Wearable wearable;
-        public List<GarmentSize> sizeRange;
         public List<WearableTemplate.GarmentColor> colorRange;
 
         public string displayName;
         public WearableTemplate.FashionLine line;
         public WearableTemplate.GarmentKind kind;
-        public WearableTemplate.GarmentPosition Position => WearableTemplate.GarmentKind2Position(kind);
         public FashionBrand brand;
 
         public WearableTemplate.GarmentMaterial composition;
+
         // public WearableTemplate.GarmentColor color;
         public WearableTemplate.GarmentColorModifier colorModifier;
         public WearableTemplate.GarmentStyleAttributes styleAttributes;
@@ -26,7 +24,11 @@ namespace Cafeo.Data
 
         public float constructionQuality;
         public float cutQuality;
+
         public float aestheticsQuality;
+
+        // public Wearable wearable;
+        public List<GarmentSize> sizeRange;
 
         public WearableSeries(List<GarmentSize> sizeRange, List<WearableTemplate.GarmentColor> colorRange,
             string displayName, WearableTemplate.FashionLine line, WearableTemplate.GarmentKind kind,
@@ -51,15 +53,13 @@ namespace Cafeo.Data
             this.aestheticsQuality = aestheticsQuality;
         }
 
+        public WearableTemplate.GarmentPosition Position => WearableTemplate.GarmentKind2Position(kind);
+
         public void AddTo(List<Wearable> collection)
         {
             foreach (var garmentSize in sizeRange)
-            {
-                foreach (var garmentColor in colorRange)
-                {
-                    collection.Add(new Wearable(this, garmentSize, garmentColor, constructionQuality, cutQuality));
-                }
-            }
+            foreach (var garmentColor in colorRange)
+                collection.Add(new Wearable(this, garmentSize, garmentColor, constructionQuality, cutQuality));
         }
     }
 }

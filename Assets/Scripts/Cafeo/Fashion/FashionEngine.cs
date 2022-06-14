@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Cafeo.Data;
 using Cafeo.Templates;
 using Cafeo.Utils;
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace Cafeo.Fashion
@@ -12,8 +10,13 @@ namespace Cafeo.Fashion
     {
         public List<FashionBrand> brands;
         public int currentSeason;
-        
+
         public UnityEvent onSeasonChange;
+
+        private void Start()
+        {
+            SimulateFashionSeason();
+        }
 
         protected override void Setup()
         {
@@ -24,26 +27,17 @@ namespace Cafeo.Fashion
             GenerateBrands();
         }
 
-        private void Start()
-        {
-            SimulateFashionSeason();
-        }
-
         public IEnumerable<WearableSeries> CurrentSeasonCollection()
         {
             foreach (var fashionBrand in brands)
-            {
-                foreach (var wearableSeries in fashionBrand.collections[currentSeason])
-                {
-                    yield return wearableSeries;
-                }
-            }
+            foreach (var wearableSeries in fashionBrand.collections[currentSeason])
+                yield return wearableSeries;
         }
 
         private void GenerateBrands()
         {
             var finder = TemplateFinder.Instance;
-            for (int i = 0; i < 30; i++)
+            for (var i = 0; i < 30; i++)
             {
                 var e = finder.fashionShopTemplates.RandomElement();
                 brands.Add(e.Generate());
@@ -52,10 +46,7 @@ namespace Cafeo.Fashion
 
         private void SimulateFashionSeason()
         {
-            foreach (var fashionBrand in brands)
-            {
-                fashionBrand.DesignFor(currentSeason);
-            }
+            foreach (var fashionBrand in brands) fashionBrand.DesignFor(currentSeason);
             onSeasonChange.Invoke();
         }
     }

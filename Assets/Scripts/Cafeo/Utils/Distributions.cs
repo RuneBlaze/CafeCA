@@ -1,7 +1,4 @@
-﻿using System;
-using UnityEngine;
-
-namespace Cafeo.Utils
+﻿namespace Cafeo.Utils
 {
     public static class Distributions
     {

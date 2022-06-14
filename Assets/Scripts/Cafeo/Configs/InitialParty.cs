@@ -9,8 +9,7 @@ namespace Cafeo.Configs
     [GlobalConfig("Assets/Resources/Configs/")]
     public class InitialParty : GlobalConfig<InitialParty>
     {
-        [AssetsOnly]
-        public List<SoulTemplate> initialMembers;
+        [AssetsOnly] public List<SoulTemplate> initialMembers;
 
         public List<BattleInventoryConfig> battleInventories;
 

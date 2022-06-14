@@ -8,7 +8,7 @@ namespace Cafeo
     public class SkillTree
     {
         public List<List<UsableItem>> data;
-        
+
         public SkillTree()
         {
             data = new List<List<UsableItem>>();

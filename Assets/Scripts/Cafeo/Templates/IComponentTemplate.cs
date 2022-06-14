@@ -1,9 +1,15 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Cafeo.Templates
 {
     public interface IComponentTemplate<out T> : ITemplate<GameObject>
     {
+        GameObject ITemplate<GameObject>.Generate()
+        {
+            throw new NotImplementedException();
+        }
+
         public T AddToGameObjet(GameObject gameObject);
 
         public T GenerateGameObject()
@@ -11,11 +17,6 @@ namespace Cafeo.Templates
             var go = new GameObject();
             var comp = AddToGameObjet(go);
             return comp;
-        }
-
-        GameObject ITemplate<GameObject>.Generate()
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

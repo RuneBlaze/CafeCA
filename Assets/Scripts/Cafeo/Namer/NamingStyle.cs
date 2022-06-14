@@ -12,14 +12,16 @@ namespace Cafeo.Namer
             "B",
             "C",
             "D",
-            "E",
+            "E"
         };
-        
+
+        public abstract string NameSome(WearableTemplate.GarmentKind garmentKind);
+
         public class NumericsNamingStyle : NamingStyle
         {
             public override string NameSome(WearableTemplate.GarmentKind garmentKind)
             {
-                var num = (int)garmentKind * 100 + Random.Range(0,99);
+                var num = (int)garmentKind * 100 + Random.Range(0, 99);
                 return $"{num}";
             }
         }
@@ -31,7 +33,5 @@ namespace Cafeo.Namer
                 return defaultLines.RandomElement();
             }
         }
-
-        public abstract string NameSome(WearableTemplate.GarmentKind garmentKind);
     }
 }

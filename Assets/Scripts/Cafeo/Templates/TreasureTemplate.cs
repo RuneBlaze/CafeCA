@@ -6,17 +6,20 @@ namespace Cafeo.Templates
     {
         [BoxGroup("Effects", centerLabel: true)]
         public HitEffects leaderEffect;
+
         [BoxGroup("Effects", centerLabel: true)]
         public HitEffects otherEffects;
+
         [BoxGroup("Effects", centerLabel: true)]
         public SkillTemplate leaderSkill;
+
         [BoxGroup("Effects", centerLabel: true)]
         public SkillTemplate nonLeaderSkill;
 
         public Treasure Generate()
         {
-            var treasure = 
-                new Treasure(displayName, leaderEffect, otherEffects, 
+            var treasure =
+                new Treasure(displayName, leaderEffect, otherEffects,
                     leaderSkill?.Generate(), nonLeaderSkill?.Generate(), icon);
             return treasure;
         }

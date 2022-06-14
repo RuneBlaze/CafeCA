@@ -1,14 +1,12 @@
-﻿using System;
-using BehaviorDesigner.Runtime;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Cafeo.Castable
 {
     public class TossItem : UsableItem
     {
-        public float radius = 2f;
-        public float maxDistance = 4;
         public bool alwaysSplash;
+        public float maxDistance = 4;
+        public float radius = 2f;
 
         public TossItem()
         {
@@ -18,7 +16,6 @@ namespace Cafeo.Castable
 
         public void Update()
         {
-            
         }
 
         public override void OnUse(BattleVessel user)
@@ -26,10 +23,7 @@ namespace Cafeo.Castable
             base.OnUse(user);
             if (maxDistance <= 0 && coroutineOnStart != null) return;
             var aimTarget = user.CalcAimTarget(this);
-            if (alwaysSplash && aimTarget == null)
-            {
-                aimTarget = null;
-            }
+            if (alwaysSplash && aimTarget == null) aimTarget = null;
             // if (alwaysSplash && maxDistance <= 0)
             // {
             //     aimTarget = null;
@@ -51,10 +45,10 @@ namespace Cafeo.Castable
                     collidable = true,
                     speed = 8f,
                     hitAllies = hitAllies,
-                    hitEnemies = hitEnemies,
+                    hitEnemies = hitEnemies
                 };
                 var dir = (aimTarget.transform.position - user.transform.position).normalized * user.Radius;
-                var proj = Scene.CreateProjectile(type, user, user.transform.position + dir * 1f , dir);
+                var proj = Scene.CreateProjectile(type, user, user.transform.position + dir * 1f, dir);
                 proj.beforeDestroy.AddListener(() => { CreateSplashProjectile(user, proj.transform); });
             }
         }
@@ -68,16 +62,19 @@ namespace Cafeo.Castable
                 speed = 0f,
                 hitAllies = hitAllies,
                 hitEnemies = hitEnemies,
-                deltaSize = -1.2f,
+                deltaSize = -1.2f
             };
             var splashProj = Scene.CreateProjectile(splash, user, origin.position, Vector2.down);
-            splashProj.onHit.AddListener(target => { ApplyEffect(user, target, splashProj.transform.position, splashProj); });
+            splashProj.onHit.AddListener(target =>
+            {
+                ApplyEffect(user, target, splashProj.transform.position, splashProj);
+            });
         }
 
         public override void ApplyEffect(BattleVessel user, BattleVessel target, Vector2 hitSource, Projectile hitProj)
         {
             base.ApplyEffect(user, target, hitSource, hitProj);
-            Vector2 towardsTarget = (Vector2) target.transform.position - hitSource;
+            var towardsTarget = (Vector2)target.transform.position - hitSource;
             ApplyCalculatedDamage(user, target, hitStun, towardsTarget * 0.5f);
             // target.ApplyHeal(10);
         }

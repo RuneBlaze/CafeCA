@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Cafeo.Data
 {
     [Serializable]
     public class DropInventory
     {
-        public List<OneTimeUseItem> oneTimeUseItems;
-        public List<Treasure> treasures;
-        public List<Charm> charms;
         public int coins;
         public int keys;
+        public List<Charm> charms;
+        public List<OneTimeUseItem> oneTimeUseItems;
+        public List<Treasure> treasures;
 
         public DropInventory()
         {
@@ -21,22 +20,22 @@ namespace Cafeo.Data
             coins = 0;
             keys = 0;
         }
-        
+
         public void AddOneTimeUseItem(OneTimeUseItem item)
         {
             oneTimeUseItems.Add(item);
         }
-        
+
         public void AddTreasure(Treasure treasure)
         {
             treasures.Add(treasure);
         }
-        
+
         public void AddCharm(Charm charm)
         {
             charms.Add(charm);
         }
-        
+
 
         public static DropInventory OnlyCoins(int coins)
         {
@@ -46,7 +45,7 @@ namespace Cafeo.Data
             };
             return inventory;
         }
-        
+
         public static DropInventory OnlyKeys(int keys)
         {
             var inventory = new DropInventory
@@ -58,26 +57,26 @@ namespace Cafeo.Data
 
         public static DropInventory CoinsAndKeys(int coins, int keys)
         {
-            DropInventory inventory = new DropInventory
+            var inventory = new DropInventory
             {
                 coins = coins,
                 keys = keys
             };
             return inventory;
         }
-        
+
         public static DropInventory OneTimeUseItems(List<OneTimeUseItem> items)
         {
-            DropInventory inventory = new DropInventory
+            var inventory = new DropInventory
             {
                 oneTimeUseItems = items
             };
             return inventory;
         }
-        
+
         public static DropInventory SingleItem(OneTimeUseItem item)
         {
-            DropInventory inventory = new DropInventory
+            var inventory = new DropInventory
             {
                 oneTimeUseItems = new List<OneTimeUseItem> { item }
             };

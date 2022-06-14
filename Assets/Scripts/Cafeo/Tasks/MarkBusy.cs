@@ -7,10 +7,10 @@ namespace Cafeo.Tasks
     [TaskCategory("Rogue")]
     public class MarkBusy : Action
     {
+        private AimerGroup aimerGroup;
+        private GenericBrain brain;
         public bool busy;
         public SharedGameObject target;
-        private GenericBrain brain;
-        private AimerGroup aimerGroup;
 
         public override void OnStart()
         {
@@ -23,13 +23,9 @@ namespace Cafeo.Tasks
         {
             brain.busy = busy;
             if (busy)
-            {
                 aimerGroup.SetAllTargetObject(target.Value);
-            }
             else
-            {
                 aimerGroup.SetAllTargetObject(null);
-            }
             return TaskStatus.Success;
         }
     }

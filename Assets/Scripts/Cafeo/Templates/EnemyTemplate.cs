@@ -6,8 +6,8 @@ namespace Cafeo.Templates
 {
     public class EnemyTemplate : SoulTemplate
     {
-        [BoxGroup("Hotbar", centerLabel: true)]
-        [AssetSelector] public List<SkillTemplate> skills;
+        [BoxGroup("Hotbar", centerLabel: true)] [AssetSelector]
+        public List<SkillTemplate> skills;
 
         [BoxGroup("Enemy", centerLabel: true)] public int dropGoldExpectation;
         [BoxGroup("Enemy", centerLabel: true)] public string aiType;

@@ -1,4 +1,3 @@
-using System;
 using Drawing;
 using UnityEngine;
 
@@ -11,7 +10,6 @@ namespace Cafeo.Shapes
             var draw = Draw.ingame;
             using (draw.InScreenSpace(Camera.main))
             {
-                
             }
         }
     }

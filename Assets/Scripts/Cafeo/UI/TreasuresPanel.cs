@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Cafeo.UI
@@ -7,14 +6,14 @@ namespace Cafeo.UI
     public class TreasuresPanel : MonoBehaviour
     {
         private Sprite defaultSprite;
-        public RogueManager Scene => RogueManager.Instance;
 
         private Image[] sprites;
+
+        public RogueManager Scene => RogueManager.Instance;
         // private SpriteRenderer sprite;
 
         public void Awake()
         {
-            
         }
 
         private void Start()
@@ -32,7 +31,7 @@ namespace Cafeo.UI
         public void Refresh()
         {
             var allies = Scene.Allies();
-            int i = 1;
+            var i = 1;
             foreach (var ally in allies)
             {
                 sprites[i].sprite = ally.HasTreasure ? ally.treasure.Icon : defaultSprite;

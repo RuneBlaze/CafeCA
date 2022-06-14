@@ -1,5 +1,4 @@
-﻿using System;
-using Cafeo.Data;
+﻿using Cafeo.Data;
 using Sirenix.OdinInspector;
 
 namespace Cafeo.Templates
@@ -9,6 +8,12 @@ namespace Cafeo.Templates
     {
         [BoxGroup("Skill", centerLabel: true)] public SkillTemplate skill;
         [BoxGroup("Skill", centerLabel: true)] public int charges;
+
+        private void Reset()
+        {
+            charges = 6;
+        }
+
         public OneTimeUseItem Generate()
         {
             var sk = skill.Generate();
@@ -17,11 +22,6 @@ namespace Cafeo.Templates
                 name = displayName
             };
             return item;
-        }
-
-        private void Reset()
-        {
-            charges = 6;
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cafeo.Data;
@@ -15,26 +14,21 @@ namespace Cafeo
         public enum Gender
         {
             Male,
-            Female,
+            Female
         }
 
-        public string DisplayName
+        public enum ResourceType
         {
-            get
-            {
-                if (firstName == "" && lastName == "")
-                {
-                    return gameObject.name;
-                }
-                return $"{lastName} {firstName}";
-            }
+            Hp,
+            Mp,
+            Cp
         }
 
         public string firstName;
         public string lastName;
         public int age = 17;
         public Gender gender = Gender.Male;
-        public float heightZ = 0;
+        public float heightZ;
         public float bmi = 22.5f;
         public float muscleStrength = 1;
         public float limbSize = 1;
@@ -44,9 +38,9 @@ namespace Cafeo
         public string hairColor = "black";
         public string eyeColor = "brown";
         public float genderAppearance = 0.7f;
-        public bool hasMaleFeature = false;
-        public bool hasFemaleFeature = false;
-        public bool hasBreasts = false;
+        public bool hasMaleFeature;
+        public bool hasFemaleFeature;
+        public bool hasBreasts;
         public float carved = 0.5f;
         public float maleFeatureProminence = 1f;
         public float femaleFeatureProminence = 1f;
@@ -55,22 +49,23 @@ namespace Cafeo
 
         public int hp = 12;
         public int mp = 6;
-        public int cp = 0;
+        public int cp;
 
         public float[] baseAttrs = new float[12];
-        
-        public void CopyTo(AgentSoul dst)
+
+        public int alignment;
+
+        public Dictionary<WearableTemplate.GarmentPosition, List<Wearable>> clothes;
+
+        public string DisplayName
         {
-            dst.firstName = firstName;
-            dst.lastName = lastName;
-            dst.age = age;
-            dst.gender = gender;
-            dst.muscleStrength = muscleStrength;
-            dst.limbSize = limbSize;
-            dst.sizeMultiplier = sizeMultiplier;
-            dst.appearedAge = appearedAge;
-            dst.baseAttrs = baseAttrs.AsEnumerable().ToArray();
+            get
+            {
+                if (firstName == "" && lastName == "") return gameObject.name;
+                return $"{lastName} {firstName}";
+            }
         }
+
         public float Str => baseAttrs[0] * Mathf.Pow(HeightScore, 1.5f);
         public float Con => baseAttrs[1] * Mathf.Pow(HeightScore, 1.5f);
         public float Dex => baseAttrs[2] / Mathf.Pow(HeightScore, 1.5f);
@@ -82,32 +77,22 @@ namespace Cafeo
         public float Awe => baseAttrs[8];
         public float Life => baseAttrs[9];
         public float Mana => baseAttrs[10];
-        
-        [ShowInInspector]
-        public float Atk => Str * 2 + Con * 0.5f;
-        [ShowInInspector]
-        public float Def => Con * 2 + Str * 0.5f;
-        [ShowInInspector]
-        public float Mat => Mag * 2 + Wil * 0.5f;
-        [ShowInInspector]
-        public float Mdf => Wil * 2 + Mag * 0.5f;
+
+        [ShowInInspector] public float Atk => Str * 2 + Con * 0.5f;
+
+        [ShowInInspector] public float Def => Con * 2 + Str * 0.5f;
+
+        [ShowInInspector] public float Mat => Mag * 2 + Wil * 0.5f;
+
+        [ShowInInspector] public float Mdf => Wil * 2 + Mag * 0.5f;
 
         [ShowInInspector]
         public int MaxHp =>
-            Mathf.RoundToInt((5 + (Life / 100) * (Con * 3 + Str + Wil) / 3) * 20 * Mathf.Pow(HeightScore, 0.8f));
+            Mathf.RoundToInt((5 + Life / 100 * (Con * 3 + Str + Wil) / 3) * 20 * Mathf.Pow(HeightScore, 0.8f));
 
-        [ShowInInspector]
-        public int MaxMp => Mathf.RoundToInt(Mana * (Mag + (6 * Mag + 3 * Wil + Lea) / 10) / 5);
+        [ShowInInspector] public int MaxMp => Mathf.RoundToInt(Mana * (Mag + (6 * Mag + 3 * Wil + Lea) / 10) / 5);
 
         public int MaxCp => 200;
-
-        public int alignment = 0;
-
-        void Start()
-        {
-            hp = MaxHp;
-            mp = MaxMp;
-        }
 
         public float RawHeight
         {
@@ -122,11 +107,11 @@ namespace Cafeo
         public int GirlInd => gender == Gender.Female ? 1 : 0;
         public int BoyInd => 1 - GirlInd;
 
-        [ShowInInspector]
-        public float Height => RawHeight * sizeMultiplier;
+        [ShowInInspector] public float Height => RawHeight * sizeMultiplier;
+
         public float HeightScore => Height / 160;
-        [ShowInInspector]
-        public float Weight => bmi * Mathf.Pow((Height / 100f), 2);
+
+        [ShowInInspector] public float Weight => bmi * Mathf.Pow(Height / 100f, 2);
 
 
         public float FootLength
@@ -148,16 +133,39 @@ namespace Cafeo
             }
         }
 
-        public int ShoeSize
+        public int ShoeSize => Mathf.RoundToInt(FootLength * 2 - 10);
+
+        public bool Dead => hp <= 0;
+
+        private void Awake()
         {
-            get { return Mathf.RoundToInt(FootLength * 2 - 10); }
+            if (preset != null) ConsumePreset();
+
+            InitClothes();
         }
 
-        public enum ResourceType
+        private void Start()
         {
-            Hp,
-            Mp,
-            Cp,
+            hp = MaxHp;
+            mp = MaxMp;
+        }
+
+        // Update is called once per frame
+        private void Update()
+        {
+        }
+
+        public void CopyTo(AgentSoul dst)
+        {
+            dst.firstName = firstName;
+            dst.lastName = lastName;
+            dst.age = age;
+            dst.gender = gender;
+            dst.muscleStrength = muscleStrength;
+            dst.limbSize = limbSize;
+            dst.sizeMultiplier = sizeMultiplier;
+            dst.appearedAge = appearedAge;
+            dst.baseAttrs = baseAttrs.AsEnumerable().ToArray();
         }
 
         public void TakeDamage(int k, ResourceType t = ResourceType.Hp)
@@ -206,20 +214,10 @@ namespace Cafeo
             k = Mathf.Clamp(k, 0, MaxCp - cp);
             cp += k;
         }
-        
+
         public void HealCpPercentage(float perc)
         {
             HealCp(Mathf.RoundToInt(MaxCp * perc));
-        }
-
-        private void Awake()
-        {
-            if (preset != null)
-            {
-                ConsumePreset();
-            }
-
-            InitClothes();
         }
 
         private void InitClothes()
@@ -227,7 +225,7 @@ namespace Cafeo
             clothes = new Dictionary<WearableTemplate.GarmentPosition, List<Wearable>>();
             foreach (var value in Enum.GetValues(typeof(WearableTemplate.GarmentPosition)))
             {
-                var pos = (WearableTemplate.GarmentPosition) value;
+                var pos = (WearableTemplate.GarmentPosition)value;
                 clothes[pos] = new List<Wearable>();
             }
         }
@@ -239,30 +237,26 @@ namespace Cafeo
             var positions = new List<WearableTemplate.GarmentPosition>();
             foreach (var value in Enum.GetValues(typeof(WearableTemplate.GarmentPosition)))
             {
-                var pos = (WearableTemplate.GarmentPosition) value;
-                if (position.HasFlag(pos))
-                {
-                    positions.Add(pos);
-                }
+                var pos = (WearableTemplate.GarmentPosition)value;
+                if (position.HasFlag(pos)) positions.Add(pos);
             }
+
             foreach (var garmentPosition in positions)
             {
                 var listOfClothes = clothes[garmentPosition];
-                if (listOfClothes[^1].Layer >= layer)
-                {
-                    return false;
-                }
+                if (listOfClothes[^1].Layer >= layer) return false;
             }
+
             foreach (var garmentPosition in positions)
             {
                 var listOfClothes = clothes[garmentPosition];
                 listOfClothes.Add(wearable);
             }
+
             return true;
         }
 
         [Button("Consume Preset")]
-
         private void ConsumePreset()
         {
             if (preset == null) return;
@@ -285,15 +279,5 @@ namespace Cafeo
             mp = MaxMp;
             cp = 0;
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-            
-        }
-        
-        public bool Dead => hp <= 0;
-
-        public Dictionary<WearableTemplate.GarmentPosition, List<Wearable>> clothes;
     }
 }

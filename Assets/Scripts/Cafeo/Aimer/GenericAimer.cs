@@ -1,5 +1,4 @@
-﻿using System;
-using BehaviorDesigner.Runtime;
+﻿using BehaviorDesigner.Runtime;
 using Cafeo.Utils;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -8,20 +7,16 @@ namespace Cafeo.Aimer
 {
     public abstract class GenericAimer<T> : MonoBehaviour
     {
-        private SpriteRenderer sprite;
-        public abstract T Item { get; set; }
         [SerializeField] protected bool hidden;
 
         public bool autoAim;
         public bool locked;
         protected BattleVessel battleVessel;
+        private SpriteRenderer sprite;
+        public abstract T Item { get; set; }
         public BehaviorTree BehaviorTree { get; private set; }
-        public virtual void Setup()
-        {
-            autoAim = true;
-            BehaviorTree = GetComponent<BehaviorTree>();
-            sprite = GetComponent<SpriteRenderer>();
-        }
+
+        public GameObject TargetObject => (GameObject)BehaviorTree.GetVariable("TargetObject").GetValue();
 
         private void Start()
         {
@@ -29,7 +24,18 @@ namespace Cafeo.Aimer
             Assert.IsNotNull(battleVessel);
         }
 
-        public GameObject TargetObject => (GameObject)BehaviorTree.GetVariable("TargetObject").GetValue();
+        public virtual void Update()
+        {
+            BehaviorTree.enabled = autoAim && !locked;
+            if (!autoAim && Item != null) ManualAim();
+        }
+
+        public virtual void Setup()
+        {
+            autoAim = true;
+            BehaviorTree = GetComponent<BehaviorTree>();
+            sprite = GetComponent<SpriteRenderer>();
+        }
 
         public virtual void SetupTargetTag(string targetTag)
         {
@@ -44,23 +50,13 @@ namespace Cafeo.Aimer
             sprite.enabled = false;
         }
 
-        public virtual void Update()
-        {
-            BehaviorTree.enabled = autoAim && !locked;
-            if (!autoAim && Item != null)
-            {
-                ManualAim();
-            }
-        }
-
         public virtual void Refresh()
         {
-            
         }
 
         public virtual void ManualAim()
         {
-            if (battleVessel.IsPlayer &&! locked)
+            if (battleVessel.IsPlayer && !locked)
             {
                 var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 mousePos.z = 0;

@@ -1,18 +1,17 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Cafeo.World
 {
     /// <summary>
-    /// Parent class for all "locations" in the physical world
+    ///     Parent class for all "locations" in the physical world
     /// </summary>
     public class TownNode : MonoBehaviour
     {
         public List<TownAgent> agents;
-        public virtual TownRegion Region { get; }
         public string displayName;
         public Sprite bgImage;
+        public virtual TownRegion Region { get; }
 
         protected virtual void Awake()
         {
@@ -21,13 +20,13 @@ namespace Cafeo.World
         }
 
         /// <summary>
-        /// syncs internal pointers to those reflected in the world hierarchy
+        ///     syncs internal pointers to those reflected in the world hierarchy
         /// </summary>
         public virtual void Refresh()
         {
             OnRefresh();
             var n = transform.childCount;
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 var child = transform.GetChild(i);
                 RefreshOnSee(child.gameObject);
@@ -41,10 +40,7 @@ namespace Cafeo.World
 
         protected virtual void RefreshOnSee(GameObject trans)
         {
-            if (trans.CompareTag("TownAgent"))
-            {
-                agents.Add(trans.GetComponent<TownAgent>());
-            }
+            if (trans.CompareTag("TownAgent")) agents.Add(trans.GetComponent<TownAgent>());
         }
     }
 }

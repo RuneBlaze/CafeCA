@@ -10,6 +10,13 @@ namespace Cafeo.MapGen
     [Serializable]
     public class MapNode
     {
+        public enum State
+        {
+            Unexplored,
+            Active,
+            Cleared
+        }
+
         public int id;
         public Vector2Int position;
         public State state;
@@ -17,41 +24,33 @@ namespace Cafeo.MapGen
 
         public int counter; // upon counter reaching zero, this room is completed
 
-        public RandomMapGenerator Map => RandomMapGenerator.Instance;
-        public RogueManager Scene => RogueManager.Instance;
-        
         public UnityEvent onStateChanged;
-        public enum State
-        {
-            Unexplored,
-            Active,
-            Cleared,
-        }
+
         public MapNode(int id, Vector2Int position)
         {
             this.id = id;
             this.position = position;
-            this.state = State.Unexplored;
-            this.onStateChanged = new UnityEvent();
+            state = State.Unexplored;
+            onStateChanged = new UnityEvent();
             counter = 0;
         }
 
+        public RandomMapGenerator Map => RandomMapGenerator.Instance;
+        public RogueManager Scene => RogueManager.Instance;
+
+        public Vector2 WorldPos => Map.MapCoord2WorldCoord(position);
+
         protected virtual void OnExitState(State prevState)
         {
-            
         }
-        
+
         protected virtual void OnEnterState(State newState)
         {
             if (newState == State.Cleared)
             {
                 foreach (var vessel in root.GetComponentsInChildren<BattleVessel>())
-                {
                     if (vessel.IsEnemy)
-                    {
                         vessel.Kill();
-                    }
-                }
                 AllyParty.Instance.AfterClear();
             }
         }
@@ -64,8 +63,6 @@ namespace Cafeo.MapGen
             go.transform.SetParent(Map.rogueDoorParent);
             root = go.transform;
         }
-
-        public Vector2 WorldPos => Map.MapCoord2WorldCoord(position);
 
         public void ProgressState()
         {
@@ -83,12 +80,13 @@ namespace Cafeo.MapGen
                 case State.Cleared:
                     break;
             }
+
             onStateChanged.Invoke();
         }
 
         public void PlaceRoomClearer(Vector2 localPos)
         {
-            var go = Map.SpawnRoomClearer((Vector2) root.transform.position + localPos);
+            var go = Map.SpawnRoomClearer((Vector2)root.transform.position + localPos);
             go.transform.SetParent(root);
         }
 
@@ -101,7 +99,7 @@ namespace Cafeo.MapGen
 
         public void PlaceEnemy(EnemyTemplate template, Vector2 localPos)
         {
-            var go = Scene.SpawnBattleVessel(template, (Vector2) root.transform.position + localPos);
+            var go = Scene.SpawnBattleVessel(template, (Vector2)root.transform.position + localPos);
             go.transform.SetParent(root);
             counter++;
             // Debug.Log("On death hooked");
@@ -110,12 +108,8 @@ namespace Cafeo.MapGen
                 counter--;
                 Debug.Log(counter);
                 if (counter <= 0)
-                {
                     if (state == State.Active)
-                    {
                         ProgressState();
-                    }
-                }
             });
         }
 

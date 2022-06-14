@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BehaviorDesigner.Runtime;
@@ -16,53 +15,28 @@ namespace Cafeo
     [RequireComponent(typeof(BattleVessel))]
     public abstract class GenericBrain : MonoBehaviour
     {
-        private BehaviorTree behaviorTree;
-        public BehaviorTree BehaviorTree => behaviorTree;
-        private AimerGroup _aimer;
-        public abstract BattleVessel Vessel { get; set; }
-        public RogueManager Scene => RogueManager.Instance;
-        public AgentSoul Soul => Vessel.soul;
-        public abstract void DecideAction();
-
-        private Queue<QueuedAction> actionQueue;
-
         public UnityEvent<int> itemUsed;
         public UnityEvent<int> itemDiscarded;
 
         public bool busy;
 
-        public int aggression = 1; // positive: we should approach, negative: we should retreat, zero: we should just zone
+        public int
+            aggression = 1; // positive: we should approach, negative: we should retreat, zero: we should just zone
+
+        private AimerGroup _aimer;
+
+        private Queue<QueuedAction> actionQueue;
         private AIPath path;
+        public BehaviorTree BehaviorTree { get; private set; }
+
+        public abstract BattleVessel Vessel { get; set; }
+        public RogueManager Scene => RogueManager.Instance;
+        public AgentSoul Soul => Vessel.soul;
 
         private void Awake()
         {
             itemUsed = new UnityEvent<int>();
             itemDiscarded = new UnityEvent<int>();
-        }
-
-        public GameObject RetrieveTargetObject()
-        {
-            return BehaviorTree != null ? BehaviorTree.GetVariable("TargetObject").GetValue() as GameObject : null;
-        }
-
-        public void TrySetTargetObject(GameObject target)
-        {
-            // Debug.Log("Setting target object to " + target);
-            if (BehaviorTree != null)
-            {
-                // if (RetrieveTargetObject().name != target.name)
-                // {
-                //     Debug.Log("Setting target to " + target.name);
-                // }
-                BehaviorTree.SetVariableValue("TargetObject", target);
-            }
-        }
-
-        public BattleVessel RetrieveTargetEnemy()
-        {
-            var go = RetrieveTargetObject();
-            if (go != null) return Scene.GetVesselFromGameObject(go);
-            return null;
         }
 
         public virtual void Start()
@@ -72,46 +46,40 @@ namespace Cafeo
             path = GetComponent<AIPath>();
             if (!Vessel.IsPlayer)
             {
-                behaviorTree = gameObject.AddComponent<BehaviorTree>();
-                behaviorTree.StartWhenEnabled = false;
+                BehaviorTree = gameObject.AddComponent<BehaviorTree>();
+                BehaviorTree.StartWhenEnabled = false;
                 // _behaviorTree.
                 if (Vessel.IsAlly)
-                {
-                    behaviorTree.ExternalBehavior = 
-                        Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/DefaultAlly.asset").WaitForCompletion();
-                }
-            
+                    BehaviorTree.ExternalBehavior =
+                        Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/DefaultAlly.asset")
+                            .WaitForCompletion();
+
                 if (Vessel.IsEnemy)
                 {
-                    string treePath = "Assets/Data/BehaviorTrees/DefaultEnemy.asset";
+                    var treePath = "Assets/Data/BehaviorTrees/DefaultEnemy.asset";
                     if (!string.IsNullOrEmpty(Vessel.aiType))
-                    {
                         treePath = $"Assets/Data/BehaviorTrees/EnemyAI/{Vessel.aiType}.asset";
-                    }
-                    behaviorTree.ExternalBehavior = 
+                    BehaviorTree.ExternalBehavior =
                         Addressables.LoadAssetAsync<ExternalBehaviorTree>(treePath).WaitForCompletion();
                 }
-                behaviorTree.EnableBehavior();
+
+                BehaviorTree.EnableBehavior();
             }
             else
             {
-                behaviorTree = gameObject.AddComponent<BehaviorTree>();
-                behaviorTree.StartWhenEnabled = false;
-                behaviorTree.ExternalBehavior =
-                    Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/LeaderFollow.asset").WaitForCompletion();
+                BehaviorTree = gameObject.AddComponent<BehaviorTree>();
+                BehaviorTree.StartWhenEnabled = false;
+                BehaviorTree.ExternalBehavior =
+                    Addressables.LoadAssetAsync<ExternalBehaviorTree>("Assets/Data/BehaviorTrees/LeaderFollow.asset")
+                        .WaitForCompletion();
             }
 
             if (Vessel.IsAlly)
-            {
-                Scene.allyBehaviorTrees.Add(behaviorTree);
-            }
+                Scene.allyBehaviorTrees.Add(BehaviorTree);
             else
-            {
-                Scene.enemyBehaviorTrees.Add(behaviorTree);
-            }
+                Scene.enemyBehaviorTrees.Add(BehaviorTree);
 
             if (Vessel.IsAlly)
-            {
                 if (!Vessel.IsPlayer)
                 {
                     if (Vessel.aiType == "ranged")
@@ -127,13 +95,34 @@ namespace Cafeo
                         BehaviorTree.SetVariableValue("SkipSight", true);
                     }
                 }
-            }
 
-            if (!Vessel.IsPlayer)
-            {
-                BehaviorTree.SetVariableValue("TargetTag", Vessel.IsAlly ? "Enemy" : "Ally");
-            }
+            if (!Vessel.IsPlayer) BehaviorTree.SetVariableValue("TargetTag", Vessel.IsAlly ? "Enemy" : "Ally");
             SetupAimer();
+        }
+
+        public abstract void DecideAction();
+
+        public GameObject RetrieveTargetObject()
+        {
+            return BehaviorTree != null ? BehaviorTree.GetVariable("TargetObject").GetValue() as GameObject : null;
+        }
+
+        public void TrySetTargetObject(GameObject target)
+        {
+            // Debug.Log("Setting target object to " + target);
+            if (BehaviorTree != null)
+                // if (RetrieveTargetObject().name != target.name)
+                // {
+                //     Debug.Log("Setting target to " + target.name);
+                // }
+                BehaviorTree.SetVariableValue("TargetObject", target);
+        }
+
+        public BattleVessel RetrieveTargetEnemy()
+        {
+            var go = RetrieveTargetObject();
+            if (go != null) return Scene.GetVesselFromGameObject(go);
+            return null;
         }
 
         public void SetupAimer()
@@ -149,18 +138,16 @@ namespace Cafeo
                 item = null;
                 return;
             }
+
+            var bestItem = suitableObjects.MaxObject(it => CalcUtility(it.Item1));
+            if (bestItem.Item2 >= 0)
+            {
+                Vessel.TrySetHotboxPointer(bestItem.Item2);
+                item = Vessel.hotbar[bestItem.Item2];
+            }
             else
             {
-                var bestItem = suitableObjects.MaxObject(it => CalcUtility(it.Item1));
-                if (bestItem.Item2 >= 0)
-                {
-                    Vessel.TrySetHotboxPointer(bestItem.Item2);
-                    item = Vessel.hotbar[bestItem.Item2];
-                }
-                else
-                {
-                    item = bestItem.Item1;
-                }
+                item = bestItem.Item1;
             }
         }
 
@@ -182,7 +169,7 @@ namespace Cafeo
 
         public void TrySwitchingToItem(UsableItem.ItemTag itemTag)
         {
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 if (Vessel.hotbar[i] == null) continue;
                 if (Vessel.hotbar[i].HasTag(itemTag))
@@ -197,10 +184,7 @@ namespace Cafeo
         {
             var item = Vessel.RetrieveCurItem();
             if (item == null) return false;
-            if (_aimer.CalcTargetObject(item))
-            {
-                return true;
-            }
+            if (_aimer.CalcTargetObject(item)) return true;
             return false;
         }
 
@@ -233,17 +217,17 @@ namespace Cafeo
         public IEnumerable<UsableItem> HeldItems()
         {
             yield return UsableItem.dashSkill;
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 if (Vessel.hotbar[i] == null) continue;
                 yield return Vessel.hotbar[i];
             }
         }
-        
+
         public IEnumerable<(UsableItem, int)> HeldItemsWithIdx()
         {
             yield return (UsableItem.dashSkill, -1);
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 if (Vessel.hotbar[i] == null) continue;
                 yield return (Vessel.hotbar[i], i);
@@ -268,8 +252,8 @@ namespace Cafeo
         {
             if (actionQueue.Count == 0) return;
             var action = actionQueue.Peek();
-            bool performedAction = false;
-            bool discardedAction = false;
+            var performedAction = false;
+            var discardedAction = false;
             switch (action)
             {
                 case QueuedAction.UseItemOfType useItemOfType:
@@ -307,11 +291,10 @@ namespace Cafeo
                                 // }
                                 // Debug.Log("checking if we should dash");
                                 if ((path.destination - transform.position).magnitude >= 1)
-                                {
                                     // Debug.Log("we are dashing towards the target");
                                     Vessel.TryDash(path.steeringTarget - transform.position);
-                                }
                             }
+
                             performedAction = true;
                         }
                         else
@@ -320,6 +303,7 @@ namespace Cafeo
                             discardedAction = true;
                         }
                     }
+
                     break;
             }
 
@@ -327,7 +311,8 @@ namespace Cafeo
             {
                 var justUsed = actionQueue.Dequeue();
                 itemDiscarded.Invoke(justUsed.id);
-            } else if (performedAction)
+            }
+            else if (performedAction)
             {
                 var justUsed = actionQueue.Dequeue();
                 itemUsed.Invoke(justUsed.id);

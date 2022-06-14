@@ -5,7 +5,7 @@ namespace Cafeo.Utils
 {
     public static class CollectionExtension
     {
-        private static Random rng = new();
+        private static readonly Random rng = new();
 
         public static T RandomElement<T>(this IList<T> list)
         {

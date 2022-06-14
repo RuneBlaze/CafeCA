@@ -1,7 +1,5 @@
-using System.Collections;
 using Cafeo.Data;
 using NUnit.Framework;
-using UnityEngine.TestTools;
 
 namespace Cafeo.Editor.Tests
 {

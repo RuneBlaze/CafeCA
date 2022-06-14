@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using BehaviorDesigner.Runtime;
 using Cafeo.Castable;
 using Cafeo.Configs;
@@ -10,15 +8,10 @@ using Cafeo.Entities;
 using Cafeo.Gadgets;
 using Cafeo.Templates;
 using Cafeo.Utils;
-using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
-using Quaternion = UnityEngine.Quaternion;
-using Random = UnityEngine.Random;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 namespace Cafeo
 {
@@ -27,11 +20,6 @@ namespace Cafeo
         public List<BattleVessel> vessels = new();
         public List<BattleVessel> otherAllyVessels = new();
         public BattleVessel player;
-        private PlayerBrain playerBrain;
-        private GameObject popupPrefab;
-        private GameObject collectablePrefab;
-        private GameObject agentPrefab;
-        private GameObject entityLabelPrefab;
         [HideInInspector] public GameObject leaderAlly;
         public UnityEvent rogueUpdateEvent = new();
         [SerializeField] private Transform popupParent;
@@ -44,10 +32,60 @@ namespace Cafeo
         public List<BehaviorTree> allyBehaviorTrees = new();
         public List<BehaviorTree> enemyBehaviorTrees = new();
 
-        public Dictionary<int, BattleVessel> goIdToVessel = new();
-
         public Sprite coinSprite;
         public Sprite keySprite;
+        private GameObject agentPrefab;
+        private GameObject collectablePrefab;
+        private GameObject entityLabelPrefab;
+
+        public Dictionary<int, BattleVessel> goIdToVessel = new();
+        private PlayerBrain playerBrain;
+        private GameObject popupPrefab;
+
+        private void Start()
+        {
+            Assert.IsNotNull(player);
+            playerBrain = player.GetComponent<PlayerBrain>();
+            leaderAlly = CalcLeaderAlly().gameObject;
+            foreach (var battleVessel in vessels)
+                if (battleVessel != player && battleVessel.IsAlly)
+                    otherAllyVessels.Add(battleVessel);
+
+            // if (battleVessel.IsAlly)
+            // {
+            //     var tree = battleVessel.GetComponent<BehaviorTree>();
+            //     if (tree != null) allyBehaviorTrees.Add(tree);
+            // }
+            // else
+            // {
+            //     var tree = battleVessel.GetComponent<BehaviorTree>();
+            //     if (tree != null) enemyBehaviorTrees.Add(tree);
+            // }
+        }
+
+        public void Update()
+        {
+            if (player.CanTakeAction)
+                if (!playerBrain.PlayerDecideAction())
+                    return;
+            // then we tick everyone else
+            foreach (var vessel in vessels)
+                if (vessel != player && vessel.CanTakeAction)
+                    vessel.Brain.DecideAction();
+
+            var dead = 0;
+            foreach (var vessel in vessels)
+                if (vessel != null)
+                    vessel.RogueUpdate();
+                else
+                    dead++;
+
+            if (dead > 0) vessels.RemoveAll(x => x == null);
+
+            rogueUpdateEvent.Invoke();
+            BehaviorManager.instance.Tick();
+            Physics2D.Simulate(Time.deltaTime);
+        }
 
         protected override void Setup()
         {
@@ -77,10 +115,7 @@ namespace Cafeo
         public IEnumerable<BattleVessel> Allies()
         {
             yield return player;
-            foreach (var vessel in otherAllyVessels)
-            {
-                yield return vessel;
-            }
+            foreach (var vessel in otherAllyVessels) yield return vessel;
         }
 
         public void InitializeBattleParty()
@@ -94,83 +129,21 @@ namespace Cafeo
             {
                 allies[i].ClearHotbar();
                 var config = inventories[i];
-                int j = 0;
+                var j = 0;
                 foreach (var skill in config.restSkills)
                 {
                     var item = skill.Generate();
                     allies[i].hotbar[j] = item;
                     j++;
                 }
+
                 allies[i].SetHotboxPointer(0);
-            }
-        }
-
-        private void Start()
-        {
-            Assert.IsNotNull(player);
-            playerBrain = player.GetComponent<PlayerBrain>();
-            leaderAlly = CalcLeaderAlly().gameObject;
-            foreach (var battleVessel in vessels)
-            {
-                if (battleVessel != player && battleVessel.IsAlly)
-                {
-                    otherAllyVessels.Add(battleVessel);
-                }
-
-                // if (battleVessel.IsAlly)
-                // {
-                //     var tree = battleVessel.GetComponent<BehaviorTree>();
-                //     if (tree != null) allyBehaviorTrees.Add(tree);
-                // }
-                // else
-                // {
-                //     var tree = battleVessel.GetComponent<BehaviorTree>();
-                //     if (tree != null) enemyBehaviorTrees.Add(tree);
-                // }
             }
         }
 
         public void RegisterVessel(BattleVessel vessel)
         {
             vessels.Add(vessel);
-        }
-
-        public void Update()
-        {
-            if (player.CanTakeAction)
-            {
-                if (!playerBrain.PlayerDecideAction()) return;
-            }
-            // then we tick everyone else
-            foreach (var vessel in vessels)
-            {
-                if (vessel != player && vessel.CanTakeAction)
-                {
-                    vessel.Brain.DecideAction();
-                }
-            }
-
-            int dead = 0;
-            foreach (var vessel in vessels)
-            {
-                if (vessel != null)
-                {
-                    vessel.RogueUpdate();
-                }
-                else
-                {
-                    dead++;
-                }
-            }
-            
-            if (dead > 0)
-            {
-                vessels.RemoveAll(x => x == null);
-            }
-            
-            rogueUpdateEvent.Invoke();
-            BehaviorManager.instance.Tick();
-            Physics2D.Simulate(Time.deltaTime);
         }
 
         public Projectile CreateProjectile(
@@ -194,15 +167,16 @@ namespace Cafeo
         public List<Projectile> CreateFanProjectiles(
             ProjectileType type, int k, int angle, BattleVessel owner, Vector2 position, Vector2 direction)
         {
-            float inc = (float) angle / (k - 1);
+            var inc = (float)angle / (k - 1);
             var projs = new List<Projectile>();
-            for (int i = 0; i < k; i++)
+            for (var i = 0; i < k; i++)
             {
-                var dir = 
+                var dir =
                     Quaternion.AngleAxis(-angle / 2f + inc * i, Vector3.forward) * direction.normalized;
                 var r = CreateProjectile(type, owner, position, dir);
                 projs.Add(r);
             }
+
             return projs;
         }
 
@@ -245,30 +219,16 @@ namespace Cafeo
 
         public void PopDropInventory(Vector2 position, DropInventory inventory, Vector2 direction)
         {
-            foreach (var charm in inventory.charms)
-            {
-                SpawnDroppable(position, charm, direction);
-            }
-            
-            foreach (var treasure in inventory.treasures)
-            {
-                SpawnDroppable(position, treasure, direction);
-            }
-            
+            foreach (var charm in inventory.charms) SpawnDroppable(position, charm, direction);
+
+            foreach (var treasure in inventory.treasures) SpawnDroppable(position, treasure, direction);
+
             foreach (var oneTimeUseItem in inventory.oneTimeUseItems)
-            {
                 SpawnDroppable(position, oneTimeUseItem, direction);
-            }
-            
-            for (int i = 0; i < inventory.coins; i++)
-            {
-                SpawnCoin(position, direction);
-            }
-            
-            for (int i = 0; i < inventory.keys; i++)
-            {
-                SpawnKey(position, direction);
-            }
+
+            for (var i = 0; i < inventory.coins; i++) SpawnCoin(position, direction);
+
+            for (var i = 0; i < inventory.keys; i++) SpawnKey(position, direction);
         }
 
         public Collectable SpawnDroppable(Vector2 position, IDroppable droppable)
@@ -293,51 +253,47 @@ namespace Cafeo
             {
                 return goIdToVessel[id];
             }
-            else
-            {
-                goIdToVessel[id] = go.GetComponent<BattleVessel>();
-                return goIdToVessel[id];
-            }
+
+            goIdToVessel[id] = go.GetComponent<BattleVessel>();
+            return goIdToVessel[id];
         }
 
-        public float CalculateBaseDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+        public float CalculateBaseDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill,
+            bool arts = false)
         {
             var lhs = attacker;
             var rhs = defender;
             var x = skill.power / 100f;
-            if (arts)
-            {
-                return x * (lhs.Mat * 1.8f - rhs.Mdf);
-            }
+            if (arts) return x * (lhs.Mat * 1.8f - rhs.Mdf);
 
             return x * (lhs.Atk * 1.8f - rhs.Def);
         }
-        
-        public float CalculateDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+
+        public float CalculateDamageMelee(BattleVessel attacker, BattleVessel defender, UsableItem skill,
+            bool arts = false)
         {
             var baseDamage = CalculateBaseDamageMelee(attacker, defender, skill, arts);
             return baseDamage * CalcVariance(attacker, defender, skill);
         }
-        
-        public float CalculateBaseDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+
+        public float CalculateBaseDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill,
+            bool arts = false)
         {
             var lhs = attacker;
             var rhs = defender;
             var x = skill.power / 100f;
-            if (arts)
-            {
-                return x * (lhs.Mat * 1.4f + lhs.Dex * 1.8f - rhs.Mdf);
-            }
+            if (arts) return x * (lhs.Mat * 1.4f + lhs.Dex * 1.8f - rhs.Mdf);
 
             return x * (lhs.Atk * 1.4f + lhs.Dex * 1.8f - rhs.Def);
         }
-        
-        public float CalculateDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill, bool arts = false)
+
+        public float CalculateDamageRanged(BattleVessel attacker, BattleVessel defender, UsableItem skill,
+            bool arts = false)
         {
             var baseDamage = CalculateBaseDamageRanged(attacker, defender, skill, arts);
             return baseDamage * CalcVariance(attacker, defender, skill);
         }
-        
+
         public float CalculateBaseHeal(BattleVessel attacker, BattleVessel defender, UsableItem skill)
         {
             var lhs = attacker;
@@ -345,13 +301,13 @@ namespace Cafeo
             var x = skill.power / 100f;
             return x * (lhs.Mat * 1.2f);
         }
-        
+
         public float CalculateHeal(BattleVessel attacker, BattleVessel defender, UsableItem skill)
         {
             var baseHeal = CalculateBaseHeal(attacker, defender, skill);
             return baseHeal * CalcVariance(attacker, defender, skill);
         }
-        
+
         public float CalcVariance(BattleVessel attacker, BattleVessel defender, UsableItem skill)
         {
             return Random.Range(0.8f, 1.2f);
@@ -361,12 +317,12 @@ namespace Cafeo
         {
             inputLocked = true;
         }
-        
+
         public void OnDebugDisabled()
         {
             inputLocked = false;
         }
-        
+
         public BattleVessel SpawnBattleVessel(EnemyTemplate template, Vector2 pos)
         {
             // first create the soul

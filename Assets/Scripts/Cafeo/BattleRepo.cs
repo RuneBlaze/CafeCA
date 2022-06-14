@@ -4,6 +4,5 @@
     // because only battle vessels can have battle items
     public class BattleRepo
     {
-        
     }
 }

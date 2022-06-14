@@ -14,21 +14,73 @@ namespace Cafeo.Fashion
     [Serializable]
     public class FashionBrand
     {
+        public static readonly GarmentSize.ShoeSize[] menShoeSizes =
+            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(245 + 5 * i)).ToArray();
+
+        public static readonly GarmentSize.ShoeSize[] largeMenShoeSizes =
+            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(265 + 5 * i)).ToArray();
+
+        public static readonly GarmentSize.ShoeSize[] womenShoeSizes =
+            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(225 + 5 * i)).ToArray();
+
+        public static readonly GarmentSize.ShoeSize[] largeWomenShoeSizes =
+            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(245 + 5 * i)).ToArray();
+
+        public static readonly GarmentSize.ShoeSize[] boyShoeSizes =
+            Enumerable.Range(0, 14).Select(i => new GarmentSize.ShoeSize(180 + 5 * i)).ToArray();
+
+        public static readonly GarmentSize.ShoeSize[] girlShoeSizes =
+            Enumerable.Range(0, 12).Select(i => new GarmentSize.ShoeSize(180 + 5 * i)).ToArray();
+
+        public static readonly GarmentSize.LetterSize[] normalLetters =
+        {
+            GarmentSize.LetterSize.Xs, GarmentSize.LetterSize.S, GarmentSize.LetterSize.M, GarmentSize.LetterSize.L,
+            GarmentSize.LetterSize.Xl, GarmentSize.LetterSize.Xxl
+        };
+
+        public static readonly GarmentSize.LetterSize[] largeLetters =
+        {
+            GarmentSize.LetterSize.L,
+            GarmentSize.LetterSize.Xl, GarmentSize.LetterSize.Xxl, GarmentSize.LetterSize.Xxxl,
+            GarmentSize.LetterSize.Xxxxl
+        };
+
+        public static readonly GarmentSize.LetterSize[] smallLetters =
+        {
+            GarmentSize.LetterSize.Xxxs, GarmentSize.LetterSize.Xxs, GarmentSize.LetterSize.Xs,
+            GarmentSize.LetterSize.S
+        };
+
+        public static readonly GarmentSize.MenSize[] menGarmentSizes =
+            normalLetters.Select(it => new GarmentSize.MenSize(it)).ToArray();
+
+        public static readonly GarmentSize.WomenSize[] womenGarmentSizes =
+            normalLetters.Select(it => new GarmentSize.WomenSize(it)).ToArray();
+
+        public static readonly GarmentSize.ChildrenSize[] childrenGarmentSizes =
+            largeLetters.Select(it => new GarmentSize.ChildrenSize(it)).ToArray();
+
+        public static readonly GarmentSize.MenSize[] largeMenGarmentSizes =
+            largeLetters.Select(it => new GarmentSize.MenSize(it)).ToArray();
+
+        public static readonly GarmentSize.WomenSize[] largeWomenGarmentSizes =
+            largeLetters.Select(it => new GarmentSize.WomenSize(it)).ToArray();
+
         public string displayName;
         public WearableTemplate.FashionLine lines;
-        public HashSet<WearableTemplate.GarmentKind> garmentKinds;
         public WearableTemplate.SizeBias sizeBias = WearableTemplate.SizeBias.None;
         public WearableTemplate.GarmentMaterial composition;
         public WearableTemplate.GarmentColor color;
         public WearableTemplate.GarmentColorModifier colorModifier;
         public WearableTemplate.GarmentStyleAttributes styleAttributes;
         public WearableTemplate.GarmentStyleElements styleElements;
-        public NamingStyle namingStyle;
         public int prestige;
         public float constructionQuality;
         public float scarcity;
 
         public Dictionary<int, List<WearableSeries>> collections;
+        public HashSet<WearableTemplate.GarmentKind> garmentKinds;
+        public NamingStyle namingStyle;
 
         public FashionBrand(string displayName, WearableTemplate.FashionLine lines,
             List<WearableTemplate.GarmentKind> garmentKinds, WearableTemplate.SizeBias sizeBias,
@@ -53,7 +105,7 @@ namespace Cafeo.Fashion
             this.constructionQuality = constructionQuality;
             this.scarcity = scarcity;
             this.namingStyle = namingStyle;
-            this.collections = new Dictionary<int, List<WearableSeries>>();
+            collections = new Dictionary<int, List<WearableSeries>>();
         }
 
         public static FashionBrand FromTemplate(FashionShopTemplate template)
@@ -72,58 +124,6 @@ namespace Cafeo.Fashion
             if (template.sizeBias != sizeBias) return -1;
             return 1;
         }
-
-        public static readonly GarmentSize.ShoeSize[] menShoeSizes =
-            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(245 + 5 * i)).ToArray();
-
-        public static readonly GarmentSize.ShoeSize[] largeMenShoeSizes =
-            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(265 + 5 * i)).ToArray();
-
-        public static readonly GarmentSize.ShoeSize[] womenShoeSizes =
-            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(225 + 5 * i)).ToArray();
-
-        public static readonly GarmentSize.ShoeSize[] largeWomenShoeSizes =
-            Enumerable.Range(0, 10).Select(i => new GarmentSize.ShoeSize(245 + 5 * i)).ToArray();
-
-        public static readonly GarmentSize.ShoeSize[] boyShoeSizes =
-            Enumerable.Range(0, 14).Select(i => new GarmentSize.ShoeSize(180 + 5 * i)).ToArray();
-
-        public static readonly GarmentSize.ShoeSize[] girlShoeSizes =
-            Enumerable.Range(0, 12).Select(i => new GarmentSize.ShoeSize(180 + 5 * i)).ToArray();
-
-        public static readonly GarmentSize.LetterSize[] normalLetters =
-        {
-            GarmentSize.LetterSize.Xs, GarmentSize.LetterSize.S, GarmentSize.LetterSize.M, GarmentSize.LetterSize.L,
-            GarmentSize.LetterSize.Xl, GarmentSize.LetterSize.Xxl,
-        };
-
-        public static readonly GarmentSize.LetterSize[] largeLetters =
-        {
-            GarmentSize.LetterSize.L,
-            GarmentSize.LetterSize.Xl, GarmentSize.LetterSize.Xxl, GarmentSize.LetterSize.Xxxl,
-            GarmentSize.LetterSize.Xxxxl
-        };
-
-        public static readonly GarmentSize.LetterSize[] smallLetters =
-        {
-            GarmentSize.LetterSize.Xxxs, GarmentSize.LetterSize.Xxs, GarmentSize.LetterSize.Xs,
-            GarmentSize.LetterSize.S,
-        };
-
-        public static readonly GarmentSize.MenSize[] menGarmentSizes =
-            normalLetters.Select(it => new GarmentSize.MenSize(it)).ToArray();
-
-        public static readonly GarmentSize.WomenSize[] womenGarmentSizes =
-            normalLetters.Select(it => new GarmentSize.WomenSize(it)).ToArray();
-
-        public static readonly GarmentSize.ChildrenSize[] childrenGarmentSizes =
-            largeLetters.Select(it => new GarmentSize.ChildrenSize(it)).ToArray();
-
-        public static readonly GarmentSize.MenSize[] largeMenGarmentSizes =
-            largeLetters.Select(it => new GarmentSize.MenSize(it)).ToArray();
-
-        public static readonly GarmentSize.WomenSize[] largeWomenGarmentSizes =
-            largeLetters.Select(it => new GarmentSize.WomenSize(it)).ToArray();
 
         public static GarmentSize[] SizingFromLineKindBias(WearableTemplate.FashionLine line,
             WearableTemplate.GarmentKind kind, WearableTemplate.SizeBias bias)
@@ -151,21 +151,16 @@ namespace Cafeo.Fashion
                 case WearableTemplate.FashionLine.Boys:
                 case WearableTemplate.FashionLine.Girls:
                     if (WearableTemplate.IsShoe(kind))
-                    {
                         return (line, bias) switch
                         {
                             (WearableTemplate.FashionLine.Boys, _) => boyShoeSizes,
                             (WearableTemplate.FashionLine.Girls, _) => boyShoeSizes,
                             _ => throw new ArgumentOutOfRangeException()
                         };
-                    }
-                    else
+                    return bias switch
                     {
-                        return bias switch
-                        {
-                            _ => childrenGarmentSizes
-                        };
-                    }
+                        _ => childrenGarmentSizes
+                    };
                 default:
                     throw new ArgumentOutOfRangeException(nameof(line), line, null);
             }
@@ -177,24 +172,17 @@ namespace Cafeo.Fashion
             Enum.GetValues(typeof(WearableTemplate.FashionLine)).Cast<WearableTemplate.FashionLine>().ToList().ForEach(
                 it =>
                 {
-                    if ((int)(it & lines & template.EffectiveLine) != 0)
-                    {
-                        availableLines.Add(it);
-                    }
+                    if ((int)(it & lines & template.EffectiveLine) != 0) availableLines.Add(it);
                 });
             var l = availableLines.RandomElement();
             var bias = template.sizeBias;
             var sizing = SizingFromLineKindBias(l, template.garmentKind, bias);
             var colors = new List<WearableTemplate.GarmentColor>();
             if (template.color == WearableTemplate.GarmentColor.Raw)
-            {
                 colors.AddRange(Enum.GetValues(typeof(WearableTemplate.GarmentColor))
                     .Cast<WearableTemplate.GarmentColor>());
-            }
             else
-            {
                 colors.Add(template.color);
-            }
 
             var rawName = namingStyle.NameSome(template.garmentKind);
 
@@ -208,13 +196,10 @@ namespace Cafeo.Fashion
 
         public void DesignFor(int fashionSeason)
         {
-            if (!collections.ContainsKey(fashionSeason))
-            {
-                collections.Add(fashionSeason, new List<WearableSeries>());
-            }
+            if (!collections.ContainsKey(fashionSeason)) collections.Add(fashionSeason, new List<WearableSeries>());
 
             var thisSeason = collections[fashionSeason];
-            int items = Mathf.RoundToInt(scarcity * 40);
+            var items = Mathf.RoundToInt(scarcity * 40);
             var templateFinder = TemplateFinder.Instance;
             var feasible = templateFinder.wearableTemplates.Where(it => ScoreWearableTemplate(it) >= 0).ToList();
             feasible.Sort((a, b) =>
@@ -225,7 +210,7 @@ namespace Cafeo.Fashion
                 return;
             }
 
-            for (int i = 0; i < items; i++)
+            for (var i = 0; i < items; i++)
             {
                 var template = feasible.RandomElement();
                 var series = DesignSingleItem(template);

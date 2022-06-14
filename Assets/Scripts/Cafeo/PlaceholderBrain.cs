@@ -1,5 +1,4 @@
-﻿using System;
-using Pathfinding;
+﻿using Pathfinding;
 using Pathfinding.RVO;
 using UnityEngine;
 
@@ -28,22 +27,22 @@ namespace Cafeo
         {
             var useRvo = true;
             if (_aiPath.hasPath)
-            // {
+                // {
                 // Debug.Log("Deciding action...");
+            {
+                var dir = _aiPath.steeringTarget - transform.position;
+                if (useRvo && dir.magnitude > 0)
                 {
-                    var dir = _aiPath.steeringTarget - transform.position;
-                    if (useRvo && dir.magnitude > 0)
-                    {
-                        _rvoController.SetTarget(transform.position + dir.normalized * 10, 2, 2);
-                        var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);
-                        vessel.Move(delta);
-                    }
-                    else
-                    {
-                        vessel.Move(dir);
-                    }
+                    _rvoController.SetTarget(transform.position + dir.normalized * 10, 2, 2);
+                    var delta = _rvoController.CalculateMovementDelta(transform.position, Time.deltaTime);
+                    vessel.Move(delta);
                 }
-                // }
+                else
+                {
+                    vessel.Move(dir);
+                }
+            }
+            // }
 
             InterpretQueue();
         }

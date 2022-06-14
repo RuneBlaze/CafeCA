@@ -8,14 +8,14 @@ namespace Cafeo.Tasks
     public class DealStapleDamage : Action
     {
         private GenericBrain brain;
-        public SharedInt maxQueue = 1;
         public bool failureOnDiscard;
-
-        private bool waitingForSkillExecution;
+        private bool itemSucceeded;
+        public SharedInt maxQueue = 1;
+        private int queueId;
         private bool skillExecuted;
         private bool skillUsed;
-        private int queueId;
-        private bool itemSucceeded;
+
+        private bool waitingForSkillExecution;
 
         public override void OnStart()
         {
@@ -31,7 +31,7 @@ namespace Cafeo.Tasks
                     skillExecuted = true;
                 }
             });
-            
+
             brain.itemDiscarded.AddListener(i =>
             {
                 if (i == queueId)
@@ -41,13 +41,10 @@ namespace Cafeo.Tasks
                     skillExecuted = true;
                 }
             });
-            
+
             brain.Vessel.enterState.AddListener(st =>
             {
-                if (st == BattleVessel.State.Idle && skillUsed)
-                {
-                    skillExecuted = true;
-                }
+                if (st == BattleVessel.State.Idle && skillUsed) skillExecuted = true;
             });
         }
 
@@ -57,24 +54,20 @@ namespace Cafeo.Tasks
             {
                 queueId = brain.QueueItemOfTag(UsableItem.ItemTag.FreeDPS, maxQueue.Value);
                 waitingForSkillExecution = true;
-                if (queueId == -1)
-                {
-                    return failureOnDiscard ? TaskStatus.Failure : TaskStatus.Success;
-                }
+                if (queueId == -1) return failureOnDiscard ? TaskStatus.Failure : TaskStatus.Success;
                 return TaskStatus.Running;
             }
-            else
+
+            // now we are waiting
+            if (skillExecuted)
             {
-                // now we are waiting
-                if (skillExecuted)
-                {
-                    waitingForSkillExecution = false;
-                    skillExecuted = false;
-                    skillUsed = false;
-                    return failureOnDiscard && !itemSucceeded ? TaskStatus.Failure : TaskStatus.Success;
-                }
-                return TaskStatus.Running;
+                waitingForSkillExecution = false;
+                skillExecuted = false;
+                skillUsed = false;
+                return failureOnDiscard && !itemSucceeded ? TaskStatus.Failure : TaskStatus.Success;
             }
+
+            return TaskStatus.Running;
         }
 
         public override void OnReset()

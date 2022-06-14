@@ -4,6 +4,6 @@ namespace Cafeo.Namer
     {
         FastFashion,
         WarriorMen,
-        SportsBrand,
+        SportsBrand
     }
 }

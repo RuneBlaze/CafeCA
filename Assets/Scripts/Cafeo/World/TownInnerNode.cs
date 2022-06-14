@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Cafeo.World
 {
     /// <summary>
-    /// An interior node of the town, connecting to other interior nodes
+    ///     An interior node of the town, connecting to other interior nodes
     /// </summary>
     public class TownInnerNode : TownNode
     {

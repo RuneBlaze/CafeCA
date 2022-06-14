@@ -10,17 +10,16 @@ namespace Cafeo.Templates
         public int shots = 1;
 
         [BoxGroup("Ranged Specification", centerLabel: true)]
-        public int fan = 0;
+        public int fan;
+
+        [BoxGroup("Ranged Specification", centerLabel: true)] [ProgressBar(0, 360)]
+        public int spread;
 
         [BoxGroup("Ranged Specification", centerLabel: true)]
-        [ProgressBar(0, 360)]
-        public int spread = 0;
-        
+        public float duration;
+
         [BoxGroup("Ranged Specification", centerLabel: true)]
-        public float duration = 0;
-        
-        [BoxGroup("Ranged Specification", centerLabel: true)]
-        public float instability = 0;
+        public float instability;
 
         [BoxGroup("Ranged Specification", centerLabel: true)]
         public bool withPrimaryShot;
@@ -33,15 +32,20 @@ namespace Cafeo.Templates
 
         [BoxGroup("Bullet Override", centerLabel: true)]
         public float speed = -1;
-        
+
         [BoxGroup("Bullet Override", centerLabel: true)]
         public float acceleration = -1;
 
         [BoxGroup("Bullet Specifications", centerLabel: true)]
         public ProjectileTypeTemplate simpleProjectile;
-        
+
         [BoxGroup("Bullet Specifications", centerLabel: true)]
         public GameObject projectilePrefab;
+
+        private void Reset()
+        {
+            hitType = TemplateHitType.HitEnemies;
+        }
 
         public override UsableItem Generate()
         {
@@ -64,12 +68,8 @@ namespace Cafeo.Templates
                 if (speed >= 0) item.projectileType.speed = speed;
                 if (acceleration >= 0) item.projectileType.acceleration = acceleration;
             }
+
             return item;
-        }
-        
-        private void Reset()
-        {
-            hitType = TemplateHitType.HitEnemies;
         }
     }
 }

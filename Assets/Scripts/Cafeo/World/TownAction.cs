@@ -2,9 +2,8 @@ namespace Cafeo.World
 {
     public class TownAction
     {
-        public TownAgent owner;
         public int duration; // in turn units: 1 turn = 5 minutes
-        public virtual bool Disappearing => false;
+        public TownAgent owner;
 
         public TownAction(TownAgent owner, int duration)
         {
@@ -12,14 +11,14 @@ namespace Cafeo.World
             this.duration = duration;
         }
 
+        public virtual bool Disappearing => false;
+
         public virtual void OnUse()
         {
-            
         }
 
         public virtual void OnEnd()
         {
-            
         }
 
         public class Travel : TownAction

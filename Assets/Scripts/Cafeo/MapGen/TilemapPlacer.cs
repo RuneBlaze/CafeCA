@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace Cafeo.MapGen
@@ -21,6 +20,7 @@ namespace Cafeo.MapGen
                 wall = tile;
                 break;
             }
+
             Debug.Log("Wall: " + wall);
             Demolish();
         }
@@ -34,47 +34,35 @@ namespace Cafeo.MapGen
         {
             tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), null);
         }
-        
+
         public void EraseHorizontal(Vector2Int origin, int length)
         {
-            for (int i = 0; i < length; i++)
-            {
-                Erase(origin + new Vector2Int(i, 0));
-            }
+            for (var i = 0; i < length; i++) Erase(origin + new Vector2Int(i, 0));
         }
-        
+
         public void EraseVertical(Vector2Int origin, int length)
         {
-            for (int i = 0; i < length; i++)
-            {
-                Erase(origin + new Vector2Int(0, i));
-            }
+            for (var i = 0; i < length; i++) Erase(origin + new Vector2Int(0, i));
         }
-        
+
         public void EraseHorizontalCentered(Vector2Int origin, int length)
         {
             EraseHorizontal(origin + new Vector2Int(-length / 2, 0), length);
         }
-        
+
         public void EraseVerticalCentered(Vector2Int origin, int length)
         {
             EraseVertical(origin + new Vector2Int(0, -length / 2), length);
         }
-        
+
         public void PlaceHorizontal(Vector2Int origin, int length)
         {
-            for (int i = 0; i < length; i++)
-            {
-                tilemap.SetTile(new Vector3Int(origin.x + i, origin.y, 0), wall);
-            }
+            for (var i = 0; i < length; i++) tilemap.SetTile(new Vector3Int(origin.x + i, origin.y, 0), wall);
         }
-        
+
         public void PlaceVertical(Vector2Int origin, int length)
         {
-            for (int i = 0; i < length; i++)
-            {
-                tilemap.SetTile(new Vector3Int(origin.x, origin.y + i, 0), wall);
-            }
+            for (var i = 0; i < length; i++) tilemap.SetTile(new Vector3Int(origin.x, origin.y + i, 0), wall);
         }
 
         public void PlaceBox(RectInt rect)
@@ -94,22 +82,24 @@ namespace Cafeo.MapGen
                 var leftPoint = rect.min + Vector2Int.up * rect.height / 2;
                 EraseVerticalCentered(leftPoint, openingSize);
             }
+
             if ((edges & RandomMap.Edges.Right) != 0)
             {
                 var rightPoint = rect.min + Vector2Int.up * rect.height / 2 + Vector2Int.right * rect.width;
                 EraseVerticalCentered(rightPoint, openingSize);
             }
+
             if ((edges & RandomMap.Edges.Top) != 0)
             {
                 var topPoint = rect.min + Vector2Int.up * rect.height + Vector2Int.right * rect.width / 2;
                 EraseHorizontalCentered(topPoint, openingSize);
             }
+
             if ((edges & RandomMap.Edges.Bottom) != 0)
             {
                 var bottomPoint = rect.min + Vector2Int.right * rect.width / 2;
                 EraseHorizontalCentered(bottomPoint, openingSize);
             }
         }
-
     }
 }

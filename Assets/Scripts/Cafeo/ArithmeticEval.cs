@@ -13,6 +13,7 @@ namespace Cafeo
                 var c = table.Columns.Add(k, typeof(float));
                 c.DefaultValue = v;
             }
+
             var res = table.Columns.Add("result", typeof(float));
             res.Expression = expression;
             var row = table.NewRow();

@@ -1,5 +1,4 @@
 ﻿using System;
-using Cafeo.Fashion;
 using Cafeo.Templates;
 
 namespace Cafeo.Data
@@ -8,12 +7,13 @@ namespace Cafeo.Data
     public class Wearable
     {
         public WearableSeries series;
-        public GarmentSize size;
         public WearableTemplate.GarmentColor color;
         public float constructionQuality;
         public float cutQuality;
+        public GarmentSize size;
 
-        public Wearable(WearableSeries series, GarmentSize size, WearableTemplate.GarmentColor color, float constructionQuality, float cutQuality)
+        public Wearable(WearableSeries series, GarmentSize size, WearableTemplate.GarmentColor color,
+            float constructionQuality, float cutQuality)
         {
             this.series = series;
             this.size = size;
@@ -22,7 +22,7 @@ namespace Cafeo.Data
             this.cutQuality = cutQuality;
         }
 
-        public int Layer => WearableTemplate.GarmentKind2Layering(this.series.kind);
+        public int Layer => WearableTemplate.GarmentKind2Layering(series.kind);
         public WearableTemplate.GarmentPosition Position => WearableTemplate.GarmentKind2Position(series.kind);
 
         public float CalcFit(AgentSoul soul)

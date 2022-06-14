@@ -20,10 +20,27 @@ namespace Cafeo
             MpPerSec,
             CpPerSec,
             Shield,
-            ShieldPerc,
+            ShieldPerc
         }
-        
+
+        public List<BuffExpr> buffs = new();
+
         [HideInInspector] public IStatusTag statusTag;
+
+        public void Apply(BattleVessel user, BattleVessel target, int levelOffset = 0)
+        {
+            foreach (var buff in buffs)
+            {
+                var statusEffect = buff.CalcStatus(user, target, levelOffset);
+                statusEffect.statusTag = statusTag;
+                target.AddStatus(statusEffect);
+            }
+        }
+
+        public void TearDown(BattleVessel target)
+        {
+            target.RemoveStatus(it => it.statusTag.CompareStatusTag(statusTag));
+        }
 
         [Serializable]
         public class BuffExpr
@@ -32,7 +49,6 @@ namespace Cafeo
             public string calcExpr;
             public float duration;
             public string buffNameOverride;
-            public string BuffName => buffNameOverride ?? dst.ToString();
             public PresetSpecifier presetSpecifier;
             public bool eternal;
 
@@ -43,6 +59,8 @@ namespace Cafeo
                 this.duration = duration;
             }
 
+            public string BuffName => buffNameOverride ?? dst.ToString();
+
             public float CalcValue(BattleVessel src, BattleVessel target, int levelOffset = 0)
             {
                 var state = new Dictionary<string, float>();
@@ -51,25 +69,19 @@ namespace Cafeo
                 state["mat"] = src.Mat;
                 state["mdf"] = src.Mdf;
                 state["level"] = levelOffset;
-                float v = ArithmeticEval.EvaluateArithmeticExpression(calcExpr.ToLowerInvariant(), state);
+                var v = ArithmeticEval.EvaluateArithmeticExpression(calcExpr.ToLowerInvariant(), state);
                 return v;
             }
 
             public StatusEffect CalcStatus(BattleVessel src, BattleVessel target, int levelOffset = 0)
             {
-                float v = CalcValue(src, target, levelOffset);
+                var v = CalcValue(src, target, levelOffset);
                 var s = new StatusEffect(target, duration, eternal);
-                if (presetSpecifier is { IsEmpty: false })
-                {
-                    s.passiveEffect = presetSpecifier.Generate();
-                }
-                bool isDebuff = v < 0;
-                string buffHumanize = isDebuff ? "debuff" : "buff";
+                if (presetSpecifier is { IsEmpty: false }) s.passiveEffect = presetSpecifier.Generate();
+                var isDebuff = v < 0;
+                var buffHumanize = isDebuff ? "debuff" : "buff";
                 s.displayName = $"{dst} {buffHumanize}";
-                if (!string.IsNullOrEmpty(buffNameOverride))
-                {
-                    s.displayName = buffNameOverride;
-                }
+                if (!string.IsNullOrEmpty(buffNameOverride)) s.displayName = buffNameOverride;
                 switch (dst)
                 {
                     case SecondaryAttr.Atk:
@@ -105,24 +117,9 @@ namespace Cafeo
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+
                 return s;
             }
-        }
-        public List<BuffExpr> buffs = new ();
-        
-        public void Apply(BattleVessel user, BattleVessel target, int levelOffset = 0)
-        {
-            foreach (var buff in buffs)
-            {
-                var statusEffect = buff.CalcStatus(user, target, levelOffset);
-                statusEffect.statusTag = statusTag;
-                target.AddStatus(statusEffect);
-            }
-        }
-
-        public void TearDown(BattleVessel target)
-        {
-            target.RemoveStatus(it => it.statusTag.CompareStatusTag(statusTag));
         }
     }
 }

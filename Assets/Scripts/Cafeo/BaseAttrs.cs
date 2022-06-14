@@ -17,36 +17,6 @@ namespace Cafeo
         public float life;
         public float mana;
 
-        public void CopyTo(float[] target)
-        {
-            target[0] = str;
-            target[1] = con;
-            target[2] = dex;
-            target[3] = per;
-            target[4] = lea;
-            target[5] = wil;
-            target[6] = mag;
-            target[7] = cut;
-            target[8] = awe;
-            target[9] = life;
-            target[10] = mana;
-        }
-        
-        public void CopyFrom(float[] source)
-        {
-            str = source[0];
-            con = source[1];
-            dex = source[2];
-            per = source[3];
-            lea = source[4];
-            wil = source[5];
-            mag = source[6];
-            cut = source[7];
-            awe = source[8];
-            life = source[9];
-            mana = source[10];
-        }
-
         public BaseAttrs()
         {
             // initialize all attributes to be 10
@@ -61,6 +31,36 @@ namespace Cafeo
             awe = 10;
             life = 30;
             mana = 10;
+        }
+
+        public void CopyTo(float[] target)
+        {
+            target[0] = str;
+            target[1] = con;
+            target[2] = dex;
+            target[3] = per;
+            target[4] = lea;
+            target[5] = wil;
+            target[6] = mag;
+            target[7] = cut;
+            target[8] = awe;
+            target[9] = life;
+            target[10] = mana;
+        }
+
+        public void CopyFrom(float[] source)
+        {
+            str = source[0];
+            con = source[1];
+            dex = source[2];
+            per = source[3];
+            lea = source[4];
+            wil = source[5];
+            mag = source[6];
+            cut = source[7];
+            awe = source[8];
+            life = source[9];
+            mana = source[10];
         }
     }
 }

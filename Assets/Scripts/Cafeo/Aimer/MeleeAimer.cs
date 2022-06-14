@@ -1,7 +1,4 @@
-﻿using System;
-using System.Drawing;
-using BehaviorDesigner.Runtime;
-using Cafeo.Castable;
+﻿using Cafeo.Castable;
 using Drawing;
 
 namespace Cafeo.Aimer
@@ -14,10 +11,7 @@ namespace Cafeo.Aimer
         {
             base.Update();
             // we draw the aimer using ALINE
-            if (Item == null || hidden)
-            {
-                return;
-            }
+            if (Item == null || hidden) return;
             // first, draw a line from center to target coord
             var targetCoord = transform.position + Item.distance * transform.right;
             var draw = Draw.ingame;

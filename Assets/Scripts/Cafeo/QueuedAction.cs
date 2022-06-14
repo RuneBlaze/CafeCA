@@ -4,7 +4,7 @@ namespace Cafeo
 {
     public class QueuedAction
     {
-        public static int nextId = 0;
+        public static int nextId;
         public int id;
 
         protected QueuedAction()
@@ -16,6 +16,7 @@ namespace Cafeo
         {
             id = nextId++;
         }
+
         public class UseItemOfType : QueuedAction
         {
             public UsableItem.ItemTag tag;
