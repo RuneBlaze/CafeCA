@@ -1,3 +1,5 @@
+using Cafeo.Utils;
+
 namespace Cafeo.World
 {
     /// <summary>
@@ -10,7 +12,7 @@ namespace Cafeo.World
         {
             public override void Furnish(TownOuterNode region)
             {
-                throw new System.NotImplementedException();
+                region.color = Palette.clayPurple;
             }
         }
 
@@ -18,7 +20,7 @@ namespace Cafeo.World
         {
             public override void Furnish(TownOuterNode region)
             {
-                throw new System.NotImplementedException();
+                region.color = Palette.orange;
             }
         }
 
@@ -26,7 +28,7 @@ namespace Cafeo.World
         {
             public override void Furnish(TownOuterNode region)
             {
-                throw new System.NotImplementedException();
+                region.color = Palette.brown;
             }
         }
 
@@ -34,7 +36,7 @@ namespace Cafeo.World
         {
             public override void Furnish(TownOuterNode region)
             {
-                throw new System.NotImplementedException();
+                region.color = Palette.pink;
             }
         }
 
@@ -42,7 +44,7 @@ namespace Cafeo.World
         {
             public override void Furnish(TownOuterNode region)
             {
-                throw new System.NotImplementedException();
+                region.color = Palette.red;
             }
         }
 
@@ -50,7 +52,7 @@ namespace Cafeo.World
         {
             public override void Furnish(TownOuterNode region)
             {
-                throw new System.NotImplementedException();
+                region.color = Palette.milkYellow;
             }
         }
 

@@ -10,6 +10,8 @@ namespace Cafeo.World
     {
         public List<TownInteriorNode> rooms;
         public TownOuterNode parent;
+
+        public TownInteriorNode Default => rooms[0];
         // public Sprite bgSprite;
 
         protected override void OnRefresh()
