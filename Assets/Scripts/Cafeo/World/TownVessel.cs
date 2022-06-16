@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Cafeo.World
 {
-    public class TownAgent : MonoBehaviour
+    public class TownVessel : MonoBehaviour
     {
         public TownNode location;
 
@@ -15,6 +16,15 @@ namespace Cafeo.World
         public int delay;
 
         public TownAction action;
+        public AgentSoul soul;
+        public TownBrain brain;
+        
+        public bool Idle => action == null;
+
+        private void Start()
+        {
+            brain = GetComponent<TownBrain>();
+        }
 
         // public TownNode goingTo;
         public IEnumerable<(TownNode, int)> Neighbors
@@ -45,8 +55,13 @@ namespace Cafeo.World
         {
         }
 
+        /// <summary>
+        /// When not blocked, can actually think
+        /// </summary>
         public void Act()
         {
+            brain.DecideAction();
+            // Debug.Log($"{name} is {action}");
         }
 
         /// <summary>
@@ -83,7 +98,8 @@ namespace Cafeo.World
 
         public void ReachDestination(TownNode node)
         {
-            location = node;
+            // location = node;
+            location.Transfer(this, node);
         }
 
         /// <summary>

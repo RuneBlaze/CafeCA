@@ -206,7 +206,7 @@ namespace Cafeo.Fashion
                 ScoreWearableTemplate(a).CompareTo(ScoreWearableTemplate(b)));
             if (feasible.Count == 0)
             {
-                Debug.Log("I have nothing to design for season " + fashionSeason);
+                // Debug.Log("I have nothing to design for season " + fashionSeason);
                 return;
             }
 
@@ -215,7 +215,7 @@ namespace Cafeo.Fashion
                 var template = feasible.RandomElement();
                 var series = DesignSingleItem(template);
                 thisSeason.Add(series);
-                Debug.Log("I designed one " + series.displayName + " for season " + fashionSeason);
+                // Debug.Log("I designed one " + series.displayName + " for season " + fashionSeason);
             }
         }
     }

@@ -3,9 +3,9 @@ namespace Cafeo.World
     public class TownAction
     {
         public int duration; // in turn units: 1 turn = 5 minutes
-        public TownAgent owner;
+        public TownVessel owner;
 
-        public TownAction(TownAgent owner, int duration)
+        public TownAction(TownVessel owner, int duration)
         {
             this.owner = owner;
             this.duration = duration;
@@ -25,9 +25,15 @@ namespace Cafeo.World
         {
             public TownNode destination;
 
-            public Travel(TownAgent owner, int duration, TownNode destination) : base(owner, duration)
+            public Travel(TownVessel owner, int duration, TownNode destination) : base(owner, duration)
             {
                 this.destination = destination;
+            }
+
+            public override void OnEnd()
+            {
+                base.OnEnd();
+                owner.ReachDestination(destination);
             }
         }
     }

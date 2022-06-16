@@ -10,6 +10,8 @@ namespace Cafeo.World
         public List<TownInnerNode> interiorLocations;
         public TownRegion region;
         public Color color;
+        public int x;
+        public int y;
         public override TownRegion Region => region;
 
         public IEnumerable<TownOuterNode> OuterNeighbors

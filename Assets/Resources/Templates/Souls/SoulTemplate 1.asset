@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: SoulTemplate 1
   m_EditorClassIdentifier: 
   displayName: 
+  id: soul:default
   icon: {fileID: 0}
+  lore: 
   tint: 0
   gender: 0
   firstName: 
@@ -37,3 +39,6 @@ MonoBehaviour:
     awe: 10
     life: 30
     mana: 10
+  job: {fileID: 0}
+  mainWeapon: {fileID: 0}
+  secondaryWeapon: {fileID: 0}

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cafeo.Templates;
 using Cafeo.Utils;
 using Drawing;
 using UnityEngine;
@@ -8,18 +9,27 @@ using Random = UnityEngine.Random;
 
 namespace Cafeo.World
 {
+    /// <summary>
+    /// God object of the WorldScene
+    /// </summary>
     public class TownRegion : Singleton<TownRegion>
     {
-        private const int SquareSize = 10;
+        private const int SquareSize = 16;
         public Transform worldRoot;
+        public Transform soulRoot;
         public int width;
         public int height;
-        public TownAgent player;
-        public List<TownAgent> agents;
+        public TownVessel player;
+        public List<TownVessel> vessels;
+        public List<AgentSoul> souls;
         private Camera cam;
         public List<(Rect, Color)> miniMap;
         public TownOuterNode[,] outerNodes;
+        
+        public float tickRate = 0.5f;
+        private float timer = 0f;
 
+        public bool idleMode;
 
         public void LateUpdate()
         {
@@ -34,14 +44,125 @@ namespace Cafeo.World
             }
         }
 
+        public void ToggleIdle()
+        {
+            idleMode = !idleMode;
+        }
+
+        private void Update()
+        {
+            TickIfNecessary();
+        }
+
+        private void TickIfNecessary()
+        {
+            timer += Time.deltaTime;
+            if (timer >= tickRate)
+            {
+                timer -= tickRate;
+                if (player.Idle &&! idleMode)
+                {
+                    
+                }
+                else
+                {
+                    // Debug.Log("Ticking!");
+                    EveryoneAct();
+                    Clock.ElapseTurn();
+                }
+            }
+        }
+
+        private void EveryoneAct()
+        {
+            foreach (var vessel in vessels)
+            {
+                if (vessel == player) continue;
+                vessel.OnTurn();
+            }
+        }
+
+        public GameClock Clock => GameClock.Instance;
+
         protected override void Setup()
         {
             base.Setup();
             width = 8;
             height = 8;
-            agents = new List<TownAgent>();
+            vessels = new List<TownVessel>();
+            souls = new List<AgentSoul>();
             miniMap = new List<(Rect, Color)>();
+        }
+
+        private void Start()
+        {
             cam = Camera.main;
+            Generate();
+            PopulateSouls();
+            PlaceSouls();
+            SetupAI();
+            Refresh();
+        }
+
+        private void SetupAI()
+        {
+            foreach (var townVessel in vessels)
+            {
+                if (townVessel != player)
+                {
+                    townVessel.gameObject.AddComponent<TownPlaceholderBrain>();
+                }
+                else
+                {
+                    townVessel.gameObject.AddComponent<TownPlayerBrain>();
+                }
+            }
+        }
+
+        public void PopulateSouls()
+        {
+            var finder = TemplateFinder.Instance;
+            for (int i = 0; i < 100; i++)
+            {
+                var tmpl = finder.RetrieveTemplate<SoulTemplate>("soul:default");
+                var go = new GameObject($"Soul {i}");
+                go.transform.parent = soulRoot;
+                var v = tmpl.AddToGameObjet(go);
+                v.firstName = "Jon";
+                v.lastName = "Doe";
+                souls.Add(v);
+            }
+        }
+
+        private void PlaceSouls()
+        {
+            foreach (var agentSoul in souls)
+            {
+                // let's just randomly place them
+                var node = GetRandomOuterNode();
+                var go = new GameObject();
+                go.transform.parent = node.transform;
+                go.tag = "TownAgent";
+                go.name = $"Vessel [{agentSoul.firstName} {agentSoul.lastName}]";
+                var vessel = go.AddComponent<TownVessel>();
+                vessel.Subscribe();
+                vessels.Add(vessel);
+                vessel.soul = agentSoul;
+            }
+            player = vessels[0];
+        }
+        
+        public (int, int) GetRandomPosition()
+        {
+            var x = Random.Range(0, width);
+            var y = Random.Range(0, height);
+            return (x, y);
+        }
+        
+        public TownOuterNode GetRandomOuterNode()
+        {
+            var (x, y) = GetRandomPosition();
+            return outerNodes[x, y];
         }
 
         public TownOuterNode CreateOuterNode(int x, int y)
@@ -54,7 +175,12 @@ namespace Cafeo.World
                 },
                 name = $"[{x}_{y}]"
             };
-            return go.AddComponent<TownOuterNode>();
+            go.tag = "TownExterior";
+            var outerNode = go.AddComponent<TownOuterNode>();
+            outerNode.region = this;
+            outerNode.x = x;
+            outerNode.y = y;
+            return outerNode;
         }
 
         protected RealEstateDev ChooseDeveloper(int x, int y)
@@ -90,11 +216,15 @@ namespace Cafeo.World
 
         private void CreateMiniMap()
         {
+            int baseX = 50;
+            int baseY = 500;
             for (var y = 0; y < height; y++)
             for (var x = 0; x < width; x++)
             {
                 var n = outerNodes[x, y];
-                miniMap.Add((new Rect(x * SquareSize, y * SquareSize, SquareSize, SquareSize), n.color));
+                miniMap.Add(
+                    (new Rect(x * SquareSize + baseX, y * SquareSize + baseY, SquareSize, SquareSize), 
+                    n.color));
             }
         }
 
@@ -102,16 +232,30 @@ namespace Cafeo.World
         {
             return x >= 0 && x < width && y >= 0 && y < height;
         }
+        
+        public static (int, int)[] cardinalDir = {
+            (0, -1),
+            (0, 1),
+            (-1, 0),
+            (1, 0)
+        };
 
         public IEnumerable<TownOuterNode> OuterNeighbors(TownOuterNode node)
         {
-            for (var x = -1; x <= 1; x++)
-            for (var y = -1; y <= 1; y++)
+            foreach (var (x, y) in cardinalDir)
             {
-                if (x == 0 && y == 0) continue;
-                if (x * x == y * y) continue;
-                if (!IsValid(x + width, y + height)) continue;
-                yield return outerNodes[x + width, y + height];
+                if (IsValid(node.x + x, node.y + y))
+                {
+                    yield return outerNodes[node.x + x, node.y + y];
+                }
+            }
+        }
+
+        public void Refresh()
+        {
+            foreach (var townOuterNode in outerNodes)
+            {
+                townOuterNode.Refresh();
             }
         }
     }
