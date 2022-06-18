@@ -61,7 +61,6 @@ namespace Cafeo.World
         public void Act()
         {
             brain.DecideAction();
-            // Debug.Log($"{name} is {action}");
         }
 
         /// <summary>
@@ -82,7 +81,6 @@ namespace Cafeo.World
             {
                 Act();
             }
-
             EachTurn();
         }
 
@@ -94,6 +92,7 @@ namespace Cafeo.World
         public virtual void OnActionFinished(TownAction act)
         {
             disappeared = false;
+            action = null;
         }
 
         public void ReachDestination(TownNode node)

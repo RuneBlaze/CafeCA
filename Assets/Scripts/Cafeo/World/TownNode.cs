@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.Events;
 
 namespace Cafeo.World
 {
@@ -12,13 +14,18 @@ namespace Cafeo.World
         public Dictionary<TownVessel, int> index;
         public string displayName;
         public Sprite bgImage;
-        public virtual TownRegion Region { get; }
+        public virtual TownRegion Region => TownRegion.Instance;
+        public bool IsPlayerRegion => Region.player.location == this;
+        public UnityEvent<TownVessel> onVesselEnter;
+        public UnityEvent<TownVessel> onVesselExit;
 
         protected virtual void Awake()
         {
             vessels = new List<TownVessel>();
             index = new Dictionary<TownVessel, int>();
             gameObject.tag = "TownExterior";
+            onVesselEnter = new UnityEvent<TownVessel>();
+            onVesselExit = new UnityEvent<TownVessel>();
         }
 
         /// <summary>
@@ -67,10 +74,30 @@ namespace Cafeo.World
         /// <param name="vessel"></param>
         public void RemoveVessel(TownVessel vessel)
         {
+            var oriLen = vessels.Count;
+            if (index[vessel] == vessels.Count - 1)
+            {
+                vessels.RemoveAt(vessels.Count-1);
+                index.Remove(vessel);
+                return;
+            }
+            // Debug.Log(vessels.Count);
             var v = vessels[^1];
             vessels.RemoveAt(vessels.Count - 1);
+            var i = index[vessel];
+            // Debug.Log(i);
+            if (i == vessels.Count)
+            {
+                vessels.Add(v);
+            }
+            else
+            {
+                vessels[i] = v;
+            }
             index.Remove(vessel);
-            vessels[index[vessel]] = v;
+            index[v] = i;
+            Assert.AreEqual(oriLen - 1, vessels.Count);
+            Assert.AreEqual(oriLen - 1, index.Count);
         }
 
         /// <summary>

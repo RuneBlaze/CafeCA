@@ -12,7 +12,7 @@ namespace Cafeo.World
         public Color color;
         public int x;
         public int y;
-        public override TownRegion Region => region;
+        public override TownRegion Region => TownRegion.Instance;
 
         public IEnumerable<TownOuterNode> OuterNeighbors
         {

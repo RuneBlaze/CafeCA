@@ -128,7 +128,7 @@ namespace Cafeo.World
                 var go = new GameObject($"Soul {i}");
                 go.transform.parent = soulRoot;
                 var v = tmpl.AddToGameObjet(go);
-                v.firstName = "Jon";
+                v.firstName = $"Jon {Random.Range(0, 50)}";
                 v.lastName = "Doe";
                 souls.Add(v);
             }
