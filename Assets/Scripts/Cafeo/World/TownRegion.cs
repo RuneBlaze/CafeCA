@@ -5,6 +5,7 @@ using Cafeo.Utils;
 using Drawing;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 namespace Cafeo.World
@@ -25,11 +26,11 @@ namespace Cafeo.World
         private Camera cam;
         public List<(Rect, Color)> miniMap;
         public TownOuterNode[,] outerNodes;
-        
         public float tickRate = 0.5f;
         private float timer = 0f;
-
         public bool idleMode;
+
+        public UnityEvent<TownNode> onPlayerMove;
 
         public void LateUpdate()
         {
@@ -92,8 +93,8 @@ namespace Cafeo.World
             vessels = new List<TownVessel>();
             souls = new List<AgentSoul>();
             miniMap = new List<(Rect, Color)>();
+            onPlayerMove = new UnityEvent<TownNode>();
         }
-
         private void Start()
         {
             cam = Camera.main;
@@ -150,6 +151,7 @@ namespace Cafeo.World
                 vessel.soul = agentSoul;
             }
             player = vessels[0];
+            player.name = "@Player";
         }
         
         public (int, int) GetRandomPosition()

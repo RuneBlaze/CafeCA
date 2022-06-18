@@ -110,6 +110,8 @@ namespace Cafeo.World
             RemoveVessel(payload);
             payload.gameObject.transform.parent = target.transform;
             target.AddVessel(payload);
+            onVesselExit.Invoke(payload);
+            target.onVesselEnter.Invoke(payload);
         }
     }
 }
