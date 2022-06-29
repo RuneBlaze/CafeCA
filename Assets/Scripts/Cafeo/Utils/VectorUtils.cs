@@ -54,6 +54,16 @@ namespace Cafeo.Utils
             return Mathf.Sign(x);
         }
 
+        public static int IntSgn(float x)
+        {
+            return x switch
+            {
+                < 0 => -1,
+                > 0 => 1,
+                _ => 0
+            };
+        }
+
         public static LayerMask GetCollisionMaskOf(GameObject go)
         {
             var myLayer = go.layer;

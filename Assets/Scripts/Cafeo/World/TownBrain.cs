@@ -6,8 +6,9 @@ namespace Cafeo.World
     public class TownBrain : MonoBehaviour
     {
         protected TownVessel vessel;
+        public TownRegion Region => TownRegion.Instance;
 
-        private void Start()
+        protected virtual void Start()
         {
             vessel = GetComponent<TownVessel>();
         }

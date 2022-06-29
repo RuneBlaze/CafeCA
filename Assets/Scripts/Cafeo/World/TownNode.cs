@@ -66,6 +66,14 @@ namespace Cafeo.World
             vessels.Add(vessel);
             index[vessel] = i;
             vessel.location = this;
+            if (this is TownInteriorNode interior)
+            {
+                vessel.outerNode = interior.parent.parent;
+            }
+            else
+            {
+                vessel.outerNode = (TownOuterNode)this;
+            }
         }
 
         /// <summary>

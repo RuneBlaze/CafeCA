@@ -5,6 +5,7 @@ namespace Cafeo.World
 {
     /// <summary>
     ///     An interior node of the town, connecting to other interior nodes
+    /// Second level of the world hierarchy, below outer node, but above interior node.
     /// </summary>
     public class TownInnerNode : TownNode
     {

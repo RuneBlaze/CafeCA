@@ -15,6 +15,7 @@ namespace Cafeo.World
             public override void Furnish(TownOuterNode region)
             {
                 region.color = Palette.clayPurple;
+                region.displayName = "商业街";
             }
         }
 
@@ -23,6 +24,7 @@ namespace Cafeo.World
             public override void Furnish(TownOuterNode region)
             {
                 region.color = Palette.orange;
+                region.displayName = "公寓区";
             }
         }
 
@@ -31,6 +33,7 @@ namespace Cafeo.World
             public override void Furnish(TownOuterNode region)
             {
                 region.color = Palette.brown;
+                region.displayName = "居民区";
             }
         }
 
@@ -39,6 +42,7 @@ namespace Cafeo.World
             public override void Furnish(TownOuterNode region)
             {
                 region.color = Palette.pink;
+                region.displayName = "小学";
             }
         }
 
@@ -47,6 +51,7 @@ namespace Cafeo.World
             public override void Furnish(TownOuterNode region)
             {
                 region.color = Palette.red;
+                region.displayName = "高中";
             }
         }
 
@@ -55,6 +60,16 @@ namespace Cafeo.World
             public override void Furnish(TownOuterNode region)
             {
                 region.color = Palette.milkYellow;
+                region.displayName = "道路";
+            }
+        }
+
+        public class Ginza : RealEstateDev
+        {
+            public override void Furnish(TownOuterNode region)
+            {
+                region.color = Palette.milkYellow;
+                region.displayName = "银座";
             }
         }
     }

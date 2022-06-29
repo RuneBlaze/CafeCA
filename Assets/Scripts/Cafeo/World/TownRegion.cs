@@ -29,19 +29,36 @@ namespace Cafeo.World
         public float tickRate = 0.5f;
         private float timer = 0f;
         public bool idleMode;
-
         public UnityEvent<TownNode> onPlayerMove;
+        public UnityEvent initFinished;
+        public Vector2Int PlayerLoc => new Vector2Int(player.outerNode.x, player.outerNode.y);
 
         public void LateUpdate()
         {
             var draw = Draw.ingame;
             using (draw.InScreenSpace(cam))
             {
-                foreach (var valueTuple in miniMap)
+                var i = 0;
+                for (var y = 0; y < height; y++)
+                for (var x = 0; x < width; x++)
                 {
-                    var (rect, color) = valueTuple;
-                    draw.SolidRectangle(rect, color);
+                    var (rect, color) = miniMap[i];
+                    var playerLoc = PlayerLoc;
+                    if (x == playerLoc.x && y == playerLoc.y)
+                    {
+                        draw.SolidRectangle(rect, Color.black);
+                    }
+                    else
+                    {
+                        draw.SolidRectangle(rect, color);
+                    }
+                    i++;
                 }
+                // foreach (var valueTuple in miniMap)
+                // {
+                //     var (rect, color) = valueTuple;
+                //     draw.SolidRectangle(rect, color);
+                // }
             }
         }
 
@@ -94,6 +111,7 @@ namespace Cafeo.World
             souls = new List<AgentSoul>();
             miniMap = new List<(Rect, Color)>();
             onPlayerMove = new UnityEvent<TownNode>();
+            initFinished = new UnityEvent();
         }
         private void Start()
         {
@@ -103,6 +121,7 @@ namespace Cafeo.World
             PlaceSouls();
             SetupAI();
             Refresh();
+            initFinished.Invoke();
         }
 
         private void SetupAI()
@@ -234,8 +253,24 @@ namespace Cafeo.World
         {
             return x >= 0 && x < width && y >= 0 && y < height;
         }
+
+        public bool IsValid(Vector2Int loc)
+        {
+            return IsValid(loc.x, loc.y);
+        }
+
+        public bool IsValid(Vector2Int loc, out TownOuterNode node)
+        {
+            if (IsValid(loc))
+            {
+                node = outerNodes[loc.x, loc.y];
+                return true;
+            }
+            node = null;
+            return false;
+        }
         
-        public static (int, int)[] cardinalDir = {
+        public static readonly (int, int)[] cardinalDir = {
             (0, -1),
             (0, 1),
             (-1, 0),
@@ -244,11 +279,19 @@ namespace Cafeo.World
 
         public IEnumerable<TownOuterNode> OuterNeighbors(TownOuterNode node)
         {
+            foreach (var (l, x, r) in OuterNeighborsWithRelCoord(node))
+            {
+                yield return l;
+            }
+        }
+        
+        public IEnumerable<(TownOuterNode, int, int)> OuterNeighborsWithRelCoord(TownOuterNode node)
+        {
             foreach (var (x, y) in cardinalDir)
             {
                 if (IsValid(node.x + x, node.y + y))
                 {
-                    yield return outerNodes[node.x + x, node.y + y];
+                    yield return (outerNodes[node.x + x, node.y + y], x, y);
                 }
             }
         }

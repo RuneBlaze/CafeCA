@@ -6,6 +6,7 @@ namespace Cafeo.World
 {
     public class TownVessel : MonoBehaviour
     {
+        public TownOuterNode outerNode;
         public TownNode location;
 
         /// <summary>
@@ -18,6 +19,9 @@ namespace Cafeo.World
         public TownAction action;
         public AgentSoul soul;
         public TownBrain brain;
+
+        public bool IsPlayer => Region.player == this;
+        public TownRegion Region => TownRegion.Instance;
         
         public bool Idle => action == null;
 
@@ -99,6 +103,10 @@ namespace Cafeo.World
         {
             // location = node;
             location.Transfer(this, node);
+            if (IsPlayer)
+            {
+                Region.onPlayerMove.Invoke(node);
+            }
         }
 
         /// <summary>
