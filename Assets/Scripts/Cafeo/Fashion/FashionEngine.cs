@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Cafeo.Data;
 using Cafeo.Templates;
 using Cafeo.Utils;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace Cafeo.Fashion
@@ -37,9 +38,15 @@ namespace Cafeo.Fashion
         private void GenerateBrands()
         {
             var finder = TemplateFinder.Instance;
+            if (finder.fashionShopTemplates.Count == 0)
+            {
+                Debug.LogError("No fashion shop templates found");
+                return;
+            }
             for (var i = 0; i < 30; i++)
             {
-                var e = finder.fashionShopTemplates.RandomElement();
+                var pool = finder.fashionShopTemplates;
+                var e = pool.RandomElement();
                 brands.Add(e.Generate());
             }
         }

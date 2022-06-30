@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cafeo.Fashion;
 using Cafeo.Templates;
 
@@ -57,9 +58,14 @@ namespace Cafeo.Data
 
         public void AddTo(List<Wearable> collection)
         {
-            foreach (var garmentSize in sizeRange)
-            foreach (var garmentColor in colorRange)
-                collection.Add(new Wearable(this, garmentSize, garmentColor, constructionQuality, cutQuality));
+            collection.AddRange(from garmentSize in sizeRange from garmentColor in colorRange select new Wearable(this, garmentSize, garmentColor, constructionQuality, cutQuality));
+        }
+
+        public IEnumerable<Wearable> Contents()
+        {
+            return from garmentSize in sizeRange
+                from garmentColor in colorRange
+                select new Wearable(this, garmentSize, garmentColor, constructionQuality, cutQuality);
         }
     }
 }

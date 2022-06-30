@@ -53,6 +53,7 @@ namespace UnityEngine.UI.Extensions
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            // Debug.Log("OnPointerEnter");
             switch (tooltipPositioningType) {
                 case TooltipPositioningType.mousePosition:
                     StartHover(UIExtensionsInputManager.MousePosition + offset, true);
@@ -86,6 +87,7 @@ namespace UnityEngine.UI.Extensions
 
         public void OnPointerExit(PointerEventData eventData)
         {
+            // Debug.Log("OnPointerExit");
             StopHover();
         }
 
@@ -96,11 +98,13 @@ namespace UnityEngine.UI.Extensions
 
         void StartHover(Vector3 position, bool shouldCanvasUpdate = false)
         {
+            // Debug.Log("StartHover");
             ToolTip.Instance.SetTooltip(text, position, shouldCanvasUpdate);
         }
 
         void StopHover()
         {
+            // Debug.Log("StopHover");
             hovered = false;
             ToolTip.Instance.HideTooltip();
         }

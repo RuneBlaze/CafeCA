@@ -8,6 +8,7 @@ namespace Cafeo.Data
         public Sprite icon;
         public string displayName;
         public int basePrice;
+        public string tooltip;
         public bool hasMaterial;
 
         [System.Flags]
