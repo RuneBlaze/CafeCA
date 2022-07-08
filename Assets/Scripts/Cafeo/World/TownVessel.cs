@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cafeo.Data;
 using UnityEngine;
 
 namespace Cafeo.World
@@ -8,6 +9,9 @@ namespace Cafeo.World
     {
         public TownOuterNode outerNode;
         public TownNode location;
+        [SerializeField] private Inventory inventory;
+        public Dictionary<TownVessel, HashSet<Relationship>> relationships;
+        public RelationshipBuilder rel;
 
         /// <summary>
         ///     Either on the move (travelling) or just down in some rabbit hole
@@ -25,8 +29,15 @@ namespace Cafeo.World
         
         public bool Idle => action == null;
 
+        private void Awake()
+        {
+            relationships = new Dictionary<TownVessel, HashSet<Relationship>>();
+            rel = new RelationshipBuilder(this);
+        }
+
         private void Start()
         {
+            inventory = gameObject.AddComponent<Inventory>();
             brain = GetComponent<TownBrain>();
         }
 
