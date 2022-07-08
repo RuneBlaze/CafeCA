@@ -1,4 +1,5 @@
 ﻿using System;
+using Cafeo.Templates;
 
 namespace Cafeo.Data
 {
@@ -60,6 +61,8 @@ namespace Cafeo.Data
         // public abstract WearableTemplate.GarmentPosition ForPosition();
         public abstract string Localize();
 
+        public abstract bool IsApplicable(WearableSeries series);
+
         [Serializable]
         public record ShoeSize : GarmentSize
         {
@@ -88,6 +91,11 @@ namespace Cafeo.Data
             {
                 return millimeters.ToString();
             }
+
+            public override bool IsApplicable(WearableSeries series)
+            {
+                return series.IsShoeLike;
+            }
         }
 
         public record ChildrenSize : GarmentSize
@@ -110,6 +118,11 @@ namespace Cafeo.Data
             public override string Localize()
             {
                 return $"{LetterSize2ChildHeight(size)} {size}";
+            }
+
+            public override bool IsApplicable(WearableSeries series)
+            {
+                return series.IsClothesLike;
             }
         }
 
@@ -134,6 +147,11 @@ namespace Cafeo.Data
             {
                 return $"{LetterSize2MenHeight(size)} {size}";
             }
+
+            public override bool IsApplicable(WearableSeries series)
+            {
+                return series.IsClothesLike;
+            }
         }
 
         public record WomenSize : GarmentSize
@@ -156,6 +174,11 @@ namespace Cafeo.Data
             public override string Localize()
             {
                 return $"{LetterSize2WomenHeight(size)} {size}";
+            }
+
+            public override bool IsApplicable(WearableSeries series)
+            {
+                return series.IsClothesLike;
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cafeo.Fashion;
 using Cafeo.Templates;
+using UnityEngine.Assertions;
 
 namespace Cafeo.Data
 {
@@ -52,6 +53,15 @@ namespace Cafeo.Data
             this.constructionQuality = constructionQuality;
             this.cutQuality = cutQuality;
             this.aestheticsQuality = aestheticsQuality;
+            Validate();
+        }
+
+        private void Validate()
+        {
+            foreach (var garmentSize in sizeRange)
+            {
+                Assert.IsTrue(garmentSize.IsApplicable(this));
+            }
         }
 
         public WearableTemplate.GarmentPosition Position => WearableTemplate.GarmentKind2Position(kind);
@@ -66,6 +76,23 @@ namespace Cafeo.Data
             return from garmentSize in sizeRange
                 from garmentColor in colorRange
                 select new Wearable(this, garmentSize, garmentColor, constructionQuality, cutQuality);
+        }
+
+        public bool IsShoeLike
+        {
+            get
+            {
+                var pos = WearableTemplate.GarmentKind2Position(kind);
+                return pos == WearableTemplate.GarmentPosition.Foot;
+            }
+        }
+        
+        public bool IsClothesLike
+        {
+            get
+            {
+                return !IsShoeLike;
+            }
         }
     }
 }

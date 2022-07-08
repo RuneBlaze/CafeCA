@@ -97,6 +97,10 @@ MonoBehaviour:
     m_Address: Assets/Data/UIPrefabs/ItemPanel.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: b43d47729ab05484eb41a98fd8af483d
+    m_Address: Assets/Data/UIPrefabs/ChoiceButton.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 631995a3864654b4ea88aa9c0314395f, type: 2}
   m_SchemaSet:

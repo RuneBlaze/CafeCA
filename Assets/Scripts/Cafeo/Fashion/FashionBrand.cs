@@ -132,21 +132,47 @@ namespace Cafeo.Fashion
             {
                 case WearableTemplate.FashionLine.Unisex:
                 case WearableTemplate.FashionLine.Men:
-                    return bias switch
+                    if (WearableTemplate.IsShoe(kind))
                     {
-                        WearableTemplate.SizeBias.None => menGarmentSizes,
-                        WearableTemplate.SizeBias.ForSmall => menGarmentSizes,
-                        WearableTemplate.SizeBias.ForLarge => largeMenGarmentSizes,
-                        _ => throw new ArgumentOutOfRangeException(nameof(bias), bias, null)
-                    };
+                        return bias switch
+                        {
+                            WearableTemplate.SizeBias.None => menShoeSizes,
+                            WearableTemplate.SizeBias.ForSmall => menShoeSizes,
+                            WearableTemplate.SizeBias.ForLarge => menShoeSizes,
+                            _ => throw new ArgumentOutOfRangeException(nameof(bias), bias, null)
+                        };
+                    }
+                    else
+                    {
+                        return bias switch
+                        {
+                            WearableTemplate.SizeBias.None => menGarmentSizes,
+                            WearableTemplate.SizeBias.ForSmall => menGarmentSizes,
+                            WearableTemplate.SizeBias.ForLarge => largeMenGarmentSizes,
+                            _ => throw new ArgumentOutOfRangeException(nameof(bias), bias, null)
+                        };
+                    }
                 case WearableTemplate.FashionLine.Women:
-                    return bias switch
+                    if (WearableTemplate.IsShoe(kind))
                     {
-                        WearableTemplate.SizeBias.None => womenGarmentSizes,
-                        WearableTemplate.SizeBias.ForSmall => womenGarmentSizes,
-                        WearableTemplate.SizeBias.ForLarge => largeWomenGarmentSizes,
-                        _ => throw new ArgumentOutOfRangeException(nameof(bias), bias, null)
-                    };
+                        return bias switch
+                        {
+                            WearableTemplate.SizeBias.None => womenShoeSizes,
+                            WearableTemplate.SizeBias.ForSmall => womenShoeSizes,
+                            WearableTemplate.SizeBias.ForLarge => womenShoeSizes,
+                            _ => throw new ArgumentOutOfRangeException(nameof(bias), bias, null)
+                        };
+                    }
+                    else
+                    {
+                        return bias switch
+                        {
+                            WearableTemplate.SizeBias.None => womenGarmentSizes,
+                            WearableTemplate.SizeBias.ForSmall => womenGarmentSizes,
+                            WearableTemplate.SizeBias.ForLarge => largeWomenGarmentSizes,
+                            _ => throw new ArgumentOutOfRangeException(nameof(bias), bias, null)
+                        };
+                    }
                 case WearableTemplate.FashionLine.Children:
                 case WearableTemplate.FashionLine.Boys:
                 case WearableTemplate.FashionLine.Girls:
